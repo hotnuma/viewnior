@@ -1,4 +1,9 @@
+<link href="style.css" rel="stylesheet"></link>
+
 # Viewnior - Fast and elegant image viewer
+
+This is a fork of : https://github.com/Artturin/Viewnior  
+From the original project : https://github.com/hellosiyan/Viewnior  
 
 This is Viewnior, an image viewer program. Created to be simple, fast and elegant. Its minimalistic interface provides more screenspace for your images. Among its features are:
 
@@ -16,17 +21,20 @@ Most of the Viewnior's sources handling image viewing are adopted from the GtkIm
 
 ## Requirements
 
-This package requires the following modules to be installed: glib, GTK+, gio, shared-mime-info.
+This package requires the following modules to be installed: GTK+, glib, gio, exiv2, shared-mime-info.
 
-You can get these packages from your favorite GNOME FTP mirror or at <http://download.gnome.org/sources> or from other sources where GNOME packages are distributed. shared-mime-info can be downloaded from the freedesktop.org website.
+```
+sudo apt install build-essential git meson ninja-build \
+libgtk-3-dev libexiv2-dev
+```
 
 ## Installation
 
-Find your distro on the [Downloads page](https://siyanpanayotov.com/project/viewnior/download). Or [install from source](https://siyanpanayotov.com/project/viewnior/download#source-code).
-
-## How to report issues
-
-Please report any issues you find: <https://github.com/hellosiyan/Viewnior/issues>.
+```
+git clone https://github.com/hotnuma/viewnior.git
+cd viewnior
+./install.sh
+```
 
 ## License
 
@@ -34,4 +42,4 @@ This program is released under the terms of the [GNU General Public License](htt
 
 object-rotate-left.png, object-rotate-right.png are taken from Elementary icon theme by ~DanRabbit (under GPL). object-flip-horizontal.png, object-flip-vertical.png are taken from Gnome icon theme (under GPL).
 
-*Last Edited - 28 April 2018*
+*Last Edited - 26 January 2025*
