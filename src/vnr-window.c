@@ -1435,7 +1435,7 @@ vnr_window_cmd_about (GtkAction *action, VnrWindow *window)
 {
     static const char *authors[] = {
         "Programming &amp; icon design",
-        "\tSiyan Panayotov <contact@siyanpanayotov.com>",
+        "\tSiyan Panayotov",
         "\nRefer to source code from GtkImageView",
         NULL
     };
@@ -1455,13 +1455,13 @@ vnr_window_cmd_about (GtkAction *action, VnrWindow *window)
     gtk_show_about_dialog (GTK_WINDOW (window),
                    "program-name", "Viewnior",
                    "version", VERSION,
-                   "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov <contact@siyanpanayotov.com>",
+                   "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov",
                    "comments",_("Elegant Image Viewer"),
                    "authors", authors,
                    "logo-icon-name", "viewnior",
                    "wrap-license", TRUE,
                    "license", license,
-                   "website", "http://siyanpanayotov.com/project/viewnior/",
+                   "website", "https://github.com/hotnuma/viewnior",
                    "translator-credits", _( "translator-credits" ),
                    NULL);
 }

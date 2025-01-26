@@ -2,8 +2,10 @@
 
 # Viewnior - Fast and elegant image viewer
 
-This is a fork of : https://github.com/Artturin/Viewnior  
-From the original project : https://github.com/hellosiyan/Viewnior  
+This is a fork of the Gtk3 port :  
+https://github.com/Artturin/Viewnior  
+From the original project by Siyan Panayotov :  
+https://github.com/hellosiyan/Viewnior  
 
 This is Viewnior, an image viewer program. Created to be simple, fast and elegant. Its minimalistic interface provides more screenspace for your images. Among its features are:
 

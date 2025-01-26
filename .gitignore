@@ -2,5 +2,6 @@
 **/autre/
 **/build/
 *.pro.user
+*.html
 
 
