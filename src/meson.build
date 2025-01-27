@@ -1,6 +1,7 @@
 src_inc = include_directories('.')
 
 viewnior_sources = [
+    'dialog.c',
     'main.c',
     'uni-anim-view.c',
     'uni-cache.c',

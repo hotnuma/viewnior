@@ -13,6 +13,7 @@ PKGCONFIG += exiv2
 PKGCONFIG += shared-mime-info
 
 SOURCES = \
+    src/dialog.c \
     src/main.c \
     src/uni-anim-view.c \
     src/uni-cache.c \
@@ -39,6 +40,7 @@ DISTFILES = \
     src/meson.build
 
 HEADERS += \
+    src/dialog.h \
     src/uni-anim-view.h \
     src/uni-cache.h \
     src/uni-dragger.h \
