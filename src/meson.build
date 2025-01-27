@@ -16,8 +16,8 @@ viewnior_sources = [
     'vnr-prefs.c',
     'vnr-properties-dialog.c',
     'vnr-tools.c',
-    'xfce-filename-input.c',
     'vnr-window.c',
+    'xfce-filename-input.c',
 ]
 
 marshal = 'uni-marshal'
