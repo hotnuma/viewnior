@@ -186,10 +186,9 @@ void
 vnr_file_load_single_uri(char *p_path, GList **file_list, gboolean include_hidden, GError **error)
 {
     GFile *file;
-    GFileInfo *fileinfo;
-    GFileType filetype;
-
     file = g_file_new_for_path(p_path);
+
+    GFileInfo *fileinfo;
     fileinfo = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_TYPE","
                                   G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
                                   0, NULL, error);
@@ -197,6 +196,7 @@ vnr_file_load_single_uri(char *p_path, GList **file_list, gboolean include_hidde
     if (fileinfo == NULL)
         return;
 
+    GFileType filetype;
     filetype = g_file_info_get_file_type(fileinfo);
 
     if (filetype == G_FILE_TYPE_DIRECTORY)

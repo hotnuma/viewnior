@@ -80,7 +80,7 @@ main (int argc, char *argv[])
 
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), PIXMAP_DIR);
 
-    window = vnr_window_new ();
+    window = window_new ();
     gtk_window_set_default_size (window, 480, 300);
     gtk_window_set_position (window, GTK_WIN_POS_CENTER);
 
@@ -99,27 +99,27 @@ main (int argc, char *argv[])
 
         if(error != NULL && file_list != NULL)
         {
-            deny_slideshow(VNR_WINDOW(window));
+            window_slideshow_deny(VNR_WINDOW(window));
             vnr_message_area_show(VNR_MESSAGE_AREA (VNR_WINDOW(window)->msg_area),
                                   TRUE, error->message, TRUE);
-            vnr_window_set_list(VNR_WINDOW(window), file_list, TRUE);
+            window_set_list(VNR_WINDOW(window), file_list, TRUE);
         }
         else if(error != NULL)
         {
-            deny_slideshow(VNR_WINDOW(window));
+            window_slideshow_deny(VNR_WINDOW(window));
             vnr_message_area_show(VNR_MESSAGE_AREA (VNR_WINDOW(window)->msg_area),
                                   TRUE, error->message, TRUE);
         }
         else if(file_list == NULL)
         {
-            deny_slideshow(VNR_WINDOW(window));
+            window_slideshow_deny(VNR_WINDOW(window));
             vnr_message_area_show(VNR_MESSAGE_AREA (VNR_WINDOW(window)->msg_area),
                                   TRUE, _("The given locations contain no images."),
                                   TRUE);
         }
         else
         {
-            vnr_window_set_list(VNR_WINDOW(window), file_list, TRUE);
+            window_set_list(VNR_WINDOW(window), file_list, TRUE);
         }
     }
     

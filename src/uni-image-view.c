@@ -573,7 +573,7 @@ uni_image_view_button_press (GtkWidget * widget, GdkEventButton * ev)
 
     if(ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_FULLSCREEN)
     {
-        vnr_window_toggle_fullscreen(vnr_win);
+        window_toggle_fullscreen(vnr_win);
         return 1;
     }
     else if(ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_NEXT)
@@ -581,9 +581,9 @@ uni_image_view_button_press (GtkWidget * widget, GdkEventButton * ev)
         int width = gdk_window_get_width(gtk_widget_get_window(widget));
 
         if(ev->x/width < 0.5)
-            vnr_window_prev(vnr_win);
+            window_prev(vnr_win);
         else
-            vnr_window_next(vnr_win, TRUE);
+            window_next(vnr_win, TRUE);
 
         return 1;
     }
@@ -610,11 +610,11 @@ uni_image_view_button_press (GtkWidget * widget, GdkEventButton * ev)
     }
     else if(ev->type == GDK_BUTTON_PRESS && ev->button == 8)
     {
-        vnr_window_prev(vnr_win);
+        window_prev(vnr_win);
     }
     else if(ev->type == GDK_BUTTON_PRESS && ev->button == 9)
     {
-        vnr_window_next(vnr_win, TRUE);
+        window_next(vnr_win, TRUE);
     }
     return 0;
 }
@@ -671,14 +671,14 @@ uni_image_view_scroll_event (GtkWidget * widget, GdkEventScroll * ev)
         {
             case GDK_SCROLL_LEFT: 
                 // In Zoom mode left/right scroll is used for navigation
-                vnr_window_prev(vnr_win); 
+                window_prev(vnr_win); 
                 break;
             case GDK_SCROLL_RIGHT: 
-                vnr_window_next(vnr_win, TRUE); 
+                window_next(vnr_win, TRUE); 
                 break;
             case GDK_SCROLL_UP:
                 if( ev->state & GDK_SHIFT_MASK ) {
-                    vnr_window_prev(vnr_win);
+                    window_prev(vnr_win);
                 } else {
                     zoom = CLAMP (view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
                     uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
@@ -686,7 +686,7 @@ uni_image_view_scroll_event (GtkWidget * widget, GdkEventScroll * ev)
                 break;
             default:
                 if( ev->state & GDK_SHIFT_MASK ) {
-                    vnr_window_next(vnr_win, TRUE);
+                    window_next(vnr_win, TRUE);
                 } else {
                     zoom = CLAMP (view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
                     uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
@@ -715,7 +715,7 @@ uni_image_view_scroll_event (GtkWidget * widget, GdkEventScroll * ev)
                     uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
                 }
                 else
-                    vnr_window_prev(vnr_win);
+                    window_prev(vnr_win);
 
                 break;
 
@@ -726,7 +726,7 @@ uni_image_view_scroll_event (GtkWidget * widget, GdkEventScroll * ev)
                     uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
                 }
                 else
-                    vnr_window_next(vnr_win, TRUE);
+                    window_next(vnr_win, TRUE);
         }
 	}
 	else

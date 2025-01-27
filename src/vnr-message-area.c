@@ -112,7 +112,7 @@ vnr_message_area_show_basic (VnrMessageArea *msg_area,
 
     g_free (warning);
     if(close_image == TRUE)
-        vnr_window_close(msg_area->vnr_win);
+        window_close(msg_area->vnr_win);
 }
 
 void

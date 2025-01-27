@@ -30,23 +30,31 @@ G_BEGIN_DECLS
 typedef struct _VnrWindow VnrWindow;
 typedef struct _VnrWindowClass VnrWindowClass;
 
-#define VNR_TYPE_WINDOW             (vnr_window_get_type ())
-#define VNR_WINDOW(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), VNR_TYPE_WINDOW, VnrWindow))
-#define VNR_WINDOW_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass),  VNR_TYPE_WINDOW, VnrWindowClass))
-#define VNR_IS_WINDOW(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VNR_TYPE_WINDOW))
-#define VNR_IS_WINDOW_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  VNR_TYPE_WINDOW))
-#define VNR_WINDOW_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),  VNR_TYPE_WINDOW, VnrWindowClass))
+#define VNR_TYPE_WINDOW \
+    (window_get_type ())
+#define VNR_WINDOW(obj) \
+    (G_TYPE_CHECK_INSTANCE_CAST ((obj), VNR_TYPE_WINDOW, VnrWindow))
+#define VNR_WINDOW_CLASS(klass) \
+    (G_TYPE_CHECK_CLASS_CAST ((klass),  VNR_TYPE_WINDOW, VnrWindowClass))
+#define VNR_IS_WINDOW(obj) \
+    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VNR_TYPE_WINDOW))
+#define VNR_IS_WINDOW_CLASS(klass) \
+    (G_TYPE_CHECK_CLASS_TYPE ((klass),  VNR_TYPE_WINDOW))
+#define VNR_WINDOW_GET_CLASS(obj) \
+    (G_TYPE_INSTANCE_GET_CLASS ((obj),  VNR_TYPE_WINDOW, VnrWindowClass))
 
-typedef enum {
-    VNR_WINDOW_MODE_NORMAL,
-    VNR_WINDOW_MODE_FULLSCREEN,
-    VNR_WINDOW_MODE_SLIDESHOW,
-} VnrWindowMode;
+typedef enum
+{
+    WINDOW_MODE_NORMAL,
+    WINDOW_MODE_FULLSCREEN,
+    WINDOW_MODE_SLIDESHOW,
+} WindowMode;
 
-struct _VnrWindow {
-    GtkWindow win;
+struct _VnrWindow
+{
+    GtkWindow __parent__;
 
-    GtkUIManager *ui_mngr;
+    GtkUIManager *ui_manager;
 
     GtkActionGroup *actions_window;
     GtkActionGroup *actions_image;
@@ -86,7 +94,7 @@ struct _VnrWindow {
     gint current_image_height;
     gint current_image_width;
 
-    VnrWindowMode mode;
+    WindowMode mode;
     guint8 modifications;
 
     gboolean cursor_is_hidden;
@@ -98,6 +106,7 @@ struct _VnrWindow {
     GtkWidget *fs_filename_label;
     GSource *fs_source;
     gboolean disable_autohide;
+
     /* Slideshow (ss) variables */
     gboolean slideshow;
     guint ss_source_tag;
@@ -107,28 +116,31 @@ struct _VnrWindow {
     GtkActionGroup *action_wallpaper;
 };
 
-struct _VnrWindowClass {
+struct _VnrWindowClass
+{
     GtkWindowClass parent_class;
 };
 
-GType       vnr_window_get_type (void) G_GNUC_CONST;
+GType window_get_type() G_GNUC_CONST;
 
 /* Constructors */
-GtkWindow*  vnr_window_new      (void);
+GtkWindow* window_new();
 
 /* Actions */
-gboolean vnr_window_open     (VnrWindow *win, gboolean fit_to_screen);
-void     vnr_window_open_from_list (VnrWindow *window, GSList *uri_list);
-void     vnr_window_close    (VnrWindow *win);
+gboolean window_open(VnrWindow *window, gboolean fit_to_screen);
+void     window_open_from_list(VnrWindow *window, GSList *uri_list);
+void     window_close(VnrWindow *window);
 
-void     vnr_window_set_list (VnrWindow *win, GList *list, gboolean free_current);
-gboolean vnr_window_next     (VnrWindow *win, gboolean rem_timeout);
-gboolean vnr_window_prev     (VnrWindow *win);
-gboolean vnr_window_first    (VnrWindow *win);
-gboolean vnr_window_last     (VnrWindow *win);
-void     deny_slideshow      (VnrWindow *window);
-void     vnr_window_apply_preferences (VnrWindow *window);
-void     vnr_window_toggle_fullscreen (VnrWindow *win);
+void     window_set_list(VnrWindow *window, GList *list, gboolean free_current);
+gboolean window_next(VnrWindow *window, gboolean rem_timeout);
+gboolean window_prev(VnrWindow *window);
+gboolean window_first(VnrWindow *window);
+gboolean window_last(VnrWindow *window);
+void     window_slideshow_deny(VnrWindow *window);
+void     window_apply_preferences(VnrWindow *window);
+void     window_toggle_fullscreen(VnrWindow *window);
 
 G_END_DECLS
 #endif /* __VNR_WINDOW_H__ */
+
+

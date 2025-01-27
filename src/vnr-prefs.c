@@ -54,7 +54,7 @@ toggle_dark_background_cb (GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->dark_background = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
-    vnr_window_apply_preferences(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
+    window_apply_preferences(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
 }
 
 static void
@@ -69,7 +69,7 @@ toggle_smooth_images_cb (GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->smooth_images = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
-    vnr_window_apply_preferences(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
+    window_apply_preferences(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
 }
 
 static void
@@ -144,7 +144,7 @@ change_spin_value_cb (GtkSpinButton *spinbutton, gpointer user_data)
 
     VNR_PREFS(user_data)->slideshow_timeout = new_value;
     vnr_prefs_save(VNR_PREFS(user_data));
-    vnr_window_apply_preferences(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
+    window_apply_preferences(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
 }
 
 static gboolean
