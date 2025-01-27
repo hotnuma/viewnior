@@ -2,22 +2,22 @@ src_inc = include_directories('.')
 
 viewnior_sources = [
     'main.c',
-    'vnr-window.c',
-    'vnr-window.h',
-    'uni-cache.c',
     'uni-anim-view.c',
+    'uni-cache.c',
+    'uni-dragger.c',
+    'uni-exiv2.cpp',
+    'uni-image-view.c',
     'uni-nav.c',
     'uni-scroll-win.c',
-    'uni-dragger.c',
-    'uni-image-view.c',
-    'vnr-message-area.c',
-    'vnr-properties-dialog.c',
-    'vnr-file.c',
     'uni-utils.c',
-    'vnr-prefs.c',
     'vnr-crop.c',
+    'vnr-file.c',
+    'vnr-message-area.c',
+    'vnr-prefs.c',
+    'vnr-properties-dialog.c',
     'vnr-tools.c',
-    'uni-exiv2.cpp',
+    'xfce-filename-input.c',
+    'vnr-window.c',
 ]
 
 marshal = 'uni-marshal'

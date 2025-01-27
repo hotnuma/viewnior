@@ -28,7 +28,8 @@ SOURCES = \
     src/vnr-prefs.c \
     src/vnr-properties-dialog.c \
     src/vnr-tools.c \
-    src/vnr-window.c
+    src/vnr-window.c \
+    src/xfce-filename-input.c
 
 DISTFILES = \
     README.md \
@@ -53,6 +54,7 @@ HEADERS += \
     src/vnr-prefs.h \
     src/vnr-properties-dialog.h \
     src/vnr-tools.h \
-    src/vnr-window.h
+    src/vnr-window.h \
+    src/xfce-filename-input.h
 
 
