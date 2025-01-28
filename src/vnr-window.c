@@ -864,10 +864,10 @@ _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 
 // Private signal handlers ===================================================
 
-// Modified version of eog's open_with_launch_application_cb
 static void
 _on_open_with_launch_application(GtkAction *action, VnrWindow *window)
 {
+    // Modified version of eog's open_with_launch_application_cb
 
     GFile *file;
     file = g_file_new_for_path((gchar*)VNR_FILE(window->file_list->data)->path);
@@ -2629,6 +2629,7 @@ window_set_list(VnrWindow *window, GList *list, gboolean free_current)
 {
     if (free_current == TRUE && window->file_list != NULL)
         g_list_free(window->file_list);
+
     if (g_list_length(g_list_first(list)) > 1)
     {
         gtk_action_group_set_sensitive(window->actions_collection, TRUE);
@@ -2639,6 +2640,7 @@ window_set_list(VnrWindow *window, GList *list, gboolean free_current)
         gtk_action_group_set_sensitive(window->actions_collection, FALSE);
         window_slideshow_deny(window);
     }
+
     window->file_list = list;
 }
 

@@ -46,14 +46,13 @@ static GOptionEntry opt_entries[] = {
 };
 
 int
-main (int argc, char *argv[])
+main(int argc, char **argv)
 {
     GError *error = NULL;
     GOptionContext *opt_context;
     GtkWindow *window;
 
     GSList *uri_list = NULL;
-    GList *file_list = NULL;
 
 
     bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -85,6 +84,8 @@ main (int argc, char *argv[])
     gtk_window_set_position (window, GTK_WIN_POS_CENTER);
 
     uri_list = vnr_tools_get_list_from_array (files);
+
+    GList *file_list = NULL;
 
     if(uri_list != NULL)
     {
@@ -125,7 +126,8 @@ main (int argc, char *argv[])
     
     VNR_WINDOW(window)->prefs->start_slideshow = slideshow;
     VNR_WINDOW(window)->prefs->start_fullscreen = fullscreen;
-    if ( VNR_WINDOW(window)->prefs->start_maximized ) {
+    if (VNR_WINDOW(window)->prefs->start_maximized)
+    {
     	gtk_window_maximize(window);
     }
     gtk_widget_show (GTK_WIDGET (window));
@@ -133,3 +135,5 @@ main (int argc, char *argv[])
 
     return 0;
 }
+
+

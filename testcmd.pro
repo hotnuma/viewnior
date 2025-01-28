@@ -33,6 +33,7 @@ SOURCES = \
     src/xfce-filename-input.c
 
 DISTFILES = \
+    Notes.md \
     Readme.md \
     install.sh \
     meson.build \
