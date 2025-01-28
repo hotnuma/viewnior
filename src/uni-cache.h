@@ -28,7 +28,8 @@
 typedef struct _UniPixbufDrawOpts UniPixbufDrawOpts;
 typedef struct _UniPixbufDrawCache UniPixbufDrawCache;
 
-typedef enum {
+typedef enum
+{
     UNI_PIXBUF_DRAW_METHOD_SCALE = 0,
     UNI_PIXBUF_DRAW_METHOD_CONTAINS = 1,
     UNI_PIXBUF_DRAW_METHOD_SCROLL = 2
@@ -41,7 +42,8 @@ typedef enum {
  * drawn. Options include such things like the source rectangle in the
  * pixbuf to draw, where to draw it, which zoom to use and so on.
  **/
-struct _UniPixbufDrawOpts {
+struct _UniPixbufDrawOpts
+{
     gdouble zoom;
 
     /* Rectangle in zoom-space coordinates of the area to draw. */
@@ -73,21 +75,22 @@ struct _UniPixbufDrawOpts {
  * widget could either do it by itself using gdk_pixbuf_scale() and
  * gdk_draw_pixbuf().
  **/
-struct _UniPixbufDrawCache {
+struct _UniPixbufDrawCache
+{
     GdkPixbuf *last_pixbuf;
     UniPixbufDrawOpts old;
     int check_size;
 };
 
-UniPixbufDrawCache* uni_pixbuf_draw_cache_new   (void);
-void    uni_pixbuf_draw_cache_free          (UniPixbufDrawCache * cache);
-void    uni_pixbuf_draw_cache_invalidate    (UniPixbufDrawCache * cache);
-void    uni_pixbuf_draw_cache_draw          (UniPixbufDrawCache * cache,
-                                             UniPixbufDrawOpts * opts,
-                                             cairo_t *cr);
+UniPixbufDrawCache *uni_pixbuf_draw_cache_new(void);
+void uni_pixbuf_draw_cache_free(UniPixbufDrawCache *cache);
+void uni_pixbuf_draw_cache_invalidate(UniPixbufDrawCache *cache);
+void uni_pixbuf_draw_cache_draw(UniPixbufDrawCache *cache,
+                                UniPixbufDrawOpts *opts,
+                                cairo_t *cr);
 
-UniPixbufDrawMethod uni_pixbuf_draw_cache_get_method (UniPixbufDrawOpts * old,
-                                                      UniPixbufDrawOpts *
-                                                      new_);
+UniPixbufDrawMethod uni_pixbuf_draw_cache_get_method(UniPixbufDrawOpts *old,
+                                                     UniPixbufDrawOpts *
+                                                         new_);
 
 #endif /* __UNI_CACHE_H__ */

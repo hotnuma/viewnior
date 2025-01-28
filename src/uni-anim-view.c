@@ -28,24 +28,25 @@
 /*************************************************************/
 /***** Private data ******************************************/
 /*************************************************************/
-enum {
+enum
+{
     TOGGLE_RUNNING,
     STEP,
     LAST_SIGNAL
 };
 
-static guint uni_anim_view_signals[LAST_SIGNAL] = { 0 };
+static guint uni_anim_view_signals[LAST_SIGNAL] = {0};
 
-G_DEFINE_TYPE (UniAnimView, uni_anim_view, UNI_TYPE_IMAGE_VIEW);
+G_DEFINE_TYPE(UniAnimView, uni_anim_view, UNI_TYPE_IMAGE_VIEW);
 
 /*************************************************************/
 /***** Static stuff ******************************************/
 /*************************************************************/
 
 static gboolean
-uni_anim_view_updator (gpointer data)
+uni_anim_view_updator(gpointer data)
 {
-    UniAnimView *aview = (UniAnimView *) data;
+    UniAnimView *aview = (UniAnimView *)data;
 
     // Workaround for #437791.
     glong delay_us = aview->delay * 1000;
@@ -57,21 +58,21 @@ uni_anim_view_updator (gpointer data)
         // uni_anim_view_updator() is run.
         delay_us = 200;
     }
-    g_time_val_add (&aview->time, delay_us);
+    g_time_val_add(&aview->time, delay_us);
 
-    gboolean next = gdk_pixbuf_animation_iter_advance (aview->iter,
-                                                       &aview->time);
-    uni_anim_view_set_is_playing (aview, FALSE);
+    gboolean next = gdk_pixbuf_animation_iter_advance(aview->iter,
+                                                      &aview->time);
+    uni_anim_view_set_is_playing(aview, FALSE);
 
-    aview->delay = gdk_pixbuf_animation_iter_get_delay_time (aview->iter);
-    aview->timer_id = g_timeout_add (aview->delay,
-                                     uni_anim_view_updator, aview);
+    aview->delay = gdk_pixbuf_animation_iter_get_delay_time(aview->iter);
+    aview->timer_id = g_timeout_add(aview->delay,
+                                    uni_anim_view_updator, aview);
 
     if (!next)
         return FALSE;
 
-    GdkPixbuf *pixbuf = gdk_pixbuf_animation_iter_get_pixbuf (aview->iter);
-    uni_image_view_set_pixbuf (UNI_IMAGE_VIEW (aview), pixbuf, FALSE);
+    GdkPixbuf *pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(aview->iter);
+    uni_image_view_set_pixbuf(UNI_IMAGE_VIEW(aview), pixbuf, FALSE);
 
     return FALSE;
 }
@@ -80,9 +81,9 @@ uni_anim_view_updator (gpointer data)
 /***** Private signal handlers *******************************/
 /*************************************************************/
 static void
-uni_anim_view_toggle_running (UniAnimView * aview)
+uni_anim_view_toggle_running(UniAnimView *aview)
 {
-    uni_anim_view_set_is_playing (aview, !aview->timer_id);
+    uni_anim_view_set_is_playing(aview, !aview->timer_id);
 }
 
 /* Steps the animation one frame forward. If the animation is playing
@@ -90,7 +91,7 @@ uni_anim_view_toggle_running (UniAnimView * aview)
  * last frame?
  **/
 static void
-uni_anim_view_step (UniAnimView * aview)
+uni_anim_view_step(UniAnimView *aview)
 {
     if (aview->anim)
     {
@@ -107,22 +108,21 @@ uni_anim_view_step (UniAnimView * aview)
          * exactly 10 chances to advance the frame before bailing out.
          * */
         int n = 0;
-        GdkPixbuf *old = gdk_pixbuf_animation_iter_get_pixbuf (aview->iter);
-        while ((gdk_pixbuf_animation_iter_get_pixbuf (aview->iter) == old)
-               && (n < 10))
+        GdkPixbuf *old = gdk_pixbuf_animation_iter_get_pixbuf(aview->iter);
+        while ((gdk_pixbuf_animation_iter_get_pixbuf(aview->iter) == old) && (n < 10))
         {
-            uni_anim_view_updator (aview);
+            uni_anim_view_updator(aview);
             n++;
         }
     }
-    uni_anim_view_set_is_playing (aview, FALSE);
+    uni_anim_view_set_is_playing(aview, FALSE);
 }
 
 /*************************************************************/
 /***** Stuff that deals with the type ************************/
 /*************************************************************/
 static void
-uni_anim_view_init (UniAnimView * aview)
+uni_anim_view_init(UniAnimView *aview)
 {
     aview->anim = NULL;
     aview->iter = NULL;
@@ -130,16 +130,16 @@ uni_anim_view_init (UniAnimView * aview)
 }
 
 static void
-uni_anim_view_finalize (GObject * object)
+uni_anim_view_finalize(GObject *object)
 {
-    uni_anim_view_set_is_playing (UNI_ANIM_VIEW (object), FALSE);
+    uni_anim_view_set_is_playing(UNI_ANIM_VIEW(object), FALSE);
 
     /* Chain up. */
-    G_OBJECT_CLASS (uni_anim_view_parent_class)->finalize (object);
+    G_OBJECT_CLASS(uni_anim_view_parent_class)->finalize(object);
 }
 
 static void
-uni_anim_view_init_signals (UniAnimViewClass * klass)
+uni_anim_view_init_signals(UniAnimViewClass *klass)
 {
     /**
      * UniAnimView::toggle-running:
@@ -151,12 +151,12 @@ uni_anim_view_init_signals (UniAnimViewClass * klass)
      * clients of this library.
      **/
     uni_anim_view_signals[TOGGLE_RUNNING] =
-        g_signal_new ("toggle_running",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniAnimViewClass, toggle_running),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+        g_signal_new("toggle_running",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniAnimViewClass, toggle_running),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
     /**
      * UniAnimView::step:
      * @aview: a #UniAnimView
@@ -167,33 +167,33 @@ uni_anim_view_init_signals (UniAnimViewClass * klass)
      * used by clients of this library.
      **/
     uni_anim_view_signals[STEP] =
-        g_signal_new ("step",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniAnimViewClass, step),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+        g_signal_new("step",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniAnimViewClass, step),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 static void
-uni_anim_view_class_init (UniAnimViewClass * klass)
+uni_anim_view_class_init(UniAnimViewClass *klass)
 {
-    uni_anim_view_init_signals (klass);
+    uni_anim_view_init_signals(klass);
 
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = uni_anim_view_finalize;
 
     klass->toggle_running = uni_anim_view_toggle_running;
     klass->step = uni_anim_view_step;
 
     /* Add keybindings. */
-    GtkBindingSet *binding_set = gtk_binding_set_by_class (klass);
+    GtkBindingSet *binding_set = gtk_binding_set_by_class(klass);
 
     /* Stop */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_p, 0, "toggle_running", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_p, 0, "toggle_running", 0);
 
     /* Step */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_j, 0, "step", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_j, 0, "step", 0);
 }
 
 /**
@@ -203,12 +203,11 @@ uni_anim_view_class_init (UniAnimViewClass * klass)
  * Creates a new #UniAnimView with default values.
  **/
 GtkWidget *
-uni_anim_view_new (void)
+uni_anim_view_new(void)
 {
-    GtkWidget *aview = g_object_new (UNI_TYPE_ANIM_VIEW, NULL);
+    GtkWidget *aview = g_object_new(UNI_TYPE_ANIM_VIEW, NULL);
     return aview;
 }
-
 
 /*************************************************************/
 /***** Read-write properties *********************************/
@@ -238,84 +237,81 @@ uni_anim_view_new (void)
 
 /* Return TRUE if anim is a static image */
 gboolean
-uni_anim_view_set_anim (UniAnimView * aview, GdkPixbufAnimation * anim)
+uni_anim_view_set_anim(UniAnimView *aview, GdkPixbufAnimation *anim)
 {
     gboolean is_static;
 
     if (aview->anim)
-        g_object_unref (aview->anim);
+        g_object_unref(aview->anim);
     aview->anim = anim;
 
     if (!anim)
     {
-        uni_anim_view_set_is_playing (aview, FALSE);
-        uni_image_view_set_pixbuf (UNI_IMAGE_VIEW (aview), NULL, TRUE);
+        uni_anim_view_set_is_playing(aview, FALSE);
+        uni_image_view_set_pixbuf(UNI_IMAGE_VIEW(aview), NULL, TRUE);
         return TRUE;
     }
 
-    g_object_ref (aview->anim);
+    g_object_ref(aview->anim);
     if (aview->iter)
-        g_object_unref (aview->iter);
+        g_object_unref(aview->iter);
 
-    g_get_current_time (&aview->time);
-    aview->iter = gdk_pixbuf_animation_get_iter (aview->anim, &aview->time);
+    g_get_current_time(&aview->time);
+    aview->iter = gdk_pixbuf_animation_get_iter(aview->anim, &aview->time);
 
     GdkPixbuf *pixbuf;
 
-    is_static = gdk_pixbuf_animation_is_static_image (anim);
+    is_static = gdk_pixbuf_animation_is_static_image(anim);
 
     if (is_static)
     {
-        pixbuf = gdk_pixbuf_animation_get_static_image (anim);
+        pixbuf = gdk_pixbuf_animation_get_static_image(anim);
     }
     else
     {
-        pixbuf = gdk_pixbuf_animation_iter_get_pixbuf (aview->iter);
+        pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(aview->iter);
     }
 
-    uni_image_view_set_pixbuf (UNI_IMAGE_VIEW (aview), pixbuf, TRUE);
+    uni_image_view_set_pixbuf(UNI_IMAGE_VIEW(aview), pixbuf, TRUE);
 
-    uni_anim_view_set_is_playing (aview, FALSE);
-    aview->delay = gdk_pixbuf_animation_iter_get_delay_time (aview->iter);
+    uni_anim_view_set_is_playing(aview, FALSE);
+    aview->delay = gdk_pixbuf_animation_iter_get_delay_time(aview->iter);
 
-    if(!is_static)
-        aview->timer_id = g_timeout_add (aview->delay,
-                                         uni_anim_view_updator, aview);
+    if (!is_static)
+        aview->timer_id = g_timeout_add(aview->delay,
+                                        uni_anim_view_updator, aview);
     return is_static;
 }
-
 
 /* No conversion from GdkPixbuf to GdkPixbufAnim can be made
  * directly using the current API, so this makes a static
  * GdkPixbufAnimation and updates the UniAnimView */
-void
-uni_anim_view_set_static (UniAnimView * aview, GdkPixbuf * pixbuf)
+void uni_anim_view_set_static(UniAnimView *aview, GdkPixbuf *pixbuf)
 {
     GdkPixbufSimpleAnim *s_anim;
 
-    s_anim = gdk_pixbuf_simple_anim_new (gdk_pixbuf_get_width(pixbuf),
-                                         gdk_pixbuf_get_height(pixbuf),
-                                         -1);
+    s_anim = gdk_pixbuf_simple_anim_new(gdk_pixbuf_get_width(pixbuf),
+                                        gdk_pixbuf_get_height(pixbuf),
+                                        -1);
     gdk_pixbuf_simple_anim_add_frame(s_anim, pixbuf);
 
     /* Simple version of uni_anim_view_set_anim */
     if (aview->anim)
-        g_object_unref (aview->anim);
+        g_object_unref(aview->anim);
 
-    aview->anim = (GdkPixbufAnimation*)s_anim;
+    aview->anim = (GdkPixbufAnimation *)s_anim;
 
-    g_object_ref (aview->anim);
+    g_object_ref(aview->anim);
     if (aview->iter)
-        g_object_unref (aview->iter);
+        g_object_unref(aview->iter);
 
-    uni_image_view_set_pixbuf (UNI_IMAGE_VIEW (aview), pixbuf, TRUE);
-    uni_anim_view_set_is_playing (aview, FALSE);
+    uni_image_view_set_pixbuf(UNI_IMAGE_VIEW(aview), pixbuf, TRUE);
+    uni_anim_view_set_is_playing(aview, FALSE);
     aview->delay = -1;
     aview->iter = NULL;
 
     g_object_unref(pixbuf);
 }
-
 
 /**
  * uni_anim_view_set_is_playing:
@@ -325,15 +321,14 @@ uni_anim_view_set_static (UniAnimView * aview, GdkPixbuf * pixbuf)
  * Sets whether the animation should play or not. If there is no
  * current animation this method does not have any effect.
  **/
-void
-uni_anim_view_set_is_playing (UniAnimView * aview, gboolean playing)
+void uni_anim_view_set_is_playing(UniAnimView *aview, gboolean playing)
 {
     if (!playing && aview->timer_id)
     {
         /* Commanded to stop AND the animation is playing. */
-        g_source_remove (aview->timer_id);
+        g_source_remove(aview->timer_id);
         aview->timer_id = 0;
     }
     else if (playing && aview->anim)
-        uni_anim_view_updator (aview);
+        uni_anim_view_updator(aview);
 }

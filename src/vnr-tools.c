@@ -24,8 +24,7 @@
 #include <string.h>
 #include "vnr-tools.h"
 
-void
-vnr_tools_fit_to_size (gint * width, gint * height, gint max_width, gint max_height)
+void vnr_tools_fit_to_size(gint *width, gint *height, gint max_width, gint max_height)
 {
     gfloat ratio, max_ratio;
 
@@ -58,8 +57,7 @@ vnr_tools_fit_to_size (gint * width, gint * height, gint max_width, gint max_hei
     return;
 }
 
-void
-vnr_tools_fit_to_size_double (gdouble * width, gdouble * height, gint max_width, gint max_height)
+void vnr_tools_fit_to_size_double(gdouble *width, gdouble *height, gint max_width, gint max_height)
 {
     gdouble ratio, max_ratio;
 
@@ -92,68 +90,70 @@ vnr_tools_fit_to_size_double (gdouble * width, gdouble * height, gint max_width,
     return;
 }
 
-GSList*
-vnr_tools_get_list_from_array (gchar **files)
+GSList *
+vnr_tools_get_list_from_array(gchar **files)
 {
     GSList *uri_list = NULL;
     gint i;
 
-    if (files == NULL) return NULL;
+    if (files == NULL)
+        return NULL;
 
-    for (i = 0; files[i]; i++) {
+    for (i = 0; files[i]; i++)
+    {
         char *uri_string;
 
         GFile *file;
 
-        file = g_file_new_for_commandline_arg (files[i]);
+        file = g_file_new_for_commandline_arg(files[i]);
 
-        uri_string = g_file_get_path (file);
+        uri_string = g_file_get_path(file);
 
-        g_object_unref (file);
+        g_object_unref(file);
 
-        if (uri_string) {
-            uri_list = g_slist_prepend (uri_list, g_strdup (uri_string));
-            g_free (uri_string);
+        if (uri_string)
+        {
+            uri_list = g_slist_prepend(uri_list, g_strdup(uri_string));
+            g_free(uri_string);
         }
     }
 
-    return g_slist_reverse (uri_list);
+    return g_slist_reverse(uri_list);
 }
 
 /* modified version of eog's
  * eog_util_parse_uri_string_list_to_file_list */
-GSList*
-vnr_tools_parse_uri_string_list_to_file_list (const gchar *uri_list)
+GSList *
+vnr_tools_parse_uri_string_list_to_file_list(const gchar *uri_list)
 {
-    GSList* file_list = NULL;
+    GSList *file_list = NULL;
     gsize i = 0;
     gchar **uris;
 
-    uris = g_uri_list_extract_uris (uri_list);
+    uris = g_uri_list_extract_uris(uri_list);
 
-    while (uris[i] != NULL) {
-        gchar* current_path = g_file_get_path (g_file_new_for_uri(uris[i]));
-        if(current_path != NULL)
-            file_list = g_slist_append (file_list, current_path);
+    while (uris[i] != NULL)
+    {
+        gchar *current_path = g_file_get_path(g_file_new_for_uri(uris[i]));
+        if (current_path != NULL)
+            file_list = g_slist_append(file_list, current_path);
         i++;
     }
 
-    g_strfreev (uris);
-    return g_slist_reverse (file_list);
+    g_strfreev(uris);
+    return g_slist_reverse(file_list);
 }
 
-gint
-compare_quarks (gconstpointer a, gconstpointer b)
+gint compare_quarks(gconstpointer a, gconstpointer b)
 {
     GQuark quark;
 
-    quark = g_quark_from_string ((const gchar *) a);
+    quark = g_quark_from_string((const gchar *)a);
 
-    return quark - GPOINTER_TO_INT (b);
+    return quark - GPOINTER_TO_INT(b);
 }
 
-void
-get_position_of_element_in_list (GList *list, gint *current, gint *total)
+void get_position_of_element_in_list(GList *list, gint *current, gint *total)
 {
     GList *it;
     gint after, before;
@@ -161,34 +161,33 @@ get_position_of_element_in_list (GList *list, gint *current, gint *total)
     after = before = 0;
     it = list;
 
-    for(it = list; it != NULL; it = it->next)
+    for (it = list; it != NULL; it = it->next)
     {
-        after ++;
+        after++;
     }
 
-    for(it = list; it != NULL; it = it->prev)
+    for (it = list; it != NULL; it = it->prev)
     {
-        before ++;
+        before++;
     }
 
     *current = before;
     *total = before + after - 1;
 }
 
-void
-vnr_tools_apply_embedded_orientation (GdkPixbufAnimation **anim)
+void vnr_tools_apply_embedded_orientation(GdkPixbufAnimation **anim)
 {
     GdkPixbuf *pixbuf;
     GdkPixbuf *original;
 
-    if(!gdk_pixbuf_animation_is_static_image (*anim))
+    if (!gdk_pixbuf_animation_is_static_image(*anim))
         return;
 
-    pixbuf = gdk_pixbuf_animation_get_static_image (*anim);
+    pixbuf = gdk_pixbuf_animation_get_static_image(*anim);
     original = pixbuf;
     pixbuf = gdk_pixbuf_apply_embedded_orientation(pixbuf);
 
-    if(original == pixbuf)
+    if (original == pixbuf)
     {
         g_object_unref(pixbuf);
         return;
@@ -196,9 +195,9 @@ vnr_tools_apply_embedded_orientation (GdkPixbufAnimation **anim)
 
     GdkPixbufSimpleAnim *s_anim;
 
-    s_anim = gdk_pixbuf_simple_anim_new (gdk_pixbuf_get_width(pixbuf),
-                                         gdk_pixbuf_get_height(pixbuf),
-                                         -1);
+    s_anim = gdk_pixbuf_simple_anim_new(gdk_pixbuf_get_width(pixbuf),
+                                        gdk_pixbuf_get_height(pixbuf),
+                                        -1);
     gdk_pixbuf_simple_anim_add_frame(s_anim, pixbuf);
 
     g_object_unref(pixbuf);

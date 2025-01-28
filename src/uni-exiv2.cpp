@@ -26,27 +26,28 @@
 
 #include "uni-exiv2.hpp"
 
-#define ARRAY_SIZE(array) (sizeof array/sizeof(array[0]))
+#define ARRAY_SIZE(array) (sizeof array / sizeof(array[0]))
 
 #define EXIV_ERROR Exiv2::AnyError
 #ifdef EXIV2_VERSION
-    #ifdef EXIV2_TEST_VERSION
-        #if EXIV2_TEST_VERSION(0,28,0)
-            #define EXIV_ERROR Exiv2::Error
-        #endif
-    #endif
+#ifdef EXIV2_TEST_VERSION
+#if EXIV2_TEST_VERSION(0, 28, 0)
+#define EXIV_ERROR Exiv2::Error
+#endif
+#endif
 #endif
 
 static std::unique_ptr<Exiv2::Image> cached_image;
 
-extern "C"
-void
-uni_read_exiv2_map(const char *uri, void (*callback)(const char*, const char*, void*), void *user_data)
+extern "C" void
+uni_read_exiv2_map(const char *uri, void (*callback)(const char *, const char *, void *), void *user_data)
 {
     Exiv2::LogMsg::setLevel(Exiv2::LogMsg::mute);
-    try {
+    try
+    {
         std::unique_ptr<Exiv2::Image> image = Exiv2::ImageFactory::open(uri);
-        if (image == nullptr) {
+        if (image == nullptr)
+        {
             return;
         }
 
@@ -54,96 +55,116 @@ uni_read_exiv2_map(const char *uri, void (*callback)(const char*, const char*, v
         Exiv2::ExifData &exifData = image->exifData();
         Exiv2::IptcData &iptcData = image->iptcData();
 
-        if ( !exifData.empty() ) {
-            for ( uint i = 0; i < ARRAY_SIZE(exifDataDictionary); i++ ) {
+        if (!exifData.empty())
+        {
+            for (uint i = 0; i < ARRAY_SIZE(exifDataDictionary); i++)
+            {
                 ExifDataDictionary dict = exifDataDictionary[i];
 
                 Exiv2::ExifData::const_iterator pos;
-                if ( dict.finder == NULL ) {
+                if (dict.finder == NULL)
+                {
                     Exiv2::ExifKey key(dict.key);
                     pos = exifData.findKey(key);
-                } else {
+                }
+                else
+                {
                     pos = dict.finder(exifData);
                 }
 
-                if ( pos != exifData.end() ) {
+                if (pos != exifData.end())
+                {
                     callback(dict.label, pos->print(&exifData).c_str(), user_data);
                 }
             }
         }
 
         std::string comment = image->comment();
-        if ( ! comment.empty() ) {
-            callback( _("Comment"), comment.c_str(), user_data );
+        if (!comment.empty())
+        {
+            callback(_("Comment"), comment.c_str(), user_data);
         }
 
-        if ( !iptcData.empty() ) {
-            for ( uint i = 0; i < ARRAY_SIZE(iptcDataDictionary); i++ ) {
+        if (!iptcData.empty())
+        {
+            for (uint i = 0; i < ARRAY_SIZE(iptcDataDictionary); i++)
+            {
                 IptcDataDictionary dict = iptcDataDictionary[i];
 
                 Exiv2::IptcKey key(dict.key);
                 Exiv2::IptcData::const_iterator pos;
                 pos = iptcData.findKey(key);
 
-                if ( pos != iptcData.end() ) {
+                if (pos != iptcData.end())
+                {
                     callback(dict.label, pos->value().toString().c_str(), user_data);
                 }
             }
         }
-    } catch (EXIV_ERROR& e) {
+    }
+    catch (EXIV_ERROR &e)
+    {
         std::cerr << "Exiv2: '" << e << "'\n";
     }
 }
 
-extern "C"
-int
+extern "C" int
 uni_read_exiv2_to_cache(const char *uri)
 {
     Exiv2::LogMsg::setLevel(Exiv2::LogMsg::mute);
 
-    if (cached_image != nullptr) {
+    if (cached_image != nullptr)
+    {
         cached_image->clearMetadata();
         cached_image.reset(nullptr);
     }
 
-    try {
+    try
+    {
         cached_image = Exiv2::ImageFactory::open(uri);
-        if (cached_image == nullptr) {
+        if (cached_image == nullptr)
+        {
             return 1;
         }
 
         cached_image->readMetadata();
-    } catch (EXIV_ERROR& e) {
+    }
+    catch (EXIV_ERROR &e)
+    {
         std::cerr << "Exiv2: '" << e << "'\n";
     }
 
     return 0;
 }
 
-extern "C"
-int
+extern "C" int
 uni_write_exiv2_from_cache(const char *uri)
 {
     Exiv2::LogMsg::setLevel(Exiv2::LogMsg::mute);
 
-    if (cached_image == nullptr) {
+    if (cached_image == nullptr)
+    {
         return 1;
     }
 
-    try {
+    try
+    {
         std::unique_ptr<Exiv2::Image> image = Exiv2::ImageFactory::open(uri);
-        if (image == nullptr) {
+        if (image == nullptr)
+        {
             return 2;
         }
 
-        image->setMetadata( *cached_image );
+        image->setMetadata(*cached_image);
         image->writeMetadata();
 
         cached_image->clearMetadata();
         cached_image.reset(nullptr);
 
         return 0;
-    } catch (EXIV_ERROR& e) {
+    }
+    catch (EXIV_ERROR &e)
+    {
         std::cerr << "Exiv2: '" << e << "'\n";
     }
 

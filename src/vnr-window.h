@@ -29,17 +29,17 @@ typedef struct _VnrWindow VnrWindow;
 typedef struct _VnrWindowClass VnrWindowClass;
 
 #define VNR_TYPE_WINDOW \
-    (window_get_type ())
+    (window_get_type())
 #define VNR_WINDOW(obj) \
-    (G_TYPE_CHECK_INSTANCE_CAST ((obj), VNR_TYPE_WINDOW, VnrWindow))
+    (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_WINDOW, VnrWindow))
 #define VNR_WINDOW_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_CAST ((klass),  VNR_TYPE_WINDOW, VnrWindowClass))
+    (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_WINDOW, VnrWindowClass))
 #define VNR_IS_WINDOW(obj) \
-    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VNR_TYPE_WINDOW))
+    (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_WINDOW))
 #define VNR_IS_WINDOW_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_TYPE ((klass),  VNR_TYPE_WINDOW))
+    (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_WINDOW))
 #define VNR_WINDOW_GET_CLASS(obj) \
-    (G_TYPE_INSTANCE_GET_CLASS ((obj),  VNR_TYPE_WINDOW, VnrWindowClass))
+    (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_WINDOW, VnrWindowClass))
 
 typedef enum
 {
@@ -122,24 +122,23 @@ struct _VnrWindowClass
 GType window_get_type() G_GNUC_CONST;
 
 /* Constructors */
-GtkWindow* window_new();
+GtkWindow *window_new();
 
 /* Actions */
 gboolean window_open(VnrWindow *window, gboolean fit_to_screen);
-void     window_open_from_list(VnrWindow *window, GSList *uri_list);
-void     window_close(VnrWindow *window);
+void window_open_from_list(VnrWindow *window, GSList *uri_list);
+void window_close(VnrWindow *window);
 
-void     window_set_list(VnrWindow *window, GList *list, gboolean free_current);
-VnrFile* window_list_get_current(VnrWindow *window);
+void window_set_list(VnrWindow *window, GList *list, gboolean free_current);
+VnrFile *window_list_get_current(VnrWindow *window);
 gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_prev(VnrWindow *window);
 gboolean window_first(VnrWindow *window);
 gboolean window_last(VnrWindow *window);
-void     window_slideshow_deny(VnrWindow *window);
-void     window_apply_preferences(VnrWindow *window);
-void     window_toggle_fullscreen(VnrWindow *window);
+void window_slideshow_deny(VnrWindow *window);
+void window_apply_preferences(VnrWindow *window);
+void window_toggle_fullscreen(VnrWindow *window);
 
 G_END_DECLS
 
 #endif /* __VNR_WINDOW_H__ */
-

@@ -34,28 +34,29 @@
 
 G_BEGIN_DECLS
 
-#define UNI_TYPE_NAV                (uni_nav_get_type ())
-#define UNI_NAV(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), UNI_TYPE_NAV, UniNav))
-#define UNI_NAV_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), UNI_TYPE_NAV, UniNavClass))
-#define UNI_IS_NAV(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), UNI_TYPE_NAV))
-#define UNI_IS_NAV_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), UNI_TYPE_NAV))
-#define UNI_NAV_GET_CLASS(obj)      (G_TYPE_CHECK_INSTANCE_GET_CLASS ((obj), UNI_TYPE_NAV, UniNavClass))
+#define UNI_TYPE_NAV (uni_nav_get_type())
+#define UNI_NAV(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), UNI_TYPE_NAV, UniNav))
+#define UNI_NAV_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), UNI_TYPE_NAV, UniNavClass))
+#define UNI_IS_NAV(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), UNI_TYPE_NAV))
+#define UNI_IS_NAV_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), UNI_TYPE_NAV))
+#define UNI_NAV_GET_CLASS(obj) (G_TYPE_CHECK_INSTANCE_GET_CLASS((obj), UNI_TYPE_NAV, UniNavClass))
 /**
  * UNI_NAV_MAX_WIDTH:
  *
  * The maximum width of the drawing area in the widget.
  **/
-#define UNI_NAV_MAX_WIDTH             150
+#define UNI_NAV_MAX_WIDTH 150
 /**
  * UNI_NAV_MAX_HEIGHT:
  *
  * The maximum height of the drawing area in the widget.
  **/
-#define UNI_NAV_MAX_HEIGHT          150
+#define UNI_NAV_MAX_HEIGHT 150
 typedef struct _UniNav UniNav;
 typedef struct _UniNavClass UniNavClass;
 
-struct _UniNav {
+struct _UniNav
+{
     GtkWindow parent;
 
     /* A GtkDrawingArea to draw the image in. */
@@ -79,22 +80,23 @@ struct _UniNav {
     gboolean update_when_shown;
 };
 
-struct _UniNavClass {
+struct _UniNavClass
+{
     GtkWindowClass parent_class;
 };
 
-GType       uni_nav_get_type        (void) G_GNUC_CONST;
+GType uni_nav_get_type(void) G_GNUC_CONST;
 
 /* Constructors */
-GtkWidget*  uni_nav_new             (UniImageView * view);
+GtkWidget *uni_nav_new(UniImageView *view);
 
 /* Actions */
-void        uni_nav_grab            (UniNav * nav);
-void        uni_nav_release         (UniNav * nav);
+void uni_nav_grab(UniNav *nav);
+void uni_nav_release(UniNav *nav);
 
 /* Runner function */
-void        uni_nav_show_and_grab   (UniNav * nav,
-                                     int center_x, int center_y);
+void uni_nav_show_and_grab(UniNav *nav,
+                           int center_x, int center_y);
 
 G_END_DECLS
 #endif /* __UNI_NAV_H__ */

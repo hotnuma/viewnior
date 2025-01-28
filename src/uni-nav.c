@@ -23,16 +23,15 @@
 #include "uni-nav.h"
 #include "uni-utils.h"
 
-
-G_DEFINE_TYPE (UniNav, uni_nav, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(UniNav, uni_nav, GTK_TYPE_WINDOW);
 
 /*************************************************************/
 /***** Static stuff ******************************************/
 /*************************************************************/
 static gdouble
-uni_nav_get_zoom (UniNav * nav)
+uni_nav_get_zoom(UniNav *nav)
 {
-    GdkPixbuf *pixbuf = uni_image_view_get_pixbuf (nav->view);
+    GdkPixbuf *pixbuf = uni_image_view_get_pixbuf(nav->view);
 
     /* If there is no image, we can't get it's width and height */
     if (!pixbuf)
@@ -40,63 +39,61 @@ uni_nav_get_zoom (UniNav * nav)
         return 0.0;
     }
 
-    int img_width = gdk_pixbuf_get_width (pixbuf);
-    int img_height = gdk_pixbuf_get_height (pixbuf);
+    int img_width = gdk_pixbuf_get_width(pixbuf);
+    int img_height = gdk_pixbuf_get_height(pixbuf);
 
-    gdouble width_zoom = (gdouble) UNI_NAV_MAX_WIDTH / (gdouble) img_width;
-    gdouble height_zoom = (gdouble) UNI_NAV_MAX_HEIGHT / (gdouble) img_height;
-    return MIN (width_zoom, height_zoom);
+    gdouble width_zoom = (gdouble)UNI_NAV_MAX_WIDTH / (gdouble)img_width;
+    gdouble height_zoom = (gdouble)UNI_NAV_MAX_HEIGHT / (gdouble)img_height;
+    return MIN(width_zoom, height_zoom);
 }
 
-
 static Size
-uni_nav_get_preview_size (UniNav * nav)
+uni_nav_get_preview_size(UniNav *nav)
 {
-    GdkPixbuf *pixbuf = uni_image_view_get_pixbuf (nav->view);
+    GdkPixbuf *pixbuf = uni_image_view_get_pixbuf(nav->view);
     if (!pixbuf)
-        return (Size)
-    {
-    UNI_NAV_MAX_WIDTH, UNI_NAV_MAX_HEIGHT};
-    int img_width = gdk_pixbuf_get_width (pixbuf);
-    int img_height = gdk_pixbuf_get_height (pixbuf);
+        return (Size){
+            UNI_NAV_MAX_WIDTH, UNI_NAV_MAX_HEIGHT};
+    int img_width = gdk_pixbuf_get_width(pixbuf);
+    int img_height = gdk_pixbuf_get_height(pixbuf);
 
-    gdouble zoom = uni_nav_get_zoom (nav);
+    gdouble zoom = uni_nav_get_zoom(nav);
 
     Size s;
-    s.width = (int) (img_width * zoom + 0.5);
-    s.height = (int) (img_height * zoom + 0.5);
+    s.width = (int)(img_width * zoom + 0.5);
+    s.height = (int)(img_height * zoom + 0.5);
     return s;
 }
 
 static gdouble
-uni_nav_get_zoom2nav_factor (UniNav * nav)
+uni_nav_get_zoom2nav_factor(UniNav *nav)
 {
-    gdouble nav_zoom = uni_nav_get_zoom (nav);
+    gdouble nav_zoom = uni_nav_get_zoom(nav);
     gdouble view_zoom = nav->view->zoom;
     return view_zoom / nav_zoom;
 }
 
 static GdkRectangle
-gtk_image_get_current_rectangle (UniNav * nav)
+gtk_image_get_current_rectangle(UniNav *nav)
 {
     GdkRectangle rect = {0, 0, 0, 0};
-    uni_image_view_get_viewport (nav->view, &rect);
+    uni_image_view_get_viewport(nav->view, &rect);
 
     /* Convert Zoom space to Nav space coordinates. */
-    gdouble zoom2nav_factor = uni_nav_get_zoom2nav_factor (nav);
-    rect.x = (gdouble) rect.x / zoom2nav_factor;
-    rect.y = (gdouble) rect.y / zoom2nav_factor;
-    rect.width = (gdouble) rect.width / zoom2nav_factor;
-    rect.height = (gdouble) rect.height / zoom2nav_factor;
+    gdouble zoom2nav_factor = uni_nav_get_zoom2nav_factor(nav);
+    rect.x = (gdouble)rect.x / zoom2nav_factor;
+    rect.y = (gdouble)rect.y / zoom2nav_factor;
+    rect.width = (gdouble)rect.width / zoom2nav_factor;
+    rect.height = (gdouble)rect.height / zoom2nav_factor;
 
     return rect;
 }
 
 static void
-uni_nav_draw_rectangle (UniNav * nav, cairo_t *cr, gboolean clear_last)
+uni_nav_draw_rectangle(UniNav *nav, cairo_t *cr, gboolean clear_last)
 {
     GdkRectangle rect;
-    rect = gtk_image_get_current_rectangle (nav);
+    rect = gtk_image_get_current_rectangle(nav);
 
     cairo_save(cr);
     cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
@@ -111,15 +108,15 @@ uni_nav_draw_rectangle (UniNav * nav, cairo_t *cr, gboolean clear_last)
     gdk_cairo_rectangle(cr, &rect);
     cairo_stroke(cr);
     cairo_restore(cr);
-    
+
     nav->last_rect = rect;
 }
 
 static void
-uni_nav_update_position (UniNav * nav)
+uni_nav_update_position(UniNav *nav)
 {
     /* If the Navigation is opened, we don't have to move it again! */
-    if (gtk_widget_get_visible (GTK_WIDGET (nav)))
+    if (gtk_widget_get_visible(GTK_WIDGET(nav)))
     {
         return;
     }
@@ -128,9 +125,9 @@ uni_nav_update_position (UniNav * nav)
     GdkRectangle rect;
 
     /* Calculate position of popup. */
-    Size pw = uni_nav_get_preview_size (nav);
+    Size pw = uni_nav_get_preview_size(nav);
 
-    rect = gtk_image_get_current_rectangle (nav);
+    rect = gtk_image_get_current_rectangle(nav);
 
     /* 3 is the rectangle's line width, defined in nav->gc */
     off_x = rect.x + rect.width / 2 + 3;
@@ -140,45 +137,44 @@ uni_nav_update_position (UniNav * nav)
     y = nav->center_y - off_y;
 
     /* Popup shoudn't be out of the screen */
-    x = CLAMP (x, 0, gdk_screen_width () - pw.width);
-    y = CLAMP (y, 0, gdk_screen_height () - pw.height);
-    gtk_window_move (GTK_WINDOW (nav), x, y);
+    x = CLAMP(x, 0, gdk_screen_width() - pw.width);
+    y = CLAMP(y, 0, gdk_screen_height() - pw.height);
+    gtk_window_move(GTK_WINDOW(nav), x, y);
 }
 
 static void
-uni_nav_update_pixbuf (UniNav * nav)
+uni_nav_update_pixbuf(UniNav *nav)
 {
     if (nav->pixbuf)
     {
-        g_object_unref (nav->pixbuf);
+        g_object_unref(nav->pixbuf);
         nav->pixbuf = NULL;
     }
-    GdkPixbuf *pixbuf = uni_image_view_get_pixbuf (nav->view);
+    GdkPixbuf *pixbuf = uni_image_view_get_pixbuf(nav->view);
     if (!pixbuf)
         return;
 
-    Size pw = uni_nav_get_preview_size (nav);
+    Size pw = uni_nav_get_preview_size(nav);
 
-    nav->pixbuf = gdk_pixbuf_new (gdk_pixbuf_get_colorspace (pixbuf),
-                                  gdk_pixbuf_get_has_alpha (pixbuf),
-                                  8, pw.width, pw.height);
-    uni_pixbuf_scale_blend (pixbuf, nav->pixbuf,
-                            0, 0, pw.width, pw.height,
-                            0, 0,
-                            uni_nav_get_zoom (nav),
-                            GDK_INTERP_BILINEAR, 0, 0);
+    nav->pixbuf = gdk_pixbuf_new(gdk_pixbuf_get_colorspace(pixbuf),
+                                 gdk_pixbuf_get_has_alpha(pixbuf),
+                                 8, pw.width, pw.height);
+    uni_pixbuf_scale_blend(pixbuf, nav->pixbuf,
+                           0, 0, pw.width, pw.height,
+                           0, 0,
+                           uni_nav_get_zoom(nav),
+                           GDK_INTERP_BILINEAR, 0, 0);
     // Lower the flag so the pixbuf isn't recreated more than
     // necessarily.
     nav->update_when_shown = FALSE;
 }
 
-
 /*************************************************************/
 /***** Private signal handlers *******************************/
 /*************************************************************/
 static gboolean
-uni_nav_expose_drawing_area (GtkWidget * widget,
-                             cairo_t *cr, UniNav * nav)
+uni_nav_expose_drawing_area(GtkWidget *widget,
+                            cairo_t *cr, UniNav *nav)
 {
     if (!nav->pixbuf)
         return FALSE;
@@ -187,9 +183,9 @@ uni_nav_expose_drawing_area (GtkWidget * widget,
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     gdk_cairo_set_source_pixbuf(cr, nav->pixbuf, 0, 0);
     cairo_paint(cr);
-    uni_nav_draw_rectangle (nav, cr, FALSE);
+    uni_nav_draw_rectangle(nav, cr, FALSE);
     cairo_restore(cr);
-    uni_nav_update_position (nav);
+    uni_nav_update_position(nav);
     return TRUE;
 }
 
@@ -201,37 +197,37 @@ uni_nav_expose_drawing_area (GtkWidget * widget,
  * in #UniNav behaves consistently with #UniImageView.
  **/
 static int
-uni_nav_key_press (GtkWidget * widget, GdkEventKey * ev)
+uni_nav_key_press(GtkWidget *widget, GdkEventKey *ev)
 {
-    UniNav *nav = UNI_NAV (widget);
-    int retval = gtk_bindings_activate (G_OBJECT (nav->view),
-                                        ev->keyval,
-                                        ev->state);
+    UniNav *nav = UNI_NAV(widget);
+    int retval = gtk_bindings_activate(G_OBJECT(nav->view),
+                                       ev->keyval,
+                                       ev->state);
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
-    uni_nav_draw_rectangle (nav, cr, TRUE);
+    uni_nav_draw_rectangle(nav, cr, TRUE);
     cairo_destroy(cr);
     return retval;
 }
 
 static int
-uni_nav_motion_notify (GtkWidget * widget, GdkEventMotion * ev)
+uni_nav_motion_notify(GtkWidget *widget, GdkEventMotion *ev)
 {
-    UniNav *nav = UNI_NAV (widget);
+    UniNav *nav = UNI_NAV(widget);
     int mx, my;
-    gdk_window_get_pointer (gtk_widget_get_window (widget), &mx, &my, NULL);
+    gdk_window_get_pointer(gtk_widget_get_window(widget), &mx, &my, NULL);
 
     /* Make coordinates relative to window. */
     mx -= 4;
     my -= 4;
 
     /* Convert Nav space to Zoom space coordinates. */
-    gdouble zoom2nav_factor = uni_nav_get_zoom2nav_factor (nav);
+    gdouble zoom2nav_factor = uni_nav_get_zoom2nav_factor(nav);
     GdkRectangle rect;
-    uni_image_view_get_viewport (nav->view, &rect);
+    uni_image_view_get_viewport(nav->view, &rect);
 
     /* Convert Zoom space to Nav space coordinates. */
-    rect.width = (gdouble) rect.width / zoom2nav_factor;
-    rect.height = (gdouble) rect.height / zoom2nav_factor;
+    rect.width = (gdouble)rect.width / zoom2nav_factor;
+    rect.height = (gdouble)rect.height / zoom2nav_factor;
 
     /* Subtract half of the XOR rectangles size from the coordinates. */
     mx -= (rect.width / 2);
@@ -241,31 +237,31 @@ uni_nav_motion_notify (GtkWidget * widget, GdkEventMotion * ev)
     int zoom_x_ofs = mx * zoom2nav_factor;
     int zoom_y_ofs = my * zoom2nav_factor;
 
-    uni_image_view_set_offset (nav->view, zoom_x_ofs, zoom_y_ofs, TRUE);
+    uni_image_view_set_offset(nav->view, zoom_x_ofs, zoom_y_ofs, TRUE);
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
-    uni_nav_draw_rectangle (nav, cr, TRUE);
+    uni_nav_draw_rectangle(nav, cr, TRUE);
     cairo_destroy(cr);
 
     return TRUE;
 }
 
 static void
-uni_nav_pixbuf_changed (UniNav * nav)
+uni_nav_pixbuf_changed(UniNav *nav)
 {
-    Size pw = uni_nav_get_preview_size (nav);
+    Size pw = uni_nav_get_preview_size(nav);
 
     // Set the new size and position of the preview.
-    gtk_widget_set_size_request (GTK_WIDGET (nav->preview),
-                                 pw.width, pw.height);
-    uni_nav_update_position (nav);
+    gtk_widget_set_size_request(GTK_WIDGET(nav->preview),
+                                pw.width, pw.height);
+    uni_nav_update_position(nav);
 
     // If the widget is showing, then create the downsampled pixbuf.
     // Otherwise, just set a flag so that it is done later.
     nav->update_when_shown = TRUE;
-    if (!gtk_widget_get_visible (GTK_WIDGET(nav)))
+    if (!gtk_widget_get_visible(GTK_WIDGET(nav)))
         return;
-    uni_nav_update_pixbuf (nav);
-    gtk_widget_queue_draw (GTK_WIDGET (nav));
+    uni_nav_update_pixbuf(nav);
+    gtk_widget_queue_draw(GTK_WIDGET(nav));
 }
 
 /**
@@ -279,10 +275,10 @@ uni_nav_pixbuf_changed (UniNav * nav)
  * queued for size allocation.
  **/
 static void
-uni_nav_zoom_changed (UniNav * nav)
+uni_nav_zoom_changed(UniNav *nav)
 {
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
-    uni_nav_draw_rectangle (nav, cr, TRUE);
+    uni_nav_draw_rectangle(nav, cr, TRUE);
     cairo_destroy(cr);
 }
 
@@ -293,90 +289,90 @@ uni_nav_zoom_changed (UniNav * nav)
  * is released, the nav is hidden.
  **/
 static void
-uni_nav_button_released (UniNav * nav, GdkEventButton * ev)
+uni_nav_button_released(UniNav *nav, GdkEventButton *ev)
 {
     if (ev->button != 1)
         return;
-    uni_nav_release (nav);
-    gtk_widget_hide (GTK_WIDGET (nav));
+    uni_nav_release(nav);
+    gtk_widget_hide(GTK_WIDGET(nav));
 }
 
 /*************************************************************/
 /***** Stuff that deals with the type ************************/
 /*************************************************************/
 static void
-uni_nav_init (UniNav * nav)
+uni_nav_init(UniNav *nav)
 {
     nav->view = NULL;
-    nav->last_rect = (GdkRectangle)
-    {
-    -1, -1, -1, -1};
+    nav->last_rect = (GdkRectangle){
+        -1, -1, -1, -1};
     nav->update_when_shown = FALSE;
 
-    GtkWidget *out_frame = gtk_frame_new (NULL);
-    gtk_frame_set_shadow_type (GTK_FRAME (out_frame), GTK_SHADOW_OUT);
-    gtk_container_add (GTK_CONTAINER (nav), out_frame);
+    GtkWidget *out_frame = gtk_frame_new(NULL);
+    gtk_frame_set_shadow_type(GTK_FRAME(out_frame), GTK_SHADOW_OUT);
+    gtk_container_add(GTK_CONTAINER(nav), out_frame);
 
-    nav->preview = gtk_drawing_area_new ();
-    gtk_container_add (GTK_CONTAINER (out_frame), nav->preview);
-    g_signal_connect (G_OBJECT (nav->preview),
-                      "draw",
-                      G_CALLBACK (uni_nav_expose_drawing_area), nav);
+    nav->preview = gtk_drawing_area_new();
+    gtk_container_add(GTK_CONTAINER(out_frame), nav->preview);
+    g_signal_connect(G_OBJECT(nav->preview),
+                     "draw",
+                     G_CALLBACK(uni_nav_expose_drawing_area), nav);
 }
 
 static void
-uni_nav_finalize (GObject * object)
+uni_nav_finalize(GObject *object)
 {
-    UniNav *nav = UNI_NAV (object);
+    UniNav *nav = UNI_NAV(object);
     if (nav->pixbuf)
     {
-        g_object_unref (nav->pixbuf);
+        g_object_unref(nav->pixbuf);
         nav->pixbuf = NULL;
     }
 
     /* Chain up. */
-    G_OBJECT_CLASS (uni_nav_parent_class)->finalize (object);
+    G_OBJECT_CLASS(uni_nav_parent_class)->finalize(object);
 }
 
-enum {
+enum
+{
     PROP_IMAGE_VIEW = 1
 };
 
 static void
-uni_nav_set_property (GObject * object,
-                      guint prop_id, const GValue * value, GParamSpec * pspec)
+uni_nav_set_property(GObject *object,
+                     guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-    UniNav *nav = UNI_NAV (object);
+    UniNav *nav = UNI_NAV(object);
     if (prop_id == PROP_IMAGE_VIEW)
     {
-        nav->view = g_value_get_object (value);
+        nav->view = g_value_get_object(value);
 
         /* Give initial state to the widget. */
-        uni_nav_pixbuf_changed (nav);
+        uni_nav_pixbuf_changed(nav);
 
-        g_signal_connect_swapped (G_OBJECT (nav->view), "pixbuf_changed",
-                                  G_CALLBACK (uni_nav_pixbuf_changed), nav);
+        g_signal_connect_swapped(G_OBJECT(nav->view), "pixbuf_changed",
+                                 G_CALLBACK(uni_nav_pixbuf_changed), nav);
     }
     else
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 }
 
 static void
-uni_nav_class_init (UniNavClass * klass)
+uni_nav_class_init(UniNavClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = uni_nav_finalize;
     object_class->set_property = uni_nav_set_property;
 
-    GParamSpec *pspec = g_param_spec_object ("view",
-                                             "Image View",
-                                             "Image View to navigate",
-                                             UNI_TYPE_IMAGE_VIEW,
-                                             G_PARAM_CONSTRUCT_ONLY |
-                                             G_PARAM_WRITABLE);
-    g_object_class_install_property (object_class, PROP_IMAGE_VIEW, pspec);
+    GParamSpec *pspec = g_param_spec_object("view",
+                                            "Image View",
+                                            "Image View to navigate",
+                                            UNI_TYPE_IMAGE_VIEW,
+                                            G_PARAM_CONSTRUCT_ONLY |
+                                                G_PARAM_WRITABLE);
+    g_object_class_install_property(object_class, PROP_IMAGE_VIEW, pspec);
 
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->key_press_event = uni_nav_key_press;
     widget_class->motion_notify_event = uni_nav_motion_notify;
 }
@@ -390,56 +386,50 @@ uni_nav_class_init (UniNavClass * klass)
  * default values are is pixbuf=NULL.
  **/
 GtkWidget *
-uni_nav_new (UniImageView * view)
+uni_nav_new(UniImageView *view)
 {
-    g_return_val_if_fail (view, NULL);
+    g_return_val_if_fail(view, NULL);
 
-    gpointer data = g_object_new (UNI_TYPE_NAV,
-                                  "type", GTK_WINDOW_POPUP,
-                                  /* The window must be non-resizable, otherwise it will not
-                                     respond correctly to size requests which shrinks it. */
-                                  "resizable", FALSE,
-                                  "view", view,
-                                  NULL);
-    return GTK_WIDGET (data);
+    gpointer data = g_object_new(UNI_TYPE_NAV,
+                                 "type", GTK_WINDOW_POPUP,
+                                 /* The window must be non-resizable, otherwise it will not
+                                    respond correctly to size requests which shrinks it. */
+                                 "resizable", FALSE,
+                                 "view", view,
+                                 NULL);
+    return GTK_WIDGET(data);
 }
 
 /*************************************************************/
 /***** Actions ***********************************************/
 /*************************************************************/
-void
-uni_nav_grab (UniNav * nav)
+void uni_nav_grab(UniNav *nav)
 {
     GtkWidget *preview = nav->preview;
     GdkWindow *window;
 
-    gtk_grab_add (preview);
+    gtk_grab_add(preview);
 
-    GdkCursor *cursor = gdk_cursor_new (GDK_FLEUR);
-    int mask = (GDK_POINTER_MOTION_MASK
-                | GDK_POINTER_MOTION_HINT_MASK
-                | GDK_BUTTON_RELEASE_MASK);
-    window = gtk_widget_get_window (preview);
-    gdk_pointer_grab (window, TRUE, mask, window, cursor,
-                      0);
-    gdk_cursor_unref (cursor);
+    GdkCursor *cursor = gdk_cursor_new(GDK_FLEUR);
+    int mask = (GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_RELEASE_MASK);
+    window = gtk_widget_get_window(preview);
+    gdk_pointer_grab(window, TRUE, mask, window, cursor,
+                     0);
+    gdk_cursor_unref(cursor);
 
     /* Capture keyboard events. */
-    gdk_keyboard_grab (window, TRUE, GDK_CURRENT_TIME);
-    gtk_widget_grab_focus (preview);
+    gdk_keyboard_grab(window, TRUE, GDK_CURRENT_TIME);
+    gtk_widget_grab_focus(preview);
 }
 
-void
-uni_nav_release (UniNav * nav)
+void uni_nav_release(UniNav *nav)
 {
-    gdk_pointer_ungrab (GDK_CURRENT_TIME);
+    gdk_pointer_ungrab(GDK_CURRENT_TIME);
 
     /* Release keyboard focus. */
-    gdk_keyboard_ungrab (GDK_CURRENT_TIME);
-    gtk_grab_remove (nav->preview);
+    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+    gtk_grab_remove(nav->preview);
 }
-
-
 
 /*************************************************************/
 /***** Runner function ***************************************/
@@ -455,23 +445,21 @@ uni_nav_release (UniNav * nav)
  * until a button release event is received which causes the widget to
  * hide.
  **/
-void
-uni_nav_show_and_grab (UniNav * nav, int center_x, int center_y)
+void uni_nav_show_and_grab(UniNav *nav, int center_x, int center_y)
 {
     nav->center_x = center_x;
     nav->center_y = center_y;
-    uni_nav_update_position (nav);
+    uni_nav_update_position(nav);
 
     if (nav->update_when_shown)
-        uni_nav_update_pixbuf (nav);
-
+        uni_nav_update_pixbuf(nav);
 
     /* Connect signals and run! */
-    gtk_widget_show_all (GTK_WIDGET (nav));
-    uni_nav_grab (nav);
+    gtk_widget_show_all(GTK_WIDGET(nav));
+    uni_nav_grab(nav);
 
-    g_signal_connect (G_OBJECT (nav), "button-release-event",
-                      G_CALLBACK (uni_nav_button_released), NULL);
-    g_signal_connect_swapped (G_OBJECT (nav->view), "zoom_changed",
-                              G_CALLBACK (uni_nav_zoom_changed), nav);
+    g_signal_connect(G_OBJECT(nav), "button-release-event",
+                     G_CALLBACK(uni_nav_button_released), NULL);
+    g_signal_connect_swapped(G_OBJECT(nav->view), "zoom_changed",
+                             G_CALLBACK(uni_nav_zoom_changed), nav);
 }

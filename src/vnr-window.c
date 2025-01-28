@@ -60,182 +60,180 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton, VnrWindow *windo
 static void _on_spin_value_change(GtkSpinButton *spinbutton, VnrWindow *window);
 static void _on_zoom_changed(UniImageView *view, VnrWindow *window);
 static gboolean _on_fullscreen_timeout(VnrWindow *window);
-static gboolean _on_leave_image_area(GtkWidget * widget, GdkEventCrossing * ev, VnrWindow *window);
-static gboolean _on_fullscreen_motion(GtkWidget * widget, GdkEventMotion * ev, VnrWindow *window);
+static gboolean _on_leave_image_area(GtkWidget *widget, GdkEventCrossing *ev, VnrWindow *window);
+static gboolean _on_fullscreen_motion(GtkWidget *widget, GdkEventMotion *ev, VnrWindow *window);
 static void _on_open_with_launch_application(GtkAction *action, VnrWindow *window);
 
 const gchar *_ui_definition = "<ui>"
-  "<menubar name=\"MainMenu\">"
-    "<menu action=\"File\">"
-      "<menuitem action=\"FileOpen\"/>"
-      "<menuitem action=\"FileOpenDir\"/>"
-      "<menu action=\"FileOpenWith\">"
-         "<placeholder name=\"AppEntries\"/>"
-      "</menu>"
-      "<separator/>"
-      "<menuitem action=\"FileSave\"/>"
-      "<menuitem action=\"FileReload\"/>"
-      "<separator/>"
-      "<menuitem action=\"FileProperties\"/>"
-      "<separator/>"
-      "<menuitem action=\"FileClose\"/>"
-    "</menu>"
-    "<menu action=\"Edit\">"
-      "<menuitem action=\"FileDelete\"/>"
-      "<separator/>"
-      "<menuitem action=\"EditPreferences\"/>"
-    "</menu>"
-    "<menu action=\"View\">"
-      "<menuitem action=\"ViewMenuBar\"/>"
-      "<menuitem action=\"ViewToolbar\"/>"
-      "<menuitem action=\"ViewScrollbar\"/>"
-      "<menuitem action=\"ViewStatusbar\"/>"
-      "<separator/>"
-      "<menuitem action=\"ViewZoomIn\"/>"
-      "<menuitem action=\"ViewZoomOut\"/>"
-      "<menuitem action=\"ViewZoomNormal\"/>"
-      "<menuitem action=\"ViewZoomFit\"/>"
-      "<separator/>"
-      "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
-      "<menuitem name=\"Slideshow\" action=\"ViewSlideshow\"/>"
-      "<separator/>"
-      "<menuitem name=\"ResizeWindow\" action=\"ViewResizeWindow\"/>"
-    "</menu>"
-    "<menu action=\"Image\">"
-      "<menuitem action=\"ImageFlipVertical\"/>"
-      "<menuitem action=\"ImageFlipHorizontal\"/>"
-      "<separator/>"
-      "<menuitem action=\"ImageRotateCW\"/>"
-      "<menuitem action=\"ImageRotateCCW\"/>"
-      "<separator/>"
-      "<menuitem action=\"ImageCrop\"/>"
-      "<placeholder name=\"WallpaperEntry\"/>"
-    "</menu>"
-    "<menu action=\"Go\">"
-      "<menuitem name=\"GoPrevious\" action=\"GoPrevious\"/>"
-      "<menuitem name=\"GoNext\" action=\"GoNext\"/>"
-      "<separator/>"
-      "<menuitem name=\"GoFirst\" action=\"GoFirst\"/>"
-      "<menuitem name=\"GoLast\" action=\"GoLast\"/>"
-    "</menu>"
-    "<menu action=\"Help\">"
-      "<menuitem action=\"HelpAbout\"/>"
-    "</menu>"
-  "</menubar>"
-  "<popup name=\"ButtonMenu\">"
-    "<menuitem action=\"FileOpen\"/>"
-    "<menuitem action=\"FileOpenDir\"/>"
-    "<menu action=\"FileOpenWith\">"
-       "<placeholder name=\"AppEntries\"/>"
-    "</menu>"
-    "<separator/>"
-    "<menuitem action=\"FileSave\"/>"
-    "<menuitem action=\"FileReload\"/>"
-    "<menuitem action=\"FileProperties\"/>"
-    "<separator/>"
-    "<menu action=\"Edit\">"
-      "<menuitem action=\"FileDelete\"/>"
-      "<separator/>"
-    "</menu>"
-    "<menu action=\"View\">"
-      "<menuitem action=\"ViewZoomIn\"/>"
-      "<menuitem action=\"ViewZoomOut\"/>"
-      "<menuitem action=\"ViewZoomNormal\"/>"
-      "<menuitem action=\"ViewZoomFit\"/>"
-      "<separator/>"
-      "<menuitem action=\"ViewMenuBar\"/>"
-      "<menuitem action=\"ViewToolbar\"/>"
-      "<menuitem action=\"ViewScrollbar\"/>"
-      "<menuitem action=\"ViewStatusbar\"/>"
-      "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
-      "<menuitem name=\"Slideshow\" action=\"ViewSlideshow\"/>"
-      "<separator/>"
-      "<menuitem name=\"ResizeWindow\" action=\"ViewResizeWindow\"/>"
-    "</menu>"
-    "<menu action=\"Image\">"
-      "<menuitem action=\"ImageFlipVertical\"/>"
-      "<menuitem action=\"ImageFlipHorizontal\"/>"
-      "<separator/>"
-      "<menuitem action=\"ImageRotateCW\"/>"
-      "<menuitem action=\"ImageRotateCCW\"/>"
-      "<separator/>"
-      "<menuitem action=\"ImageCrop\"/>"
-      "<placeholder name=\"WallpaperEntry\"/>"
-    "</menu>"
-    "<separator/>"
-    "<menuitem action=\"EditPreferences\"/>"
-    "<separator/>"
-    "<menuitem action=\"HelpAbout\"/>"
-    "<menuitem action=\"FileClose\"/>"
-  "</popup>"
-  "<toolbar name=\"Toolbar\">"
-    "<toolitem action=\"GoPrevious\"/>"
-    "<toolitem action=\"GoNext\"/>"
-    "<separator/>"
-    "<toolitem action=\"ViewZoomIn\"/>"
-    "<toolitem action=\"ViewZoomOut\"/>"
-    "<toolitem action=\"ViewZoomNormal\"/>"
-    "<toolitem action=\"ViewZoomFit\"/>"
-    "<separator/>"
-    "<toolitem action=\"ImageRotateCCW\"/>"
-    "<toolitem action=\"ImageRotateCW\"/>"
-    "<separator expand=\"true\"/>"
-    "<toolitem action=\"Properties\"/>"
-  "</toolbar>"
-  "<popup name=\"PopupMenu\">"
-    "<menuitem name=\"GoPrevious\" action=\"GoPrevious\"/>"
-    "<menuitem name=\"GoNext\" action=\"GoNext\"/>"
-    "<separator/>"
-    "<menu action=\"FileOpenWith\">"
-       "<placeholder name=\"AppEntries\"/>"
-    "</menu>"
-    "<separator/>"
-    "<menuitem action=\"ViewZoomIn\"/>"
-    "<menuitem action=\"ViewZoomOut\"/>"
-    "<menuitem action=\"ViewZoomNormal\"/>"
-    "<menuitem action=\"ViewZoomFit\"/>"
-    "<placeholder name=\"WallpaperEntry\"/>"
-    "<separator/>"
-    "<menuitem name=\"MenuBar\" action=\"ViewMenuBar\"/>"
-    "<menuitem name=\"Toolbar\" action=\"ViewToolbar\"/>"
-    "<menuitem name=\"Scrollbar\" action=\"ViewScrollbar\"/>"
-    "<menuitem name=\"Statusbar\" action=\"ViewStatusbar\"/>"
-    "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
-    "<separator/>"
-    "<menuitem action=\"FileProperties\"/>"
-  "</popup>"
-  "<accelerator name=\"ControlEqualAccel\" action=\"ControlEqual\"/>"
-  "<accelerator name=\"ControlKPAddAccel\" action=\"ControlKpAdd\"/>"
-  "<accelerator name=\"ControlKPSubAccel\" action=\"ControlKpSub\"/>"
-  "<accelerator name=\"DeleteAccel\" action=\"Delete\"/>"
-"</ui>";
-
+                              "<menubar name=\"MainMenu\">"
+                              "<menu action=\"File\">"
+                              "<menuitem action=\"FileOpen\"/>"
+                              "<menuitem action=\"FileOpenDir\"/>"
+                              "<menu action=\"FileOpenWith\">"
+                              "<placeholder name=\"AppEntries\"/>"
+                              "</menu>"
+                              "<separator/>"
+                              "<menuitem action=\"FileSave\"/>"
+                              "<menuitem action=\"FileReload\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"FileProperties\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"FileClose\"/>"
+                              "</menu>"
+                              "<menu action=\"Edit\">"
+                              "<menuitem action=\"FileDelete\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"EditPreferences\"/>"
+                              "</menu>"
+                              "<menu action=\"View\">"
+                              "<menuitem action=\"ViewMenuBar\"/>"
+                              "<menuitem action=\"ViewToolbar\"/>"
+                              "<menuitem action=\"ViewScrollbar\"/>"
+                              "<menuitem action=\"ViewStatusbar\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"ViewZoomIn\"/>"
+                              "<menuitem action=\"ViewZoomOut\"/>"
+                              "<menuitem action=\"ViewZoomNormal\"/>"
+                              "<menuitem action=\"ViewZoomFit\"/>"
+                              "<separator/>"
+                              "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
+                              "<menuitem name=\"Slideshow\" action=\"ViewSlideshow\"/>"
+                              "<separator/>"
+                              "<menuitem name=\"ResizeWindow\" action=\"ViewResizeWindow\"/>"
+                              "</menu>"
+                              "<menu action=\"Image\">"
+                              "<menuitem action=\"ImageFlipVertical\"/>"
+                              "<menuitem action=\"ImageFlipHorizontal\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"ImageRotateCW\"/>"
+                              "<menuitem action=\"ImageRotateCCW\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"ImageCrop\"/>"
+                              "<placeholder name=\"WallpaperEntry\"/>"
+                              "</menu>"
+                              "<menu action=\"Go\">"
+                              "<menuitem name=\"GoPrevious\" action=\"GoPrevious\"/>"
+                              "<menuitem name=\"GoNext\" action=\"GoNext\"/>"
+                              "<separator/>"
+                              "<menuitem name=\"GoFirst\" action=\"GoFirst\"/>"
+                              "<menuitem name=\"GoLast\" action=\"GoLast\"/>"
+                              "</menu>"
+                              "<menu action=\"Help\">"
+                              "<menuitem action=\"HelpAbout\"/>"
+                              "</menu>"
+                              "</menubar>"
+                              "<popup name=\"ButtonMenu\">"
+                              "<menuitem action=\"FileOpen\"/>"
+                              "<menuitem action=\"FileOpenDir\"/>"
+                              "<menu action=\"FileOpenWith\">"
+                              "<placeholder name=\"AppEntries\"/>"
+                              "</menu>"
+                              "<separator/>"
+                              "<menuitem action=\"FileSave\"/>"
+                              "<menuitem action=\"FileReload\"/>"
+                              "<menuitem action=\"FileProperties\"/>"
+                              "<separator/>"
+                              "<menu action=\"Edit\">"
+                              "<menuitem action=\"FileDelete\"/>"
+                              "<separator/>"
+                              "</menu>"
+                              "<menu action=\"View\">"
+                              "<menuitem action=\"ViewZoomIn\"/>"
+                              "<menuitem action=\"ViewZoomOut\"/>"
+                              "<menuitem action=\"ViewZoomNormal\"/>"
+                              "<menuitem action=\"ViewZoomFit\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"ViewMenuBar\"/>"
+                              "<menuitem action=\"ViewToolbar\"/>"
+                              "<menuitem action=\"ViewScrollbar\"/>"
+                              "<menuitem action=\"ViewStatusbar\"/>"
+                              "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
+                              "<menuitem name=\"Slideshow\" action=\"ViewSlideshow\"/>"
+                              "<separator/>"
+                              "<menuitem name=\"ResizeWindow\" action=\"ViewResizeWindow\"/>"
+                              "</menu>"
+                              "<menu action=\"Image\">"
+                              "<menuitem action=\"ImageFlipVertical\"/>"
+                              "<menuitem action=\"ImageFlipHorizontal\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"ImageRotateCW\"/>"
+                              "<menuitem action=\"ImageRotateCCW\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"ImageCrop\"/>"
+                              "<placeholder name=\"WallpaperEntry\"/>"
+                              "</menu>"
+                              "<separator/>"
+                              "<menuitem action=\"EditPreferences\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"HelpAbout\"/>"
+                              "<menuitem action=\"FileClose\"/>"
+                              "</popup>"
+                              "<toolbar name=\"Toolbar\">"
+                              "<toolitem action=\"GoPrevious\"/>"
+                              "<toolitem action=\"GoNext\"/>"
+                              "<separator/>"
+                              "<toolitem action=\"ViewZoomIn\"/>"
+                              "<toolitem action=\"ViewZoomOut\"/>"
+                              "<toolitem action=\"ViewZoomNormal\"/>"
+                              "<toolitem action=\"ViewZoomFit\"/>"
+                              "<separator/>"
+                              "<toolitem action=\"ImageRotateCCW\"/>"
+                              "<toolitem action=\"ImageRotateCW\"/>"
+                              "<separator expand=\"true\"/>"
+                              "<toolitem action=\"Properties\"/>"
+                              "</toolbar>"
+                              "<popup name=\"PopupMenu\">"
+                              "<menuitem name=\"GoPrevious\" action=\"GoPrevious\"/>"
+                              "<menuitem name=\"GoNext\" action=\"GoNext\"/>"
+                              "<separator/>"
+                              "<menu action=\"FileOpenWith\">"
+                              "<placeholder name=\"AppEntries\"/>"
+                              "</menu>"
+                              "<separator/>"
+                              "<menuitem action=\"ViewZoomIn\"/>"
+                              "<menuitem action=\"ViewZoomOut\"/>"
+                              "<menuitem action=\"ViewZoomNormal\"/>"
+                              "<menuitem action=\"ViewZoomFit\"/>"
+                              "<placeholder name=\"WallpaperEntry\"/>"
+                              "<separator/>"
+                              "<menuitem name=\"MenuBar\" action=\"ViewMenuBar\"/>"
+                              "<menuitem name=\"Toolbar\" action=\"ViewToolbar\"/>"
+                              "<menuitem name=\"Scrollbar\" action=\"ViewScrollbar\"/>"
+                              "<menuitem name=\"Statusbar\" action=\"ViewStatusbar\"/>"
+                              "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
+                              "<separator/>"
+                              "<menuitem action=\"FileProperties\"/>"
+                              "</popup>"
+                              "<accelerator name=\"ControlEqualAccel\" action=\"ControlEqual\"/>"
+                              "<accelerator name=\"ControlKPAddAccel\" action=\"ControlKpAdd\"/>"
+                              "<accelerator name=\"ControlKPSubAccel\" action=\"ControlKpSub\"/>"
+                              "<accelerator name=\"DeleteAccel\" action=\"Delete\"/>"
+                              "</ui>";
 
 const gchar *_ui_definition_wallpaper = "<ui>"
-  "<menubar name=\"MainMenu\">"
-    "<menu action=\"Image\">"
-      "<placeholder name=\"WallpaperEntry\">"
-        "<separator/>"
-        "<menuitem name=\"Wallpaper\" action=\"SetAsWallpaper\"/>"
-      "</placeholder>"
-    "</menu>"
-  "</menubar>"
-  "<popup name=\"ButtonMenu\">"
-    "<menu action=\"Image\">"
-      "<placeholder name=\"WallpaperEntry\">"
-        "<separator/>"
-        "<menuitem name=\"Wallpaper\" action=\"SetAsWallpaper\"/>"
-      "</placeholder>"
-    "</menu>"
-  "</popup>"
-  "<popup name=\"PopupMenu\">"
-    "<placeholder name=\"WallpaperEntry\">"
-      "<separator/>"
-      "<menuitem action=\"SetAsWallpaper\"/>"
-    "</placeholder>"
-  "</popup>"
-"</ui>";
-
+                                        "<menubar name=\"MainMenu\">"
+                                        "<menu action=\"Image\">"
+                                        "<placeholder name=\"WallpaperEntry\">"
+                                        "<separator/>"
+                                        "<menuitem name=\"Wallpaper\" action=\"SetAsWallpaper\"/>"
+                                        "</placeholder>"
+                                        "</menu>"
+                                        "</menubar>"
+                                        "<popup name=\"ButtonMenu\">"
+                                        "<menu action=\"Image\">"
+                                        "<placeholder name=\"WallpaperEntry\">"
+                                        "<separator/>"
+                                        "<menuitem name=\"Wallpaper\" action=\"SetAsWallpaper\"/>"
+                                        "</placeholder>"
+                                        "</menu>"
+                                        "</popup>"
+                                        "<popup name=\"PopupMenu\">"
+                                        "<placeholder name=\"WallpaperEntry\">"
+                                        "<separator/>"
+                                        "<menuitem action=\"SetAsWallpaper\"/>"
+                                        "</placeholder>"
+                                        "</popup>"
+                                        "</ui>";
 
 // Private actions -----------------------------------------------------------
 
@@ -253,10 +251,10 @@ _window_update_openwith_menu(VnrWindow *window)
     guint action_id = 0;
 
     VnrFile *current = window_list_get_current(window);
-    file = g_file_new_for_path((gchar*) current->path);
+    file = g_file_new_for_path((gchar *)current->path);
     file_info = g_file_query_info(file,
-                       G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
-                       0, NULL, NULL);
+                                  G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+                                  0, NULL, NULL);
 
     if (file_info == NULL)
         return;
@@ -265,20 +263,20 @@ _window_update_openwith_menu(VnrWindow *window)
 
     if (window->open_with_menu_id != 0)
     {
-           gtk_ui_manager_remove_ui(window->ui_manager, window->open_with_menu_id);
-           window->open_with_menu_id = 0;
+        gtk_ui_manager_remove_ui(window->ui_manager, window->open_with_menu_id);
+        window->open_with_menu_id = 0;
     }
 
     if (window->actions_open_with != NULL)
     {
-          gtk_ui_manager_remove_action_group(window->ui_manager, window->actions_open_with);
-          window->actions_open_with = NULL;
+        gtk_ui_manager_remove_action_group(window->ui_manager, window->actions_open_with);
+        window->actions_open_with = NULL;
     }
 
     if (mime_type == NULL)
     {
-            g_object_unref(file_info);
-            return;
+        g_object_unref(file_info);
+        return;
     }
 
     apps = g_app_info_get_all_for_type(mime_type);
@@ -286,23 +284,24 @@ _window_update_openwith_menu(VnrWindow *window)
     g_object_unref(file_info);
 
     if (!apps)
-            return;
+        return;
 
     window->actions_open_with = gtk_action_group_new("OpenWithActions");
     gtk_ui_manager_insert_action_group(window->ui_manager, window->actions_open_with, -1);
 
     window->open_with_menu_id = gtk_ui_manager_new_merge_id(window->ui_manager);
 
-    for(iter = apps; iter; iter = iter->next) {
+    for (iter = apps; iter; iter = iter->next)
+    {
         GAppInfo *app = iter->data;
         gchar name[64];
 
         /* Do not include viewnior itself */
         if (g_ascii_strcasecmp(g_app_info_get_executable(app),
-                                g_get_prgname()) == 0)
+                               g_get_prgname()) == 0)
         {
-                g_object_unref(app);
-                continue;
+            g_object_unref(app);
+            continue;
         }
 
         g_snprintf(name, sizeof(name), "OpenWith%u", action_id++);
@@ -315,37 +314,37 @@ _window_update_openwith_menu(VnrWindow *window)
         g_free(tip);
 
         g_object_set_data_full(G_OBJECT(action), "app", app,
-                               (GDestroyNotify) g_object_unref);
+                               (GDestroyNotify)g_object_unref);
 
         g_signal_connect(action,
-                          "activate",
-                          G_CALLBACK(_on_open_with_launch_application),
-                          window);
+                         "activate",
+                         G_CALLBACK(_on_open_with_launch_application),
+                         window);
 
         gtk_action_group_add_action(window->actions_open_with, action);
         g_object_unref(action);
 
         gtk_ui_manager_add_ui(window->ui_manager,
-                        window->open_with_menu_id,
-                        "/MainMenu/File/FileOpenWith/AppEntries",
-                        name,
-                        name,
-                        GTK_UI_MANAGER_MENUITEM,
-                        FALSE);
+                              window->open_with_menu_id,
+                              "/MainMenu/File/FileOpenWith/AppEntries",
+                              name,
+                              name,
+                              GTK_UI_MANAGER_MENUITEM,
+                              FALSE);
         gtk_ui_manager_add_ui(window->ui_manager,
-                        window->open_with_menu_id,
-                        "/MainMenu/FileOpenWith/AppEntries",
-                        name,
-                        name,
-                        GTK_UI_MANAGER_MENUITEM,
-                        FALSE);
+                              window->open_with_menu_id,
+                              "/MainMenu/FileOpenWith/AppEntries",
+                              name,
+                              name,
+                              GTK_UI_MANAGER_MENUITEM,
+                              FALSE);
         gtk_ui_manager_add_ui(window->ui_manager,
-                        window->open_with_menu_id,
-                        "/PopupMenu/FileOpenWith/AppEntries",
-                        name,
-                        name,
-                        GTK_UI_MANAGER_MENUITEM,
-                        FALSE);
+                              window->open_with_menu_id,
+                              "/PopupMenu/FileOpenWith/AppEntries",
+                              name,
+                              name,
+                              GTK_UI_MANAGER_MENUITEM,
+                              FALSE);
     }
 
     g_list_free(apps);
@@ -355,7 +354,7 @@ static void
 _window_save_accel_map()
 {
     gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                         "accel_map", NULL);
+                                        "accel_map", NULL);
 
     gtk_accel_map_save(accelfile);
     g_free(accelfile);
@@ -365,7 +364,7 @@ static void
 _window_load_accel_map()
 {
     gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                         "accel_map", NULL);
+                                        "accel_map", NULL);
 
     gtk_accel_map_load(accelfile);
     g_free(accelfile);
@@ -419,7 +418,7 @@ _window_next_image_src(VnrWindow *window)
 
     window->ss_source_tag = g_timeout_add_seconds(window->ss_timeout,
                                                   (GSourceFunc)_window_next_image_src,
-                                                   window);
+                                                  window);
 
     return FALSE;
 }
@@ -443,7 +442,7 @@ _window_fullscreen_set_timeout(VnrWindow *window)
     window->fs_source = g_timeout_source_new(FULLSCREEN_TIMEOUT);
     g_source_set_callback(window->fs_source,
                           (GSourceFunc)_on_fullscreen_timeout,
-                           window, NULL);
+                          window, NULL);
 
     g_source_attach(window->fs_source, NULL);
 }
@@ -477,25 +476,24 @@ _window_get_fs_controls(VnrWindow *window)
     window->fs_filename_label = widget;
     gtk_box_pack_end(GTK_BOX(box), widget, TRUE, TRUE, 10);
 
-
     widget = gtk_vseparator_new();
     gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
 
     widget = gtk_check_button_new_with_label(_("Show next image after: "));
     g_signal_connect(widget, "toggled", G_CALLBACK(_on_toggle_show_next),
-                      window);
+                     window);
     gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
     window->toggle_btn = widget;
 
     /* Create spin button to adjust slideshow's timeout */
-    //spinner_adj =(GtkAdjustment *) gtk_adjustment_new(5, 1.0, 30.0, 1.0, 1.0, 0);
-    spinner_adj =(GtkAdjustment *) gtk_adjustment_new(window->prefs->slideshow_timeout, 1.0, 30.0, 1.0, 1.0, 0);
+    // spinner_adj =(GtkAdjustment *) gtk_adjustment_new(5, 1.0, 30.0, 1.0, 1.0, 0);
+    spinner_adj = (GtkAdjustment *)gtk_adjustment_new(window->prefs->slideshow_timeout, 1.0, 30.0, 1.0, 1.0, 0);
     widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
     gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
     gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget),
-                                       GTK_UPDATE_ALWAYS);
+                                      GTK_UPDATE_ALWAYS);
     g_signal_connect(widget, "value-changed",
-                      G_CALLBACK(_on_spin_value_change), window);
+                     G_CALLBACK(_on_spin_value_change), window);
     gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
     window->ss_timeout_widget = widget;
 
@@ -512,9 +510,9 @@ static void
 _window_set_drag(VnrWindow *window)
 {
     gtk_drag_dest_set(GTK_WIDGET(window),
-                       GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP,
-                       NULL, 0,
-                       GDK_ACTION_COPY | GDK_ACTION_ASK);
+                      GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP,
+                      NULL, 0,
+                      GDK_ACTION_COPY | GDK_ACTION_ASK);
     gtk_drag_dest_add_uri_targets(GTK_WIDGET(window));
 }
 
@@ -531,14 +529,14 @@ _window_fullscreen(VnrWindow *window)
 
     window->mode = WINDOW_MODE_FULLSCREEN;
     action = gtk_action_group_get_action(window->actions_image,
-                                          "ViewFullscreen");
+                                         "ViewFullscreen");
 
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
     gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
-                                      VNR_PREFS_ZOOM_FIT);
+                                     VNR_PREFS_ZOOM_FIT);
 
     _window_update_fs_filename_label(window);
     gtk_widget_hide(window->toolbar);
@@ -556,20 +554,20 @@ _window_fullscreen(VnrWindow *window)
      * "after" because it must be called after the uniImageView's
      * callback(when the image is dragged).*/
     g_signal_connect_after(window->view,
-                            "motion-notify-event",
-                            G_CALLBACK(_on_fullscreen_motion),
-                            window);
+                           "motion-notify-event",
+                           G_CALLBACK(_on_fullscreen_motion),
+                           window);
 
     /* Never hide the toolbar, while the mouse is over it */
     g_signal_connect(window->toolbar,
-                      "enter-notify-event",
-                      G_CALLBACK(_on_leave_image_area),
-                      window);
+                     "enter-notify-event",
+                     G_CALLBACK(_on_leave_image_area),
+                     window);
 
     g_signal_connect(window->msg_area,
-                      "enter-notify-event",
-                      G_CALLBACK(_on_leave_image_area),
-                      window);
+                     "enter-notify-event",
+                     G_CALLBACK(_on_leave_image_area),
+                     window);
 
     _window_fullscreen_set_timeout(window);
 }
@@ -588,22 +586,24 @@ _window_unfullscreen(VnrWindow *window)
     gtk_widget_show(window->menu_bar);
     gtk_window_unfullscreen(GTK_WINDOW(window));
     action = gtk_action_group_get_action(window->actions_image,
-                                          "ViewFullscreen");
+                                         "ViewFullscreen");
 
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
 
-    if (window->prefs->dark_background) {
+    if (window->prefs->dark_background)
+    {
         GdkColor color;
         gdk_color_parse(DARK_BACKGROUND_COLOR, &color);
         gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
     }
-    else {
+    else
+    {
         gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, NULL);
     }
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
-                                      window->prefs->zoom);
+                                     window->prefs->zoom);
 
     if (window->prefs->show_menu_bar)
         gtk_widget_hide(window->properties_button);
@@ -650,7 +650,7 @@ _window_slideshow_stop(VnrWindow *window)
     GtkAction *action;
 
     action = gtk_action_group_get_action(window->actions_collection,
-                                          "ViewSlideshow");
+                                         "ViewSlideshow");
 
     window->slideshow = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn), FALSE);
@@ -674,13 +674,13 @@ _window_slideshow_start(VnrWindow *window)
     window->mode = WINDOW_MODE_SLIDESHOW;
 
     window->ss_source_tag = g_timeout_add_seconds(window->ss_timeout,
-                                                  (GSourceFunc) _window_next_image_src,
-                                                   window);
+                                                  (GSourceFunc)_window_next_image_src,
+                                                  window);
 
     GtkAction *action;
 
     action = gtk_action_group_get_action(window->actions_collection,
-                                          "ViewSlideshow");
+                                         "ViewSlideshow");
 
     window->slideshow = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn), TRUE);
@@ -700,7 +700,7 @@ _window_slideshow_restart(VnrWindow *window)
     g_source_remove(window->ss_source_tag);
     window->ss_source_tag = g_timeout_add_seconds(window->ss_timeout,
                                                   (GSourceFunc)_window_next_image_src,
-                                                   window);
+                                                  window);
 }
 
 static void
@@ -729,8 +729,7 @@ _window_get_top_widgets_height(VnrWindow *window)
     return allocation.height;
 }
 
-void
-window_slideshow_deny(VnrWindow *window)
+void window_slideshow_deny(VnrWindow *window)
 {
     if (!window->slideshow)
         return;
@@ -780,7 +779,7 @@ _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle)
         vnr_properties_dialog_update_image(VNR_PROPERTIES_DIALOG(window->props_dlg));
 
     /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
-    if ((window->modifications &(4))^((angle==GDK_PIXBUF_ROTATE_CLOCKWISE)<<2))
+    if ((window->modifications & (4)) ^ ((angle == GDK_PIXBUF_ROTATE_CLOCKWISE) << 2))
         window->modifications ^= 3;
 
     window->modifications ^= 4;
@@ -814,7 +813,7 @@ _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 
     if (!window->cursor_is_hidden)
         gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                               gdk_cursor_new(GDK_WATCH));
+                              gdk_cursor_new(GDK_WATCH));
     /* This makes the cursor show NOW */
     gdk_flush();
 
@@ -836,11 +835,11 @@ _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 
     if (!window->cursor_is_hidden)
         gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                               gdk_cursor_new(GDK_LEFT_PTR));
+                              gdk_cursor_new(GDK_LEFT_PTR));
     g_object_unref(result);
 
     /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
-    window->modifications ^=(window->modifications&4)?1+horizontal:2-horizontal;
+    window->modifications ^= (window->modifications & 4) ? 1 + horizontal : 2 - horizontal;
 
     gtk_action_group_set_sensitive(window->action_save, window->modifications);
 
@@ -865,7 +864,6 @@ _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
                                           G_CALLBACK(_action_save_image));
 }
 
-
 // Private signal handlers ===================================================
 
 static void
@@ -874,7 +872,7 @@ _on_open_with_launch_application(GtkAction *action, VnrWindow *window)
     // Modified version of eog's open_with_launch_application_cb
 
     VnrFile *current = window_list_get_current(window);
-    GFile *file = g_file_new_for_path((gchar*) current->path);
+    GFile *file = g_file_new_for_path((gchar *)current->path);
 
     GList *files = NULL;
     files = g_list_append(files, file);
@@ -883,22 +881,22 @@ _on_open_with_launch_application(GtkAction *action, VnrWindow *window)
     app = g_object_get_data(G_OBJECT(action), "app");
 
     g_app_info_launch(app,
-               files,
-               NULL, NULL);
+                      files,
+                      NULL, NULL);
 
     g_object_unref(file);
     g_list_free(files);
 }
 
 static gboolean
-_on_leave_image_area(GtkWidget * widget, GdkEventCrossing * ev, VnrWindow *window)
+_on_leave_image_area(GtkWidget *widget, GdkEventCrossing *ev, VnrWindow *window)
 {
     _window_fullscreen_unset_timeout(window);
     return FALSE;
 }
 
 static gboolean
-_on_fullscreen_motion(GtkWidget * widget, GdkEventMotion * ev, VnrWindow *window)
+_on_fullscreen_motion(GtkWidget *widget, GdkEventMotion *ev, VnrWindow *window)
 {
     if (window->disable_autohide)
         return FALSE;
@@ -938,7 +936,7 @@ _on_spin_value_change(GtkSpinButton *spinbutton, VnrWindow *window)
         vnr_prefs_set_slideshow_timeout(window->prefs, new_value);
 
     gtk_label_set_text(GTK_LABEL(window->fs_seconds_label),
-                        ngettext(" second", " seconds", new_value));
+                       ngettext(" second", " seconds", new_value));
     window->ss_timeout = new_value;
     _window_slideshow_restart(window);
 }
@@ -974,7 +972,7 @@ _action_save_image(GtkWidget *widget, VnrWindow *window)
     /* Store exiv2 metadata to cache, so we can restore it afterwards */
     uni_read_exiv2_to_cache(current->path);
 
-    if (g_strcmp0(window->writable_format_name, "jpeg" ) == 0)
+    if (g_strcmp0(window->writable_format_name, "jpeg") == 0)
     {
         gchar *quality;
         quality = g_strdup_printf("%i", window->prefs->jpeg_quality);
@@ -984,7 +982,7 @@ _action_save_image(GtkWidget *widget, VnrWindow *window)
                         &error, "quality", quality, NULL);
         g_free(quality);
     }
-    else if (g_strcmp0(window->writable_format_name, "png" ) == 0)
+    else if (g_strcmp0(window->writable_format_name, "png") == 0)
     {
         gchar *compression;
         compression = g_strdup_printf("%i", window->prefs->png_compression);
@@ -1010,7 +1008,7 @@ _action_save_image(GtkWidget *widget, VnrWindow *window)
     if (error != NULL)
     {
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
-                                               error->message, FALSE);
+                              error->message, FALSE);
         return;
     }
 
@@ -1063,7 +1061,8 @@ _menu_position_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer
 static void
 _action_open_menu(GtkToggleAction *action, VnrWindow *window)
 {
-    if ( !gtk_toggle_action_get_active(action)) {
+    if (!gtk_toggle_action_get_active(action))
+    {
         return;
     }
     gtk_menu_popup(GTK_MENU(window->button_menu), NULL, NULL, _menu_position_func, window, 0, gtk_get_current_event_time());
@@ -1089,18 +1088,19 @@ _window_on_realize(GtkWidget *widget, gpointer user_data)
 
     if (!vnr_message_area_is_critical(VNR_MESSAGE_AREA(VNR_WINDOW(widget)->msg_area)))
     {
-        if ( VNR_WINDOW(widget)->prefs->start_maximized ) {
+        if (VNR_WINDOW(widget)->prefs->start_maximized)
+        {
             window_open(VNR_WINDOW(widget), FALSE);
-        } 
-        else 
+        }
+        else
         {
             GdkScreen *screen;
             GdkRectangle monitor;
             screen = gtk_window_get_screen(GTK_WINDOW(widget));
             gdk_screen_get_monitor_geometry(screen,
-                                             gdk_screen_get_monitor_at_window(screen,
-                                             gtk_widget_get_window(widget)),
-                                             &monitor);
+                                            gdk_screen_get_monitor_at_window(screen,
+                                                                             gtk_widget_get_window(widget)),
+                                            &monitor);
 
             VNR_WINDOW(widget)->max_width = monitor.width * 0.9 - 100;
             VNR_WINDOW(widget)->max_height = monitor.height * 0.9 - 100;
@@ -1108,16 +1108,14 @@ _window_on_realize(GtkWidget *widget, gpointer user_data)
             window_open(VNR_WINDOW(widget), TRUE);
         }
 
-        if (VNR_WINDOW(widget)->prefs->start_slideshow
-            && VNR_WINDOW(widget)->file_list != NULL)
+        if (VNR_WINDOW(widget)->prefs->start_slideshow && VNR_WINDOW(widget)->file_list != NULL)
         {
             _window_fullscreen(VNR_WINDOW(widget));
             VNR_WINDOW(widget)->mode = WINDOW_MODE_NORMAL;
             _window_slideshow_allow(VNR_WINDOW(widget));
             _window_slideshow_start(VNR_WINDOW(widget));
         }
-        else if (VNR_WINDOW(widget)->prefs->start_fullscreen
-                 && VNR_WINDOW(widget)->file_list != NULL)
+        else if (VNR_WINDOW(widget)->prefs->start_fullscreen && VNR_WINDOW(widget)->file_list != NULL)
         {
             _window_fullscreen(VNR_WINDOW(widget));
         }
@@ -1130,7 +1128,7 @@ _window_on_change_state(GtkWidget *widget, GdkEventWindowState *event, gpointer 
     if (event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED)
     {
         /* Detect maximized state only */
-        if ( event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED)
+        if (event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED)
         {
             VNR_WINDOW(widget)->prefs->start_maximized = TRUE;
         }
@@ -1144,7 +1142,6 @@ _window_on_change_state(GtkWidget *widget, GdkEventWindowState *event, gpointer 
 
     return TRUE;
 }
-
 
 static void
 _window_on_destroy(GtkWidget *widget, gpointer user_data)
@@ -1175,7 +1172,7 @@ _on_zoom_changed(UniImageView *view, VnrWindow *window)
                               total,
                               window->current_image_width,
                               window->current_image_height,
-                              (int) (view->zoom * 100.));
+                              (int)(view->zoom * 100.));
 
         gtk_window_set_title(GTK_WINDOW(window), buf);
 
@@ -1187,20 +1184,19 @@ _on_zoom_changed(UniImageView *view, VnrWindow *window)
     }
 }
 
-
 static void
 _window_on_drag_begin(GtkWidget *widget,
-              GdkDragContext *drag_context,
-              GtkSelectionData *data,
-              guint info,
-              guint time,
-              gpointer user_data)
+                      GdkDragContext *drag_context,
+                      GtkSelectionData *data,
+                      guint info,
+                      guint time,
+                      gpointer user_data)
 {
     gchar *uris[2];
 
     VnrFile *current = window_list_get_current(VNR_WINDOW(user_data));
 
-    uris[0] = g_filename_to_uri((gchar*)  current->path, NULL, NULL);
+    uris[0] = g_filename_to_uri((gchar *)current->path, NULL, NULL);
     uris[1] = NULL;
 
     gtk_selection_data_set_uris(data, uris);
@@ -1233,7 +1229,7 @@ _action_preferences(GtkAction *action, gpointer user_data)
 static void
 _action_flip_horizontal(GtkAction *action, VnrWindow *window)
 {
-    if ( !gtk_action_group_get_sensitive(window->actions_static_image) )
+    if (!gtk_action_group_get_sensitive(window->actions_static_image))
         return;
 
     _window_flip_pixbuf(window, TRUE);
@@ -1242,7 +1238,7 @@ _action_flip_horizontal(GtkAction *action, VnrWindow *window)
 static void
 _action_flip_vertical(GtkAction *action, VnrWindow *window)
 {
-    if ( !gtk_action_group_get_sensitive(window->actions_static_image) )
+    if (!gtk_action_group_get_sensitive(window->actions_static_image))
         return;
 
     _window_flip_pixbuf(window, FALSE);
@@ -1312,17 +1308,18 @@ _action_prev(GtkAction *action, gpointer user_data)
 static void
 _action_resize(GtkToggleAction *action, VnrWindow *window)
 {
-    if ( action != NULL && !gtk_toggle_action_get_active(action) ) {
+    if (action != NULL && !gtk_toggle_action_get_active(action))
+    {
         window->prefs->auto_resize = FALSE;
         return;
     }
 
-    gint img_h, img_w;          /* Width and Height of the pixbuf */
+    gint img_h, img_w; /* Width and Height of the pixbuf */
 
     img_w = window->current_image_width;
     img_h = window->current_image_height;
 
-    if ( img_w == 0 || img_h == 0 )
+    if (img_w == 0 || img_h == 0)
         return;
 
     window->prefs->auto_resize = TRUE;
@@ -1343,7 +1340,6 @@ _action_reload(GtkAction *action, VnrWindow *window)
     window_open(window, FALSE);
 }
 
-
 static gboolean
 _file_size_is_small(char *filename)
 {
@@ -1351,7 +1347,8 @@ _file_size_is_small(char *filename)
     struct stat st;
     int four_mb = 4 * 1024 * 1024;
 
-    if (filename != NULL && stat(filename, &st) == 0) {
+    if (filename != NULL && stat(filename, &st) == 0)
+    {
         return st.st_size < four_mb;
     }
     return FALSE;
@@ -1364,17 +1361,20 @@ _on_update_preview(GtkFileChooser *file_chooser, gpointer data)
     char *filename = gtk_file_chooser_get_preview_filename(file_chooser);
     gboolean has_preview = FALSE;
 
-    if (_file_size_is_small(filename)) {
+    if (_file_size_is_small(filename))
+    {
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 256, 256, NULL);
         has_preview = pixbuf != NULL;
 
         gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
-        if (pixbuf) {
+        if (pixbuf)
+        {
             g_object_unref(pixbuf);
         }
     }
     gtk_file_chooser_set_preview_widget_active(file_chooser, has_preview);
-    if (filename != NULL) {
+    if (filename != NULL)
+    {
         g_free(filename);
     }
 }
@@ -1388,11 +1388,11 @@ _action_open(GtkAction *action, VnrWindow *window)
     GtkFileFilter *all_filter;
 
     dialog = gtk_file_chooser_dialog_new(_("Open Image"),
-                          GTK_WINDOW(window),
-                          GTK_FILE_CHOOSER_ACTION_OPEN,
-                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                          GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                          NULL);
+                                         GTK_WINDOW(window),
+                                         GTK_FILE_CHOOSER_ACTION_OPEN,
+                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                         NULL);
 
     img_filter = gtk_file_filter_new();
     g_assert(img_filter != NULL);
@@ -1426,8 +1426,8 @@ _action_open(GtkAction *action, VnrWindow *window)
     }
 
     g_signal_connect(dialog, "response",
-                      G_CALLBACK(_on_file_open_dialog_response),
-                      window);
+                     G_CALLBACK(_on_file_open_dialog_response),
+                     window);
 
     gtk_widget_show_all(GTK_WIDGET(dialog));
 
@@ -1440,11 +1440,11 @@ _action_open_dir(GtkAction *action, VnrWindow *window)
 {
     GtkWidget *dialog;
     dialog = gtk_file_chooser_dialog_new(_("Open Folder"),
-                          GTK_WINDOW(window),
-                          GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                          GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                          NULL);
+                                         GTK_WINDOW(window),
+                                         GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                         NULL);
 
     gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -1458,8 +1458,8 @@ _action_open_dir(GtkAction *action, VnrWindow *window)
     }
 
     g_signal_connect(dialog, "response",
-                      G_CALLBACK(_on_file_open_dialog_response),
-                      window);
+                     G_CALLBACK(_on_file_open_dialog_response),
+                     window);
 
     gtk_widget_show_all(GTK_WIDGET(dialog));
 
@@ -1474,33 +1474,32 @@ _action_about(GtkAction *action, VnrWindow *window)
         "Programming &amp; icon design",
         "\tSiyan Panayotov",
         "\nRefer to source code from GtkImageView",
-        NULL
-    };
+        NULL};
 
     char *license =
         ("Viewnior is free software: you can redistribute it and/or modify "
-        "it under the terms of the GNU General Public License as published by "
-        "the Free Software Foundation, either version 3 of the License, or "
-        "(at your option) any later version.\n\n"
-        "Viewnior is distributed in the hope that it will be useful, "
-        "but WITHOUT ANY WARRANTY; without even the implied warranty of "
-        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
-        "GNU General Public License for more details.\n\n"
-        "You should have received a copy of the GNU General Public License "
-        "along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.\n");
+         "it under the terms of the GNU General Public License as published by "
+         "the Free Software Foundation, either version 3 of the License, or "
+         "(at your option) any later version.\n\n"
+         "Viewnior is distributed in the hope that it will be useful, "
+         "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+         "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+         "GNU General Public License for more details.\n\n"
+         "You should have received a copy of the GNU General Public License "
+         "along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.\n");
 
     gtk_show_about_dialog(GTK_WINDOW(window),
-                   "program-name", "Viewnior",
-                   "version", VERSION,
-                   "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov",
-                   "comments",_("Elegant Image Viewer"),
-                   "authors", authors,
-                   "logo-icon-name", "viewnior",
-                   "wrap-license", TRUE,
-                   "license", license,
-                   "website", "https://github.com/hotnuma/viewnior",
-                   "translator-credits", _( "translator-credits" ),
-                   NULL);
+                          "program-name", "Viewnior",
+                          "version", VERSION,
+                          "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov",
+                          "comments", _("Elegant Image Viewer"),
+                          "authors", authors,
+                          "logo-icon-name", "viewnior",
+                          "wrap-license", TRUE,
+                          "license", license,
+                          "website", "https://github.com/hotnuma/viewnior",
+                          "translator-credits", _("translator-credits"),
+                          NULL);
 }
 
 static void
@@ -1510,8 +1509,9 @@ _action_set_wallpaper(GtkAction *action, VnrWindow *win)
 
     pid = fork();
 
-    if ( pid == 0 ) {
-        gchar * tmp;
+    if (pid == 0)
+    {
+        gchar *tmp;
 
         VnrPrefsDesktop desktop_environment = win->prefs->desktop;
 
@@ -1522,72 +1522,75 @@ _action_set_wallpaper(GtkAction *action, VnrWindow *win)
 
         VnrFile *current = window_list_get_current(win);
 
-        switch(desktop_environment) {
-            case VNR_PREFS_DESKTOP_GNOME2:
-                execlp("gconftool-2", "gconftool-2",
-                        "--set", "/desktop/gnome/background/picture_filename",
-                        "--type", "string",
-                        current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_MATE:
-                execlp("gsettings", "gsettings",
-                        "set", "org.mate.background",
-                        "picture-filename", current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_GNOME3:
-                tmp = g_strdup_printf("file://%s", current->path);
-                execlp("gsettings", "gsettings",
-                        "set", "org.gnome.desktop.background",
-                        "picture-uri", tmp,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_XFCE:
-                tmp = g_strdup_printf("/backdrop/screen%d/monitor0/workspace0/last-image",
-                                        gdk_screen_get_number(gtk_widget_get_screen(GTK_WIDGET(win))));
-                execlp("xfconf-query", "xfconf-query",
-                        "-c", "xfce4-desktop",
-                        "-p", tmp,
-                        "--type", "string",
-                        "--set",
-                        current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_LXDE:
-                execlp("pcmanfm", "pcmanfm",
-                        "--set-wallpaper",
-                        current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_PUPPY:
-                execlp("set_bg", "set_bg",
-                        current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_FLUXBOX:
-                execlp("fbsetbg", "fbsetbg",
-                        "-f", current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_NITROGEN:
-                execlp("nitrogen", "nitrogen",
-                        "--set-zoom-fill", "--save",
-                        current->path,
-                        NULL);
-                break;
-            case VNR_PREFS_DESKTOP_CINNAMON:
-                tmp = g_strdup_printf("file://%s",
-                                      current->path);
-                execlp("gsettings", "gsettings",
-                        "set", "org.cinnamon.desktop.background",
-                        "picture-uri", tmp,
-                        NULL);
-                break;
-            default:
-                _exit(0);
+        switch (desktop_environment)
+        {
+        case VNR_PREFS_DESKTOP_GNOME2:
+            execlp("gconftool-2", "gconftool-2",
+                   "--set", "/desktop/gnome/background/picture_filename",
+                   "--type", "string",
+                   current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_MATE:
+            execlp("gsettings", "gsettings",
+                   "set", "org.mate.background",
+                   "picture-filename", current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_GNOME3:
+            tmp = g_strdup_printf("file://%s", current->path);
+            execlp("gsettings", "gsettings",
+                   "set", "org.gnome.desktop.background",
+                   "picture-uri", tmp,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_XFCE:
+            tmp = g_strdup_printf("/backdrop/screen%d/monitor0/workspace0/last-image",
+                                  gdk_screen_get_number(gtk_widget_get_screen(GTK_WIDGET(win))));
+            execlp("xfconf-query", "xfconf-query",
+                   "-c", "xfce4-desktop",
+                   "-p", tmp,
+                   "--type", "string",
+                   "--set",
+                   current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_LXDE:
+            execlp("pcmanfm", "pcmanfm",
+                   "--set-wallpaper",
+                   current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_PUPPY:
+            execlp("set_bg", "set_bg",
+                   current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_FLUXBOX:
+            execlp("fbsetbg", "fbsetbg",
+                   "-f", current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_NITROGEN:
+            execlp("nitrogen", "nitrogen",
+                   "--set-zoom-fill", "--save",
+                   current->path,
+                   NULL);
+            break;
+        case VNR_PREFS_DESKTOP_CINNAMON:
+            tmp = g_strdup_printf("file://%s",
+                                  current->path);
+            execlp("gsettings", "gsettings",
+                   "set", "org.cinnamon.desktop.background",
+                   "picture-uri", tmp,
+                   NULL);
+            break;
+        default:
+            _exit(0);
         }
-    } else {
+    }
+    else
+    {
         wait(NULL);
     }
 }
@@ -1610,8 +1613,7 @@ _action_menu_bar(GtkAction *action, VnrWindow *window)
     vnr_prefs_set_show_menu_bar(window->prefs, show);
 
     if (window->mode != WINDOW_MODE_NORMAL)
-       return;
-
+        return;
 
     if (show)
     {
@@ -1701,8 +1703,8 @@ _action_delete(GtkAction *action, VnrWindow *window)
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
     {
-       _window_slideshow_stop(window);
-       restart_slideshow = TRUE;
+        _window_slideshow_stop(window);
+        restart_slideshow = TRUE;
     }
 
     if (window->cursor_is_hidden)
@@ -1727,11 +1729,10 @@ _action_delete(GtkAction *action, VnrWindow *window)
 
         /* I18N: The '%s' is replaced with the name of the file to be deleted. */
         prompt = g_strdup_printf(_("Are you sure you want to\n"
-                                    "permanently delete \"%s\"?"),
-                                  current->display_name);
+                                   "permanently delete \"%s\"?"),
+                                 current->display_name);
         markup = g_markup_printf_escaped("<span weight=\"bold\" size=\"larger\">%s</span>\n\n%s",
-                                          prompt, warning);
-
+                                         prompt, warning);
 
         dlg = gtk_message_dialog_new(GTK_WINDOW(window),
                                      GTK_DIALOG_MODAL,
@@ -1748,7 +1749,7 @@ _action_delete(GtkAction *action, VnrWindow *window)
                                NULL);
     }
 
-    if (!window->prefs->confirm_delete || gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_YES )
+    if (!window->prefs->confirm_delete || gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_YES)
     {
         GFile *file;
         file = g_file_new_for_path(file_path);
@@ -1759,7 +1760,7 @@ _action_delete(GtkAction *action, VnrWindow *window)
         if (error != NULL)
         {
             vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
-                                   error->message, FALSE);
+                                  error->message, FALSE);
             restart_slideshow = FALSE;
         }
         else
@@ -1788,7 +1789,6 @@ _action_delete(GtkAction *action, VnrWindow *window)
                                       TRUE);
                 restart_slideshow = FALSE;
 
-
                 if (gtk_widget_get_visible(window->props_dlg))
                     vnr_properties_dialog_clear(VNR_PROPERTIES_DIALOG(window->props_dlg));
             }
@@ -1813,7 +1813,7 @@ _action_delete(GtkAction *action, VnrWindow *window)
     window->disable_autohide = FALSE;
 
     if (restart_slideshow)
-       _window_slideshow_start(window);
+        _window_slideshow_start(window);
     if (cursor_was_hidden)
         _window_hide_cursor(window);
     if (restart_autohide_timeout)
@@ -1823,7 +1823,7 @@ _action_delete(GtkAction *action, VnrWindow *window)
     {
         g_free(prompt);
         g_free(markup);
-        gtk_widget_destroy( dlg );
+        gtk_widget_destroy(dlg);
     }
 }
 
@@ -1832,12 +1832,12 @@ _action_crop(GtkAction *action, VnrWindow *window)
 {
     VnrCrop *crop;
 
-    if ( !gtk_action_group_get_sensitive(window->actions_static_image) )
+    if (!gtk_action_group_get_sensitive(window->actions_static_image))
         return;
 
-    crop =(VnrCrop*) vnr_crop_new(window);
+    crop = (VnrCrop *)vnr_crop_new(window);
 
-    if (! vnr_crop_run(crop))
+    if (!vnr_crop_run(crop))
     {
         g_object_unref(crop);
         return;
@@ -1849,11 +1849,11 @@ _action_crop(GtkAction *action, VnrWindow *window)
     original = uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view));
 
     cropped = gdk_pixbuf_new(gdk_pixbuf_get_colorspace(original),
-                               gdk_pixbuf_get_has_alpha(original),
-                               gdk_pixbuf_get_bits_per_sample(original),
-                               crop->area.width, crop->area.height);
+                             gdk_pixbuf_get_has_alpha(original),
+                             gdk_pixbuf_get_bits_per_sample(original),
+                             crop->area.width, crop->area.height);
 
-    gdk_pixbuf_copy_area((const GdkPixbuf*)original, crop->area.x, crop->area.y,
+    gdk_pixbuf_copy_area((const GdkPixbuf *)original, crop->area.x, crop->area.y,
                          crop->area.width, crop->area.height, cropped, 0, 0);
 
     uni_anim_view_set_static(UNI_ANIM_VIEW(window->view), cropped);
@@ -1885,148 +1885,147 @@ _action_crop(GtkAction *action, VnrWindow *window)
 }
 
 static const GtkActionEntry _action_entries_window[] = {
-    { "File",  NULL, N_("_File") },
-    { "Edit",  NULL, N_("_Edit") },
-    { "View",  NULL, N_("_View") },
-    { "Image",  NULL, N_("_Image") },
-    { "Go",    NULL, N_("_Go") },
-    { "Help",  NULL, N_("_Help") },
+    {"File", NULL, N_("_File")},
+    {"Edit", NULL, N_("_Edit")},
+    {"View", NULL, N_("_View")},
+    {"Image", NULL, N_("_Image")},
+    {"Go", NULL, N_("_Go")},
+    {"Help", NULL, N_("_Help")},
 
-    { "FileOpen", GTK_STOCK_FILE, N_("Open _Image..."), "<control>O",
-      N_("Open an Image"),
-      G_CALLBACK(_action_open) },
-    { "FileOpenDir", GTK_STOCK_DIRECTORY, N_("Open _Folder..."), "<control>F",
-      N_("Open a Folder"),
-      G_CALLBACK(_action_open_dir) },
-    { "FileClose", GTK_STOCK_CLOSE, N_("_Close"), "<control>W",
-      N_("Close window"),
-      G_CALLBACK(gtk_main_quit) },
-    { "HelpAbout", GTK_STOCK_ABOUT, N_("_About"), NULL,
-      N_("About this application"),
-      G_CALLBACK(_action_about) },
-    { "EditPreferences", GTK_STOCK_PREFERENCES, N_("_Preferences..."), NULL,
-      N_("User preferences for Viewnior"),
-      G_CALLBACK(_action_preferences) }
-};
+    {"FileOpen", GTK_STOCK_FILE, N_("Open _Image..."), "<control>O",
+     N_("Open an Image"),
+     G_CALLBACK(_action_open)},
+    {"FileOpenDir", GTK_STOCK_DIRECTORY, N_("Open _Folder..."), "<control>F",
+     N_("Open a Folder"),
+     G_CALLBACK(_action_open_dir)},
+    {"FileClose", GTK_STOCK_CLOSE, N_("_Close"), "<control>W",
+     N_("Close window"),
+     G_CALLBACK(gtk_main_quit)},
+    {"HelpAbout", GTK_STOCK_ABOUT, N_("_About"), NULL,
+     N_("About this application"),
+     G_CALLBACK(_action_about)},
+    {"EditPreferences", GTK_STOCK_PREFERENCES, N_("_Preferences..."), NULL,
+     N_("User preferences for Viewnior"),
+     G_CALLBACK(_action_preferences)}};
 
 static const GtkActionEntry _action_entry_save[] = {
-    { "FileSave", GTK_STOCK_SAVE, N_("_Save"), "<control>S",
-      N_("Save changes"),
-      G_CALLBACK(_action_save_image) },
+    {"FileSave", GTK_STOCK_SAVE, N_("_Save"), "<control>S",
+     N_("Save changes"),
+     G_CALLBACK(_action_save_image)},
 };
 
 static const GtkToggleActionEntry _toggle_entry_properties[] = {
-    { "Properties", GTK_STOCK_PROPERTIES, N_("_Properties"), NULL,
-      N_("Properties"),
-      G_CALLBACK(_action_open_menu) },
+    {"Properties", GTK_STOCK_PROPERTIES, N_("_Properties"), NULL,
+     N_("Properties"),
+     G_CALLBACK(_action_open_menu)},
 };
 
 static const GtkActionEntry _action_entry_wallpaper[] = {
-    { "SetAsWallpaper", NULL, N_("Set as _Wallpaper"), "<control>F8",
-      N_("Set the selected image as the desktop background"),
-      G_CALLBACK(_action_set_wallpaper) },
+    {"SetAsWallpaper", NULL, N_("Set as _Wallpaper"), "<control>F8",
+     N_("Set the selected image as the desktop background"),
+     G_CALLBACK(_action_set_wallpaper)},
 };
 
 static const GtkActionEntry _action_entries_image[] = {
-    { "FileOpenWith", NULL, N_("Open _With"), NULL,
-      N_("Open the selected image with a different application"),
-      NULL},
-    { "FileDelete", GTK_STOCK_DELETE, N_("_Delete"), NULL,
-      N_("Delete the current file"),
-      G_CALLBACK(_action_delete) },
-    { "FileProperties", GTK_STOCK_PROPERTIES, N_("_Properties..."), "<Alt>Return",
-      N_("Show information about the current file"),
-      G_CALLBACK(_action_properties) },
-    { "FileReload", GTK_STOCK_REFRESH, N_("_Reload"), NULL,
-      N_("Reload the current file"),
-      G_CALLBACK(_action_reload) },
-    { "Delete", NULL, N_("_Delete"), "Delete",
-      N_("Delete the current file"),
-      G_CALLBACK(_action_delete) },
-    { "ViewZoomIn", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>plus",
-      N_("Enlarge the image"),
-      G_CALLBACK(_action_zoom_in) },
-    { "ViewZoomOut", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>minus",
-      N_("Shrink the image"),
-      G_CALLBACK(_action_zoom_out) },
-    { "ViewZoomNormal", GTK_STOCK_ZOOM_100, N_("_Normal Size"), "<control>0",
-      N_("Show the image at its normal size"),
-      G_CALLBACK(_action_normal_size) },
-    { "ViewZoomFit", GTK_STOCK_ZOOM_FIT, N_("Best _Fit"), NULL,
-      N_("Fit the image to the window"),
-      G_CALLBACK(_action_fit) },
-    { "ControlEqual", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>equal",
-      N_("Shrink the image"),
-      G_CALLBACK(_action_zoom_in) },
-    { "ControlKpAdd", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>KP_Add",
-      N_("Shrink the image"),
-      G_CALLBACK(_action_zoom_in) },
-    { "ControlKpSub", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>KP_Subtract",
-      N_("Shrink the image"),
-      G_CALLBACK(_action_zoom_out) },
+    {"FileOpenWith", NULL, N_("Open _With"), NULL,
+     N_("Open the selected image with a different application"),
+     NULL},
+    {"FileDelete", GTK_STOCK_DELETE, N_("_Delete"), NULL,
+     N_("Delete the current file"),
+     G_CALLBACK(_action_delete)},
+    {"FileProperties", GTK_STOCK_PROPERTIES, N_("_Properties..."), "<Alt>Return",
+     N_("Show information about the current file"),
+     G_CALLBACK(_action_properties)},
+    {"FileReload", GTK_STOCK_REFRESH, N_("_Reload"), NULL,
+     N_("Reload the current file"),
+     G_CALLBACK(_action_reload)},
+    {"Delete", NULL, N_("_Delete"), "Delete",
+     N_("Delete the current file"),
+     G_CALLBACK(_action_delete)},
+    {"ViewZoomIn", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>plus",
+     N_("Enlarge the image"),
+     G_CALLBACK(_action_zoom_in)},
+    {"ViewZoomOut", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>minus",
+     N_("Shrink the image"),
+     G_CALLBACK(_action_zoom_out)},
+    {"ViewZoomNormal", GTK_STOCK_ZOOM_100, N_("_Normal Size"), "<control>0",
+     N_("Show the image at its normal size"),
+     G_CALLBACK(_action_normal_size)},
+    {"ViewZoomFit", GTK_STOCK_ZOOM_FIT, N_("Best _Fit"), NULL,
+     N_("Fit the image to the window"),
+     G_CALLBACK(_action_fit)},
+    {"ControlEqual", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>equal",
+     N_("Shrink the image"),
+     G_CALLBACK(_action_zoom_in)},
+    {"ControlKpAdd", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>KP_Add",
+     N_("Shrink the image"),
+     G_CALLBACK(_action_zoom_in)},
+    {"ControlKpSub", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>KP_Subtract",
+     N_("Shrink the image"),
+     G_CALLBACK(_action_zoom_out)},
 };
 
 static const GtkActionEntry _action_entries_static_image[] = {
-    { "ImageRotateCW", "object-rotate-right", N_("Rotate _Clockwise"), "<control>R",
-      N_("Rotate image clockwise"),
-      G_CALLBACK(_action_rotate_cw) },
-    { "ImageRotateCCW", "object-rotate-left", N_("Rotate _Anti-clockwise"), "<control><shift>R",
-      N_("Rotate image anti-clockwise"),
-      G_CALLBACK(_action_rotate_ccw) },
-    { "ImageFlipVertical", "object-flip-vertical", N_("Flip _Vertical"), NULL,
-      N_("Flip image vertically"),
-      G_CALLBACK(_action_flip_vertical) },
-    { "ImageFlipHorizontal", "object-flip-horizontal", N_("Flip _Horizontal"), NULL,
-      N_("Flip image horizontally"),
-      G_CALLBACK(_action_flip_horizontal) },
-    { "ImageCrop", NULL, N_("Crop..."), NULL,
-      N_("Crop"),
-      G_CALLBACK(_action_crop) },
+    {"ImageRotateCW", "object-rotate-right", N_("Rotate _Clockwise"), "<control>R",
+     N_("Rotate image clockwise"),
+     G_CALLBACK(_action_rotate_cw)},
+    {"ImageRotateCCW", "object-rotate-left", N_("Rotate _Anti-clockwise"), "<control><shift>R",
+     N_("Rotate image anti-clockwise"),
+     G_CALLBACK(_action_rotate_ccw)},
+    {"ImageFlipVertical", "object-flip-vertical", N_("Flip _Vertical"), NULL,
+     N_("Flip image vertically"),
+     G_CALLBACK(_action_flip_vertical)},
+    {"ImageFlipHorizontal", "object-flip-horizontal", N_("Flip _Horizontal"), NULL,
+     N_("Flip image horizontally"),
+     G_CALLBACK(_action_flip_horizontal)},
+    {"ImageCrop", NULL, N_("Crop..."), NULL,
+     N_("Crop"),
+     G_CALLBACK(_action_crop)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_image[] = {
-    { "ViewFullscreen", GTK_STOCK_FULLSCREEN, N_("Full _Screen"), "F11",
-      N_("Show in fullscreen mode"),
-      G_CALLBACK(_action_fullscreen) },
-    { "ViewResizeWindow", NULL, N_("_Adjust window size"), NULL,
-      N_("Adjust window size to fit the image"),
-      G_CALLBACK(_action_resize) },
+    {"ViewFullscreen", GTK_STOCK_FULLSCREEN, N_("Full _Screen"), "F11",
+     N_("Show in fullscreen mode"),
+     G_CALLBACK(_action_fullscreen)},
+    {"ViewResizeWindow", NULL, N_("_Adjust window size"), NULL,
+     N_("Adjust window size to fit the image"),
+     G_CALLBACK(_action_resize)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_window[] = {
-    { "ViewMenuBar", NULL, N_("Menu Bar"), NULL,
-      N_("Show Menu Bar"),
-      G_CALLBACK(_action_menu_bar) },
-    { "ViewToolbar", NULL, N_("Toolbar"), NULL,
-      N_("Show Toolbar"),
-      G_CALLBACK(_action_toolbar) },
-    { "ViewScrollbar", NULL, N_("Scrollbar"), NULL,
-      N_("Show Scrollbar"),
-      G_CALLBACK(_action_scrollbar) },
-    { "ViewStatusbar", NULL, N_("Statusbar"), NULL,
-      N_("Show Statusbar"),
-      G_CALLBACK(_action_statusbar) },
+    {"ViewMenuBar", NULL, N_("Menu Bar"), NULL,
+     N_("Show Menu Bar"),
+     G_CALLBACK(_action_menu_bar)},
+    {"ViewToolbar", NULL, N_("Toolbar"), NULL,
+     N_("Show Toolbar"),
+     G_CALLBACK(_action_toolbar)},
+    {"ViewScrollbar", NULL, N_("Scrollbar"), NULL,
+     N_("Show Scrollbar"),
+     G_CALLBACK(_action_scrollbar)},
+    {"ViewStatusbar", NULL, N_("Statusbar"), NULL,
+     N_("Show Statusbar"),
+     G_CALLBACK(_action_statusbar)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_collection[] = {
-    { "ViewSlideshow", GTK_STOCK_NETWORK, N_("Sli_deshow"), "F6",
-      N_("Show in slideshow mode"),
-      G_CALLBACK(_action_slideshow) },
+    {"ViewSlideshow", GTK_STOCK_NETWORK, N_("Sli_deshow"), "F6",
+     N_("Show in slideshow mode"),
+     G_CALLBACK(_action_slideshow)},
 };
 
 static const GtkActionEntry _action_entries_collection[] = {
-    { "GoPrevious", GTK_STOCK_GO_BACK, N_("_Previous Image"), "<Alt>Left",
-      N_("Go to the previous image of the collection"),
-      G_CALLBACK(_action_prev) },
-    { "GoNext", GTK_STOCK_GO_FORWARD, N_("_Next Image"), "<Alt>Right",
-      N_("Go to the next image of the collection"),
-      G_CALLBACK(_action_next) },
-    { "GoFirst", GTK_STOCK_GOTO_FIRST, N_("_First Image"), "<Alt>Home",
-      N_("Go to the first image of the collection"),
-      G_CALLBACK(_action_first) },
-    { "GoLast", GTK_STOCK_GOTO_LAST, N_("_Last Image"), "<Alt>End",
-      N_("Go to the last image of the collection"),
-      G_CALLBACK(_action_last) },
+    {"GoPrevious", GTK_STOCK_GO_BACK, N_("_Previous Image"), "<Alt>Left",
+     N_("Go to the previous image of the collection"),
+     G_CALLBACK(_action_prev)},
+    {"GoNext", GTK_STOCK_GO_FORWARD, N_("_Next Image"), "<Alt>Right",
+     N_("Go to the next image of the collection"),
+     G_CALLBACK(_action_next)},
+    {"GoFirst", GTK_STOCK_GOTO_FIRST, N_("_First Image"), "<Alt>Home",
+     N_("Go to the first image of the collection"),
+     G_CALLBACK(_action_first)},
+    {"GoLast", GTK_STOCK_GOTO_LAST, N_("_Last Image"), "<Alt>End",
+     N_("Go to the last image of the collection"),
+     G_CALLBACK(_action_last)},
 };
 
 /*************************************************************/
@@ -2044,101 +2043,102 @@ _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
     toolbar_focus_child = gtk_container_get_focus_child(GTK_CONTAINER(window->toolbar));
     msg_area_focus_child = gtk_container_get_focus_child(GTK_CONTAINER(window->msg_area));
 
-    switch(event->keyval){
-        case GDK_KEY_Left:
-            if (event->state & GDK_MOD1_MASK)
-            {
-                _action_prev(NULL, window);
-                result = TRUE;
-                break;
-            } /* else fall-trough is intended */
-        case GDK_KEY_Up:
-            if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
-            {
-                /* break to let scrollview handle the key */
-                break;
-            }
-            if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
-                break;
-
+    switch (event->keyval)
+    {
+    case GDK_KEY_Left:
+        if (event->state & GDK_MOD1_MASK)
+        {
             _action_prev(NULL, window);
             result = TRUE;
             break;
-        case GDK_KEY_Right:
-            if (event->state & GDK_MOD1_MASK)
-            {
-                _action_next(NULL, window);
-                result = TRUE;
-                break;
-            } /* else fall-trough is intended */
-        case GDK_KEY_Down:
-            if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
-            {
-                /* break to let scrollview handle the key */
-                break;
-            }
-            if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
-                break;
+        } /* else fall-trough is intended */
+    case GDK_KEY_Up:
+        if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
+        {
+            /* break to let scrollview handle the key */
+            break;
+        }
+        if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
+            break;
 
+        _action_prev(NULL, window);
+        result = TRUE;
+        break;
+    case GDK_KEY_Right:
+        if (event->state & GDK_MOD1_MASK)
+        {
             _action_next(NULL, window);
             result = TRUE;
             break;
-        case GDK_KEY_Page_Up:
-            _action_prev(NULL, window);
-            result = TRUE;
+        } /* else fall-trough is intended */
+    case GDK_KEY_Down:
+        if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
+        {
+            /* break to let scrollview handle the key */
             break;
-        case GDK_KEY_Page_Down:
-            _action_next(NULL, window);
-            result = TRUE;
+        }
+        if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
             break;
-        case GDK_KEY_Escape:
-        case 'q':
-            if (window->mode != WINDOW_MODE_NORMAL)
-                _window_unfullscreen(window);
-            else
-                gtk_main_quit();
+
+        _action_next(NULL, window);
+        result = TRUE;
+        break;
+    case GDK_KEY_Page_Up:
+        _action_prev(NULL, window);
+        result = TRUE;
+        break;
+    case GDK_KEY_Page_Down:
+        _action_next(NULL, window);
+        result = TRUE;
+        break;
+    case GDK_KEY_Escape:
+    case 'q':
+        if (window->mode != WINDOW_MODE_NORMAL)
+            _window_unfullscreen(window);
+        else
+            gtk_main_quit();
+        break;
+    case GDK_KEY_space:
+        if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
             break;
-        case GDK_KEY_space:
-            if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
-                break;
-            window_next(window, TRUE);
-            result = TRUE;
-            break;
-        case GDK_KEY_BackSpace:
-            window_prev(window);
-            result = TRUE;
-            break;
-        case GDK_KEY_Home:
-            window_first(window);
-            result = TRUE;
-            break;
-        case GDK_KEY_End:
-            window_last(window);
-            result = TRUE;
-            break;
-        case 'h':
-            _action_flip_horizontal(NULL, window);
-            break;
-        case 'v':
-            _action_flip_vertical(NULL, window);
-            break;
-        case 'c':
-            _action_crop(NULL, window);
-            break;
+        window_next(window, TRUE);
+        result = TRUE;
+        break;
+    case GDK_KEY_BackSpace:
+        window_prev(window);
+        result = TRUE;
+        break;
+    case GDK_KEY_Home:
+        window_first(window);
+        result = TRUE;
+        break;
+    case GDK_KEY_End:
+        window_last(window);
+        result = TRUE;
+        break;
+    case 'h':
+        _action_flip_horizontal(NULL, window);
+        break;
+    case 'v':
+        _action_flip_vertical(NULL, window);
+        break;
+    case 'c':
+        _action_crop(NULL, window);
+        break;
     }
 
     if (result == FALSE && GTK_WIDGET_CLASS(window_parent_class)->key_press_event)
-        result =(* GTK_WIDGET_CLASS(window_parent_class)->key_press_event)(widget, event);
+        result = (*GTK_WIDGET_CLASS(window_parent_class)->key_press_event)(widget, event);
 
     return result;
 }
 
 static void
 _window_drag_data_received(GtkWidget *widget,
-                               GdkDragContext *context,
-                               gint x, gint y,
-                               GtkSelectionData *selection_data,
-                               guint info, guint time)
+                           GdkDragContext *context,
+                           gint x, gint y,
+                           GtkSelectionData *selection_data,
+                           guint info, guint time)
 {
     GSList *uri_list = NULL;
     GdkAtom target = gtk_selection_data_get_target(selection_data);
@@ -2155,7 +2155,7 @@ _window_drag_data_received(GtkWidget *widget,
     {
         const guchar *data = gtk_selection_data_get_data(selection_data);
 
-        uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *) data);
+        uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *)data);
         if (uri_list == NULL)
         {
             window_close(VNR_WINDOW(widget));
@@ -2174,16 +2174,16 @@ _window_drag_data_received(GtkWidget *widget,
 static void
 window_class_init(VnrWindowClass *klass)
 {
-    GtkWidgetClass *widget_class =(GtkWidgetClass *) klass;
+    GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
     widget_class->key_press_event = _window_on_key_press;
     widget_class->drag_data_received = _window_drag_data_received;
 }
 
-GtkWindow*
+GtkWindow *
 window_new()
 {
-    return (GtkWindow*) g_object_new(VNR_TYPE_WINDOW, NULL);
+    return (GtkWindow *)g_object_new(VNR_TYPE_WINDOW, NULL);
 }
 
 static void
@@ -2203,11 +2203,11 @@ window_init(VnrWindow *window)
     window->actions_open_with = NULL;
     window->open_with_menu_id = 0;
 
-    window->prefs =(VnrPrefs*)vnr_prefs_new(GTK_WIDGET(window));
+    window->prefs = (VnrPrefs *)vnr_prefs_new(GTK_WIDGET(window));
 
     window->mode = WINDOW_MODE_NORMAL;
 
-    gtk_window_set_title((GtkWindow *) window, "Viewnior");
+    gtk_window_set_title((GtkWindow *)window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
 
     /* Build MENUBAR and TOOLBAR */
@@ -2215,137 +2215,131 @@ window_init(VnrWindow *window)
 
     window->actions_window = gtk_action_group_new("MenuActionsWindow");
 
-
     gtk_action_group_set_translation_domain(window->actions_window,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_actions(window->actions_window,
-                                  _action_entries_window,
-                                  G_N_ELEMENTS(_action_entries_window),
-                                  window);
+                                 _action_entries_window,
+                                 G_N_ELEMENTS(_action_entries_window),
+                                 window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->actions_window, 0);
+                                       window->actions_window, 0);
 
     window->action_save = gtk_action_group_new("MenuActionSave");
 
-
     gtk_action_group_set_translation_domain(window->action_save,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_actions(window->action_save,
-                                  _action_entry_save,
-                                  G_N_ELEMENTS(_action_entry_save),
-                                  window);
+                                 _action_entry_save,
+                                 G_N_ELEMENTS(_action_entry_save),
+                                 window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->action_save, 0);
+                                       window->action_save, 0);
 
     window->action_properties = gtk_action_group_new("MenuActionProperties");
 
-
     gtk_action_group_set_translation_domain(window->action_properties,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_toggle_actions(window->action_properties,
-                                  _toggle_entry_properties,
-                                  G_N_ELEMENTS(_toggle_entry_properties),
-                                  window);
+                                        _toggle_entry_properties,
+                                        G_N_ELEMENTS(_toggle_entry_properties),
+                                        window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->action_properties, 0);
+                                       window->action_properties, 0);
 
     window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
 
-
     gtk_action_group_set_translation_domain(window->actions_static_image,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_actions(window->actions_static_image,
-                                  _action_entries_static_image,
-                                  G_N_ELEMENTS(_action_entries_static_image),
-                                  window);
+                                 _action_entries_static_image,
+                                 G_N_ELEMENTS(_action_entries_static_image),
+                                 window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->actions_static_image, 0);
-
+                                       window->actions_static_image, 0);
 
     window->actions_image = gtk_action_group_new("MenuActionsImage");
 
-
     gtk_action_group_set_translation_domain(window->actions_image,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_actions(window->actions_image,
-                                  _action_entries_image,
-                                  G_N_ELEMENTS(_action_entries_image),
-                                  window);
+                                 _action_entries_image,
+                                 G_N_ELEMENTS(_action_entries_image),
+                                 window);
     gtk_action_group_add_toggle_actions(window->actions_image,
-                                         _toggle_entries_image,
-                                         G_N_ELEMENTS(_toggle_entries_image),
-                                         window);
+                                        _toggle_entries_image,
+                                        G_N_ELEMENTS(_toggle_entries_image),
+                                        window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->actions_image, 0);
+                                       window->actions_image, 0);
     /**********/
     window->actions_bars = gtk_action_group_new("MenuActionsBars");
 
-
     gtk_action_group_set_translation_domain(window->actions_bars,
-                                              GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_toggle_actions(window->actions_bars,
-                                         _toggle_entries_window,
-                                         G_N_ELEMENTS(_toggle_entries_window),
-                                         window);
+                                        _toggle_entries_window,
+                                        G_N_ELEMENTS(_toggle_entries_window),
+                                        window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->actions_bars, 0);
+                                       window->actions_bars, 0);
 
     /*****************/
     window->actions_collection = gtk_action_group_new("MenuActionsCollection");
 
-
     gtk_action_group_set_translation_domain(window->actions_collection,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_actions(window->actions_collection,
-                                  _action_entries_collection,
-                                  G_N_ELEMENTS(_action_entries_collection),
-                                  window);
+                                 _action_entries_collection,
+                                 G_N_ELEMENTS(_action_entries_collection),
+                                 window);
     gtk_action_group_add_toggle_actions(window->actions_collection,
-                                         _toggle_entries_collection,
-                                         G_N_ELEMENTS(_toggle_entries_collection),
-                                         window);
+                                        _toggle_entries_collection,
+                                        G_N_ELEMENTS(_toggle_entries_collection),
+                                        window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->actions_collection, 0);
+                                       window->actions_collection, 0);
 
     if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
-                                            _ui_definition, -1,
-                                            &error)) {
-            g_error("building menus failed: %s\n", error->message);
-            g_error_free(error);
+                                           _ui_definition, -1,
+                                           &error))
+    {
+        g_error("building menus failed: %s\n", error->message);
+        g_error_free(error);
     }
 
     window->action_wallpaper = gtk_action_group_new("ActionWallpaper");
 
     gtk_action_group_set_translation_domain(window->action_wallpaper,
-                                             GETTEXT_PACKAGE);
+                                            GETTEXT_PACKAGE);
 
     gtk_action_group_add_actions(window->action_wallpaper,
-                                  _action_entry_wallpaper,
-                                  G_N_ELEMENTS(_action_entry_wallpaper),
-                                  window);
+                                 _action_entry_wallpaper,
+                                 G_N_ELEMENTS(_action_entry_wallpaper),
+                                 window);
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
-                                        window->action_wallpaper, 0);
+                                       window->action_wallpaper, 0);
 
     if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
-                                            _ui_definition_wallpaper, -1,
-                                            &error)) {
-            g_error("building menus failed: %s\n", error->message);
-            g_error_free(error);
+                                           _ui_definition_wallpaper, -1,
+                                           &error))
+    {
+        g_error("building menus failed: %s\n", error->message);
+        g_error_free(error);
     }
     gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
 
@@ -2357,16 +2351,16 @@ window_init(VnrWindow *window)
 
     /* Continue with layout */
 
-    window->layout = gtk_vbox_new(FALSE,0);
+    window->layout = gtk_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window), window->layout);
     gtk_widget_show(window->layout);
 
-    window->menus = gtk_vbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(window->layout), window->menus, FALSE,FALSE,0);
+    window->menus = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window->layout), window->menus, FALSE, FALSE, 0);
 
     window->menu_bar = gtk_ui_manager_get_widget(window->ui_manager, "/MainMenu");
     g_assert(GTK_IS_WIDGET(window->menu_bar));
-    gtk_box_pack_start(GTK_BOX(window->menus), window->menu_bar, FALSE,FALSE,0);
+    gtk_box_pack_start(GTK_BOX(window->menus), window->menu_bar, FALSE, FALSE, 0);
 
     window->properties_button = gtk_ui_manager_get_widget(window->ui_manager, "/Toolbar/Properties");
     g_assert(GTK_IS_WIDGET(window->properties_button));
@@ -2380,10 +2374,10 @@ window_init(VnrWindow *window)
     gtk_toolbar_set_style(GTK_TOOLBAR(window->toolbar), GTK_TOOLBAR_ICONS);
     g_object_set(G_OBJECT(window->toolbar), "show-arrow", FALSE, NULL);
     gtk_toolbar_insert(GTK_TOOLBAR(window->toolbar),
-                        GTK_TOOL_ITEM(_window_get_fs_controls(window)), -1);
+                       GTK_TOOL_ITEM(_window_get_fs_controls(window)), -1);
     GtkStyleContext *context = gtk_widget_get_style_context(window->toolbar);
     gtk_style_context_add_class(context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-    gtk_box_pack_start(GTK_BOX(window->menus), window->toolbar, FALSE,FALSE,0);
+    gtk_box_pack_start(GTK_BOX(window->menus), window->toolbar, FALSE, FALSE, 0);
 
     window->popup_menu = gtk_ui_manager_get_widget(window->ui_manager, "/PopupMenu");
     g_assert(GTK_IS_WIDGET(window->popup_menu));
@@ -2395,16 +2389,15 @@ window_init(VnrWindow *window)
 
     // Apply menu bar preference
     action = gtk_action_group_get_action(window->actions_bars,
-                                          "ViewMenuBar");
+                                         "ViewMenuBar");
     if (!window->prefs->show_menu_bar)
         gtk_widget_hide(window->menu_bar);
     else
         gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
-
     // Apply toolbar preference
     action = gtk_action_group_get_action(window->actions_bars,
-                                          "ViewToolbar");
+                                         "ViewToolbar");
     if (!window->prefs->show_toolbar)
         gtk_widget_hide(window->toolbar);
     else
@@ -2412,40 +2405,38 @@ window_init(VnrWindow *window)
 
     // Apply auto-resize preference
     action = gtk_action_group_get_action(window->actions_image,
-                                          "ViewResizeWindow");
+                                         "ViewResizeWindow");
 
     if (window->prefs->auto_resize)
         gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
     window->msg_area = vnr_message_area_new();
     VNR_MESSAGE_AREA(window->msg_area)->vnr_win = window;
-    gtk_box_pack_start(GTK_BOX(window->layout), window->msg_area, FALSE,FALSE,0);
+    gtk_box_pack_start(GTK_BOX(window->layout), window->msg_area, FALSE, FALSE, 0);
     gtk_widget_show(GTK_WIDGET(window->msg_area));
 
     window->view = uni_anim_view_new();
     gtk_widget_set_can_focus(window->view, TRUE);
     window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
 
-
     window->statusbar = gtk_statusbar_new();
-    gtk_box_pack_end(GTK_BOX(window->layout), window->statusbar, FALSE,FALSE,0);
+    gtk_box_pack_end(GTK_BOX(window->layout), window->statusbar, FALSE, FALSE, 0);
 
     // Apply statusbar preference
     action = gtk_action_group_get_action(window->actions_bars,
-                                          "ViewStatusbar");
+                                         "ViewStatusbar");
     if (!window->prefs->show_statusbar)
         gtk_widget_hide(window->statusbar);
     else
         gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
-
     // Apply scrollbar preference
     action = gtk_action_group_get_action(window->actions_bars,
-                                          "ViewScrollbar");
+                                         "ViewScrollbar");
     uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), window->prefs->show_scrollbar);
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), window->prefs->show_scrollbar);
 
-    gtk_box_pack_end(GTK_BOX(window->layout), window->scroll_view, TRUE,TRUE,0);
+    gtk_box_pack_end(GTK_BOX(window->layout), window->scroll_view, TRUE, TRUE, 0);
     gtk_widget_show_all(GTK_WIDGET(window->scroll_view));
 
     gtk_widget_grab_focus(window->view);
@@ -2455,37 +2446,37 @@ window_init(VnrWindow *window)
 
     /* Care for Properties dialog */
     window->props_dlg = vnr_properties_dialog_new(window,
-                             gtk_action_group_get_action(window->actions_collection,
-                                                          "GoNext"),
-                             gtk_action_group_get_action(window->actions_collection,
-                                                          "GoPrevious"));
+                                                  gtk_action_group_get_action(window->actions_collection,
+                                                                              "GoNext"),
+                                                  gtk_action_group_get_action(window->actions_collection,
+                                                                              "GoPrevious"));
 
     window_apply_preferences(window);
 
     _window_set_drag(window);
 
     g_signal_connect(G_OBJECT(window), "destroy",
-                      G_CALLBACK(_window_on_destroy), NULL);
+                     G_CALLBACK(_window_on_destroy), NULL);
 
     g_signal_connect(G_OBJECT(window), "realize",
-                      G_CALLBACK(_window_on_realize), NULL);
+                     G_CALLBACK(_window_on_realize), NULL);
 
     g_signal_connect(G_OBJECT(window), "window-state-event",
-                      G_CALLBACK(_window_on_change_state), NULL);
+                     G_CALLBACK(_window_on_change_state), NULL);
 
     g_signal_connect(G_OBJECT(window->view), "zoom_changed",
-                      G_CALLBACK(_on_zoom_changed), window);
+                     G_CALLBACK(_on_zoom_changed), window);
 
     g_signal_connect(G_OBJECT(window->view), "drag-data-get",
-                      G_CALLBACK(_window_on_drag_begin), window);
+                     G_CALLBACK(_window_on_drag_begin), window);
 
     g_signal_connect(G_OBJECT(window->button_menu), "hide",
-                      G_CALLBACK(_window_on_main_menu_hidden), window);
+                     G_CALLBACK(_window_on_main_menu_hidden), window);
 
     gtk_window_add_accel_group(GTK_WINDOW(window),
-                gtk_ui_manager_get_accel_group(window->ui_manager));
+                               gtk_ui_manager_get_accel_group(window->ui_manager));
 
-     _window_load_accel_map();
+    _window_load_accel_map();
 }
 
 /*************************************************************/
@@ -2542,7 +2533,7 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
 
     if (fit_to_screen)
     {
-        gint img_h, img_w;          /* Width and Height of the pixbuf */
+        gint img_h, img_w; /* Width and Height of the pixbuf */
 
         img_w = window->current_image_width;
         img_h = window->current_image_height;
@@ -2555,7 +2546,7 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
     last_fit_mode = UNI_IMAGE_VIEW(window->view)->fitting;
 
     /* Return TRUE if the image is static */
-    if ( uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf) )
+    if (uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf))
         gtk_action_group_set_sensitive(window->actions_static_image, TRUE);
     else
         gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
@@ -2564,7 +2555,7 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
     {
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view), VNR_PREFS_ZOOM_FIT);
     }
-    else if (window->prefs->zoom == VNR_PREFS_ZOOM_LAST_USED )
+    else if (window->prefs->zoom == VNR_PREFS_ZOOM_LAST_USED)
     {
         uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view), last_fit_mode);
         _on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
@@ -2574,7 +2565,8 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view), window->prefs->zoom);
     }
 
-    if ( window->prefs->auto_resize ) {
+    if (window->prefs->auto_resize)
+    {
         _action_resize(NULL, window);
     }
 
@@ -2587,8 +2579,7 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
     return TRUE;
 }
 
-void
-window_open_from_list(VnrWindow *window, GSList *uri_list)
+void window_open_from_list(VnrWindow *window, GSList *uri_list)
 {
     GList *file_list = NULL;
     GError *error = NULL;
@@ -2645,8 +2636,7 @@ window_open_from_list(VnrWindow *window, GSList *uri_list)
     }
 }
 
-void
-window_close(VnrWindow *window)
+void window_close(VnrWindow *window)
 {
     gtk_window_set_title(GTK_WINDOW(window), "Viewnior");
     uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), NULL);
@@ -2655,8 +2645,7 @@ window_close(VnrWindow *window)
     gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
 }
 
-void
-window_set_list(VnrWindow *window, GList *list, gboolean free_current)
+void window_set_list(VnrWindow *window, GList *list, gboolean free_current)
 {
     if (free_current == TRUE && window->file_list != NULL)
         g_list_free(window->file_list);
@@ -2675,19 +2664,20 @@ window_set_list(VnrWindow *window, GList *list, gboolean free_current)
     window->file_list = list;
 }
 
-VnrFile*
+VnrFile *
 window_list_get_current(VnrWindow *window)
 {
     return VNR_FILE(window->file_list->data);
 }
 
 gboolean
-window_next(VnrWindow *window, gboolean rem_timeout){
+window_next(VnrWindow *window, gboolean rem_timeout)
+{
     GList *next;
 
     /* Don't reload current image
      * if the list contains only one(or no) image */
-    if (g_list_length(g_list_first(window->file_list)) <2)
+    if (g_list_length(g_list_first(window->file_list)) < 2)
         return FALSE;
 
     if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
@@ -2715,18 +2705,19 @@ window_next(VnrWindow *window, gboolean rem_timeout){
     if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
         window->ss_source_tag = g_timeout_add_seconds(window->ss_timeout,
                                                       (GSourceFunc)_window_next_image_src,
-                                                       window);
+                                                      window);
 
     return TRUE;
 }
 
 gboolean
-window_prev(VnrWindow *window){
+window_prev(VnrWindow *window)
+{
     GList *prev;
 
     /* Don't reload current image
      * if the list contains only one(or no) image */
-    if (g_list_length(g_list_first(window->file_list)) <2)
+    if (g_list_length(g_list_first(window->file_list)) < 2)
         return FALSE;
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
@@ -2754,13 +2745,14 @@ window_prev(VnrWindow *window){
     if (window->mode == WINDOW_MODE_SLIDESHOW)
         window->ss_source_tag = g_timeout_add_seconds(window->ss_timeout,
                                                       (GSourceFunc)_window_next_image_src,
-                                                       window);
+                                                      window);
 
     return TRUE;
 }
 
 gboolean
-window_first(VnrWindow *window){
+window_first(VnrWindow *window)
+{
     GList *prev;
 
     prev = g_list_first(window->file_list);
@@ -2786,7 +2778,8 @@ window_first(VnrWindow *window){
 }
 
 gboolean
-window_last(VnrWindow *window){
+window_last(VnrWindow *window)
+{
     GList *prev;
 
     prev = g_list_last(window->file_list);
@@ -2811,10 +2804,10 @@ window_last(VnrWindow *window){
     return TRUE;
 }
 
-void
-window_apply_preferences(VnrWindow *window)
+void window_apply_preferences(VnrWindow *window)
 {
-    if ( window->prefs->dark_background ) {
+    if (window->prefs->dark_background)
+    {
         GdkColor color;
         gdk_color_parse(DARK_BACKGROUND_COLOR, &color);
         gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
@@ -2831,19 +2824,17 @@ window_apply_preferences(VnrWindow *window)
         gtk_widget_queue_draw(window->view);
     }
 
-
     if (gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(window->ss_timeout_widget)) != window->prefs->slideshow_timeout)
     {
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->ss_timeout_widget),(gdouble) window->prefs->slideshow_timeout);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->ss_timeout_widget), (gdouble)window->prefs->slideshow_timeout);
     }
 }
 
-void
-window_toggle_fullscreen(VnrWindow *window)
+void window_toggle_fullscreen(VnrWindow *window)
 {
     gboolean fullscreen;
 
-    fullscreen =(window->mode == WINDOW_MODE_NORMAL)?TRUE:FALSE;
+    fullscreen = (window->mode == WINDOW_MODE_NORMAL) ? TRUE : FALSE;
 
     if (fullscreen)
         _window_fullscreen(window);

@@ -21,7 +21,7 @@
  */
 
 #include <libintl.h>
-#define _(String) gettext (String)
+#define _(String) gettext(String)
 
 #include "uni-scroll-win.h"
 #include "uni-image-view.h"
@@ -31,101 +31,99 @@
 /***** PRIVATE DATA ******************************************/
 /*************************************************************/
 static const char *nav_button[] =
-{
-    /* columns rows colors chars-per-pixel */
-    "14 14 2 1 ",
-    "  c black",
-    ". c None",
-    /* pixels */
-    "......  ......",
-    ".....    .....",
-    "....      ....",
-    "......  ......",
-    ".. ...  ... ..",
-    ".  ...  ...  .",
-    "              ",
-    "              ",
-    ".  ...  ...  .",
-    ".. ...  ... ..",
-    "......  ......",
-    "....      ....",
-    ".....    .....",
-    "......  ......"
-};
+    {
+        /* columns rows colors chars-per-pixel */
+        "14 14 2 1 ",
+        "  c black",
+        ". c None",
+        /* pixels */
+        "......  ......",
+        ".....    .....",
+        "....      ....",
+        "......  ......",
+        ".. ...  ... ..",
+        ".  ...  ...  .",
+        "              ",
+        "              ",
+        ".  ...  ...  .",
+        ".. ...  ... ..",
+        "......  ......",
+        "....      ....",
+        ".....    .....",
+        "......  ......"};
 
-G_DEFINE_TYPE (UniScrollWin, uni_scroll_win, GTK_TYPE_TABLE);
+G_DEFINE_TYPE(UniScrollWin, uni_scroll_win, GTK_TYPE_TABLE);
 
 /*************************************************************/
 /***** Static stuff ******************************************/
 /*************************************************************/
 static void
-uni_scroll_win_show_scrollbar (UniScrollWin * window, gboolean show)
+uni_scroll_win_show_scrollbar(UniScrollWin *window, gboolean show)
 {
     if (show)
     {
-        gtk_widget_show_now (window->vscroll);
-        gtk_widget_show_now (window->hscroll);
-        gtk_widget_show_now (window->nav_box);
+        gtk_widget_show_now(window->vscroll);
+        gtk_widget_show_now(window->hscroll);
+        gtk_widget_show_now(window->nav_box);
     }
     else
     {
-        gtk_widget_hide (window->vscroll);
-        gtk_widget_hide (window->hscroll);
-        gtk_widget_hide (window->nav_box);
+        gtk_widget_hide(window->vscroll);
+        gtk_widget_hide(window->hscroll);
+        gtk_widget_hide(window->nav_box);
     }
 }
 
-
 static void
-uni_scroll_win_adjustment_changed (GtkAdjustment * adj, UniScrollWin * window)
+uni_scroll_win_adjustment_changed(GtkAdjustment *adj, UniScrollWin *window)
 {
-    uni_scroll_win_show_scrollbar (window,
-        window->show_scrollbar && !uni_scroll_win_image_fits (window));
+    uni_scroll_win_show_scrollbar(window,
+                                  window->show_scrollbar && !uni_scroll_win_image_fits(window));
 }
 
 static void
-uni_scroll_win_nav_btn_clicked (UniScrollWin * window, GdkEventButton * ev)
+uni_scroll_win_nav_btn_clicked(UniScrollWin *window, GdkEventButton *ev)
 {
-    uni_nav_show_and_grab (UNI_NAV (window->nav), ev->x_root, ev->y_root);
+    uni_nav_show_and_grab(UNI_NAV(window->nav), ev->x_root, ev->y_root);
 }
 
 static void
-uni_scroll_win_set_view (UniScrollWin * window, UniImageView * view)
+uni_scroll_win_set_view(UniScrollWin *window, UniImageView *view)
 {
     // Setup the scrollbars
     GtkAdjustment *hadj;
-    hadj = (GtkAdjustment *) g_object_new (GTK_TYPE_ADJUSTMENT, NULL);
+    hadj = (GtkAdjustment *)g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
 
     GtkAdjustment *vadj;
-    vadj = (GtkAdjustment *) g_object_new (GTK_TYPE_ADJUSTMENT, NULL);
+    vadj = (GtkAdjustment *)g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
 
-    window->hscroll = gtk_hscrollbar_new (hadj);
-    window->vscroll = gtk_vscrollbar_new (vadj);
+    window->hscroll = gtk_hscrollbar_new(hadj);
+    window->vscroll = gtk_vscrollbar_new(vadj);
 
     // We want to be notified when the adjustments change.
-    g_signal_connect (hadj, "changed",
-                      G_CALLBACK (uni_scroll_win_adjustment_changed), window);
-    g_signal_connect (vadj, "changed",
-                      G_CALLBACK (uni_scroll_win_adjustment_changed), window);
+    g_signal_connect(hadj, "changed",
+                     G_CALLBACK(uni_scroll_win_adjustment_changed), window);
+    g_signal_connect(vadj, "changed",
+                     G_CALLBACK(uni_scroll_win_adjustment_changed), window);
 
     // Output the adjustments to the widget.
     gtk_scrollable_set_hadjustment(GTK_SCROLLABLE(view), hadj);
     gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(view), vadj);
 
     // Add the widgets to the table.
-    gtk_widget_push_composite_child ();
-    gtk_table_attach (GTK_TABLE (window), GTK_WIDGET (view), 0, 1, 0, 1,
-                      GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-    gtk_table_attach (GTK_TABLE (window), window->vscroll, 1, 2, 0, 1,
-                      GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-    gtk_table_attach (GTK_TABLE (window), window->hscroll, 0, 1, 1, 2,
-                      GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
-    gtk_table_attach (GTK_TABLE (window), window->nav_box, 1, 2, 1, 2,
-                      GTK_SHRINK, GTK_SHRINK, 0, 0);
-    gtk_widget_pop_composite_child ();
+    gtk_widget_push_composite_child();
+    gtk_table_attach(GTK_TABLE(window), GTK_WIDGET(view), 0, 1, 0, 1,
+                     GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+    gtk_table_attach(GTK_TABLE(window), window->vscroll, 1, 2, 0, 1,
+                     GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+    gtk_table_attach(GTK_TABLE(window), window->hscroll, 0, 1, 1, 2,
+                     GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+    gtk_table_attach(GTK_TABLE(window), window->nav_box, 1, 2, 1, 2,
+                     GTK_SHRINK, GTK_SHRINK, 0, 0);
+    gtk_widget_pop_composite_child();
 
     // Create the UniNav popup.
-    window->nav = uni_nav_new (view);
+    window->nav = uni_nav_new(view);
 }
 
 /*************************************************************/
@@ -154,33 +152,32 @@ uni_scroll_win_set_view (UniScrollWin * window, UniImageView * view)
    And so it continues.
  */
 static void
-uni_scroll_win_get_preferred_width (GtkWidget *widget,
-                               gint      *minimal_width,
-                               gint      *natural_width)
+uni_scroll_win_get_preferred_width(GtkWidget *widget,
+                                   gint *minimal_width,
+                                   gint *natural_width)
 {
     /* Chain up. */
-    GTK_WIDGET_CLASS (uni_scroll_win_parent_class)->get_preferred_width(widget, minimal_width, natural_width);
+    GTK_WIDGET_CLASS(uni_scroll_win_parent_class)->get_preferred_width(widget, minimal_width, natural_width);
 
     *minimal_width = *natural_width = 200;
 }
 
 static void
-uni_scroll_win_get_preferred_height (GtkWidget *widget,
-                                gint      *minimal_height,
-                                gint      *natural_height)
+uni_scroll_win_get_preferred_height(GtkWidget *widget,
+                                    gint *minimal_height,
+                                    gint *natural_height)
 {
     /* Chain up. */
-    GTK_WIDGET_CLASS (uni_scroll_win_parent_class)->get_preferred_height(widget, minimal_height, natural_height);
+    GTK_WIDGET_CLASS(uni_scroll_win_parent_class)->get_preferred_height(widget, minimal_height, natural_height);
 
     *minimal_height = *natural_height = 200;
 }
-
 
 /*************************************************************/
 /***** Stuff that deals with the type ************************/
 /*************************************************************/
 static void
-uni_scroll_win_init (UniScrollWin * window)
+uni_scroll_win_init(UniScrollWin *window)
 {
     window->hscroll = NULL;
     window->vscroll = NULL;
@@ -189,66 +186,67 @@ uni_scroll_win_init (UniScrollWin * window)
     window->show_scrollbar = FALSE;
 
     // Setup the navigator button.
-    window->nav_button = gdk_pixbuf_new_from_xpm_data (nav_button);
-    window->nav_image = gtk_image_new_from_pixbuf (window->nav_button);
+    window->nav_button = gdk_pixbuf_new_from_xpm_data(nav_button);
+    window->nav_image = gtk_image_new_from_pixbuf(window->nav_button);
 
-    window->nav_box = gtk_event_box_new ();
-    gtk_container_add (GTK_CONTAINER (window->nav_box), window->nav_image);
-    g_signal_connect_swapped (G_OBJECT (window->nav_box),
-                              "button_press_event",
-                              G_CALLBACK (uni_scroll_win_nav_btn_clicked),
-                              window);
+    window->nav_box = gtk_event_box_new();
+    gtk_container_add(GTK_CONTAINER(window->nav_box), window->nav_image);
+    g_signal_connect_swapped(G_OBJECT(window->nav_box),
+                             "button_press_event",
+                             G_CALLBACK(uni_scroll_win_nav_btn_clicked),
+                             window);
 
-    gtk_widget_set_tooltip_text (window->nav_box,
-                                 _("Open the navigator window"));
+    gtk_widget_set_tooltip_text(window->nav_box,
+                                _("Open the navigator window"));
     gtk_container_set_resize_mode(GTK_CONTAINER(window), GTK_RESIZE_IMMEDIATE);
 }
 
 static void
-uni_scroll_win_finalize (GObject * object)
+uni_scroll_win_finalize(GObject *object)
 {
-    UniScrollWin *window = UNI_SCROLL_WIN (object);
-    g_object_unref (window->nav_button);
+    UniScrollWin *window = UNI_SCROLL_WIN(object);
+    g_object_unref(window->nav_button);
     /* Maybe window->nav should be unreferenced here.. But uh I don't
        know how. */
-    gtk_widget_destroy (window->nav);
+    gtk_widget_destroy(window->nav);
 
     /* Chain up. */
-    G_OBJECT_CLASS (uni_scroll_win_parent_class)->finalize (object);
+    G_OBJECT_CLASS(uni_scroll_win_parent_class)->finalize(object);
 }
 
-enum {
+enum
+{
     PROP_IMAGE_VIEW = 1
 };
 
 static void
-uni_scroll_win_set_property (GObject * object,
-                             guint prop_id,
-                             const GValue * value, GParamSpec * pspec)
+uni_scroll_win_set_property(GObject *object,
+                            guint prop_id,
+                            const GValue *value, GParamSpec *pspec)
 {
-    UniScrollWin *window = UNI_SCROLL_WIN (object);
+    UniScrollWin *window = UNI_SCROLL_WIN(object);
     if (prop_id == PROP_IMAGE_VIEW)
-        uni_scroll_win_set_view (window, g_value_get_object (value));
+        uni_scroll_win_set_view(window, g_value_get_object(value));
     else
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 }
 
 static void
-uni_scroll_win_class_init (UniScrollWinClass * klass)
+uni_scroll_win_class_init(UniScrollWinClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->finalize = uni_scroll_win_finalize;
     object_class->set_property = uni_scroll_win_set_property;
 
-    GParamSpec *pspec = g_param_spec_object ("view",
-                                             "Image View",
-                                             "Image View to navigate",
-                                             UNI_TYPE_IMAGE_VIEW,
-                                             G_PARAM_CONSTRUCT_ONLY |
-                                             G_PARAM_WRITABLE);
-    g_object_class_install_property (object_class, PROP_IMAGE_VIEW, pspec);
+    GParamSpec *pspec = g_param_spec_object("view",
+                                            "Image View",
+                                            "Image View to navigate",
+                                            UNI_TYPE_IMAGE_VIEW,
+                                            G_PARAM_CONSTRUCT_ONLY |
+                                                G_PARAM_WRITABLE);
+    g_object_class_install_property(object_class, PROP_IMAGE_VIEW, pspec);
 
-    GtkWidgetClass *widget_class = (GtkWidgetClass *) klass;
+    GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
     widget_class->get_preferred_width = uni_scroll_win_get_preferred_width;
     widget_class->get_preferred_height = uni_scroll_win_get_preferred_height;
 }
@@ -268,17 +266,16 @@ uni_scroll_win_class_init (UniScrollWinClass * klass)
  * hidden.
  **/
 GtkWidget *
-uni_scroll_win_new (UniImageView * view)
+uni_scroll_win_new(UniImageView *view)
 {
-    gpointer data = g_object_new (UNI_TYPE_SCROLL_WIN,
-                                  "n-columns", 2,
-                                  "n-rows", 2,
-                                  "homogeneous", FALSE,
-                                  "view", view,
-                                  NULL);
-    return GTK_WIDGET (data);
+    gpointer data = g_object_new(UNI_TYPE_SCROLL_WIN,
+                                 "n-columns", 2,
+                                 "n-rows", 2,
+                                 "homogeneous", FALSE,
+                                 "view", view,
+                                 NULL);
+    return GTK_WIDGET(data);
 }
-
 
 /**
  * uni_scroll_win_image_fits:
@@ -289,14 +286,14 @@ uni_scroll_win_new (UniImageView * view)
  * The check is performed as if scrollbars are not visible.
  **/
 gboolean
-uni_scroll_win_image_fits (UniScrollWin * window)
+uni_scroll_win_image_fits(UniScrollWin *window)
 {
     GtkAdjustment *hadj, *vadj;
     GtkAllocation allocation;
 
-    hadj = gtk_range_get_adjustment (GTK_RANGE (window->hscroll));
-    vadj = gtk_range_get_adjustment (GTK_RANGE (window->vscroll));
-    gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
+    hadj = gtk_range_get_adjustment(GTK_RANGE(window->hscroll));
+    vadj = gtk_range_get_adjustment(GTK_RANGE(window->vscroll));
+    gtk_widget_get_allocation(GTK_WIDGET(window), &allocation);
 
     /* We compare with the allocation size for the window instead of
        hadj->page_size and vadj->page_size. If the scrollbars are
@@ -306,8 +303,8 @@ uni_scroll_win_image_fits (UniScrollWin * window)
        of pixels that COULD be shown if the scrollbars weren't
        there.
      */
-    return gtk_adjustment_get_upper (hadj) <= allocation.width &&
-           gtk_adjustment_get_upper (vadj) <= allocation.height;
+    return gtk_adjustment_get_upper(hadj) <= allocation.width &&
+           gtk_adjustment_get_upper(vadj) <= allocation.height;
 }
 
 /**
@@ -317,10 +314,9 @@ uni_scroll_win_image_fits (UniScrollWin * window)
  * Show or hide the scrollbar.
  * The scrollbar will only be shown if the image doesn't fit in the window.
  **/
-void
-uni_scroll_win_set_show_scrollbar (UniScrollWin * window, gboolean show)
+void uni_scroll_win_set_show_scrollbar(UniScrollWin *window, gboolean show)
 {
     window->show_scrollbar = show;
-    uni_scroll_win_show_scrollbar (window,
-        window->show_scrollbar && !uni_scroll_win_image_fits (window));
+    uni_scroll_win_show_scrollbar(window,
+                                  window->show_scrollbar && !uni_scroll_win_image_fits(window));
 }

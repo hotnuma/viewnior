@@ -26,32 +26,33 @@
 #include <gdk/gdk.h>
 #include "vnr-prefs.h"
 
-#define CHECK_SIZE  8
+#define CHECK_SIZE 8
 #define CHECK_LIGHT 0x00cccccc
-#define CHECK_DARK  0x00808080
+#define CHECK_DARK 0x00808080
 
-typedef struct {
+typedef struct
+{
     int width;
     int height;
 } Size;
 
-void    uni_pixbuf_scale_blend          (GdkPixbuf * src,
-                                         GdkPixbuf * dst,
-                                         int dst_x,
-                                         int dst_y,
-                                         int dst_width,
-                                         int dst_height,
-                                         gdouble offset_x,
-                                         gdouble offset_y,
-                                         gdouble zoom,
-                                         GdkInterpType interp, int check_x, int check_y);
+void uni_pixbuf_scale_blend(GdkPixbuf *src,
+                            GdkPixbuf *dst,
+                            int dst_x,
+                            int dst_y,
+                            int dst_width,
+                            int dst_height,
+                            gdouble offset_x,
+                            gdouble offset_y,
+                            gdouble zoom,
+                            GdkInterpType interp, int check_x, int check_y);
 
-void    uni_draw_rect                   (cairo_t *cr, gboolean filled, GdkRectangle * rect);
+void uni_draw_rect(cairo_t *cr, gboolean filled, GdkRectangle *rect);
 
-void    uni_rectangle_get_rects_around  (GdkRectangle * outer,
-                                         GdkRectangle * inner,
-                                         GdkRectangle around[4]);
+void uni_rectangle_get_rects_around(GdkRectangle *outer,
+                                    GdkRectangle *inner,
+                                    GdkRectangle around[4]);
 
-VnrPrefsDesktop uni_detect_desktop_environment ();
+VnrPrefsDesktop uni_detect_desktop_environment();
 
 #endif /* __UNI_UTILS_H__ */

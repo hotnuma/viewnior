@@ -33,17 +33,18 @@
 #include "uni-nav.h"
 
 G_BEGIN_DECLS
-#define UNI_TYPE_SCROLL_WIN                 (uni_scroll_win_get_type ())
-#define UNI_SCROLL_WIN(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), UNI_TYPE_SCROLL_WIN, UniScrollWin))
-#define UNI_SCROLL_WIN_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), UNI_TYPE_SCROLL_WIN, UniScrollWinClass))
-#define UNI_IS_SCROLL_WIN(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), UNI_TYPE_SCROLL_WIN))
-#define UNI_IS_SCROLL_WIN_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), UNI_TYPE_SCROLL_WIN))
-#define UNI_SCROLL_WIN_GET_CLASS(obj)       (G_TYPE_CHECK_INSTANCE_GET_CLASS ((obj), UNI_TYPE_SCROLL_WIN, UniScrollWinClass))
+#define UNI_TYPE_SCROLL_WIN (uni_scroll_win_get_type())
+#define UNI_SCROLL_WIN(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), UNI_TYPE_SCROLL_WIN, UniScrollWin))
+#define UNI_SCROLL_WIN_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), UNI_TYPE_SCROLL_WIN, UniScrollWinClass))
+#define UNI_IS_SCROLL_WIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), UNI_TYPE_SCROLL_WIN))
+#define UNI_IS_SCROLL_WIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), UNI_TYPE_SCROLL_WIN))
+#define UNI_SCROLL_WIN_GET_CLASS(obj) (G_TYPE_CHECK_INSTANCE_GET_CLASS((obj), UNI_TYPE_SCROLL_WIN, UniScrollWinClass))
 
 typedef struct _UniScrollWin UniScrollWin;
 typedef struct _UniScrollWinClass UniScrollWinClass;
 
-struct _UniScrollWin {
+struct _UniScrollWin
+{
     GtkTable parent;
 
     GtkWidget *hscroll;
@@ -60,17 +61,18 @@ struct _UniScrollWin {
     gboolean show_scrollbar;
 };
 
-struct _UniScrollWinClass {
+struct _UniScrollWinClass
+{
     GtkTableClass parent_class;
 };
 
-GType       uni_scroll_win_get_type (void) G_GNUC_CONST;
+GType uni_scroll_win_get_type(void) G_GNUC_CONST;
 
 /* Constructors */
-GtkWidget*   uni_scroll_win_new     (UniImageView * view);
+GtkWidget *uni_scroll_win_new(UniImageView *view);
 
-gboolean uni_scroll_win_image_fits         (UniScrollWin * window);
-void     uni_scroll_win_set_show_scrollbar (UniScrollWin * window, gboolean show);
+gboolean uni_scroll_win_image_fits(UniScrollWin *window);
+void uni_scroll_win_set_show_scrollbar(UniScrollWin *window, gboolean show);
 
 G_END_DECLS
 #endif /* __UNI_SCROLL_WIN_H__ */

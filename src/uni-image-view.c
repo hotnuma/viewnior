@@ -36,18 +36,19 @@
 
 #define g_signal_handlers_disconnect_by_data(instance, data) \
     g_signal_handlers_disconnect_matched ((instance), G_SIGNAL_MATCH_DATA, \
-                                          0, 0, NULL, NULL, (data))
+                                         0, 0, NULL, NULL, (data))
 #define g_signal_handlers_block_by_data(instance, data) \
     g_signal_handlers_block_matched ((instance), G_SIGNAL_MATCH_DATA, \
-                                     0, 0, NULL, NULL, (data))
+                                    0, 0, NULL, NULL, (data))
 #define g_signal_handlers_unblock_by_data(instance, data) \
     g_signal_handlers_unblock_matched ((instance), G_SIGNAL_MATCH_DATA, \
-                                       0, 0, NULL, NULL, (data))
+                                      0, 0, NULL, NULL, (data))
 
 /*************************************************************/
 /***** Private data ******************************************/
 /*************************************************************/
-enum {
+enum
+{
     SET_ZOOM,
     ZOOM_IN,
     ZOOM_OUT,
@@ -58,7 +59,8 @@ enum {
     LAST_SIGNAL
 };
 
-enum {
+enum
+{
     P_0,
     P_HADJUSTMENT,
     P_VADJUSTMENT,
@@ -68,97 +70,96 @@ enum {
 
 struct _UniImageViewPrivate
 {
-  /* Properties */
-  GtkAdjustment *hadjustment;
-  GtkAdjustment *vadjustment;
+    /* Properties */
+    GtkAdjustment *hadjustment;
+    GtkAdjustment *vadjustment;
 
-  /* GtkScrollablePolicy needs to be checked when
-   * driving the scrollable adjustment values */
-  GtkScrollablePolicy hscroll_policy : 1;
-  GtkScrollablePolicy vscroll_policy : 1;
+    /* GtkScrollablePolicy needs to be checked when
+     * driving the scrollable adjustment values */
+    GtkScrollablePolicy hscroll_policy : 1;
+    GtkScrollablePolicy vscroll_policy : 1;
 };
 
-static guint uni_image_view_signals[LAST_SIGNAL] = { 0 };
+static guint uni_image_view_signals[LAST_SIGNAL] = {0};
 
-G_DEFINE_TYPE_WITH_CODE (UniImageView, uni_image_view, GTK_TYPE_WIDGET, G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL));
+G_DEFINE_TYPE_WITH_CODE(UniImageView, uni_image_view, GTK_TYPE_WIDGET, G_IMPLEMENT_INTERFACE(GTK_TYPE_SCROLLABLE, NULL));
 
 /*************************************************************/
 /***** Static stuff ******************************************/
 /*************************************************************/
 
 static Size
-uni_image_view_get_pixbuf_size (UniImageView * view)
+uni_image_view_get_pixbuf_size(UniImageView *view)
 {
-    Size s = { 0, 0 };
+    Size s = {0, 0};
     if (!view->pixbuf)
         return s;
 
-    s.width = gdk_pixbuf_get_width (view->pixbuf);
-    s.height = gdk_pixbuf_get_height (view->pixbuf);
+    s.width = gdk_pixbuf_get_width(view->pixbuf);
+    s.height = gdk_pixbuf_get_height(view->pixbuf);
     return s;
 }
 
 static Size
-uni_image_view_get_allocated_size (UniImageView * view)
+uni_image_view_get_allocated_size(UniImageView *view)
 {
     GtkAllocation allocation;
-    gtk_widget_get_allocation (GTK_WIDGET (view), &allocation);
+    gtk_widget_get_allocation(GTK_WIDGET(view), &allocation);
     Size size = {
         .width = allocation.width,
-        .height = allocation.height
-    };
+        .height = allocation.height};
     return size;
 }
 
 static Size
-uni_image_view_get_zoomed_size (UniImageView * view)
+uni_image_view_get_zoomed_size(UniImageView *view)
 {
-    Size size = uni_image_view_get_pixbuf_size (view);
-    size.width = (int) (size.width * view->zoom + 0.5);
-    size.height = (int) (size.height * view->zoom + 0.5);
+    Size size = uni_image_view_get_pixbuf_size(view);
+    size.width = (int)(size.width * view->zoom + 0.5);
+    size.height = (int)(size.height * view->zoom + 0.5);
     return size;
 }
 
 static void
-uni_image_view_clamp_offset (UniImageView * view, gdouble * x, gdouble * y)
+uni_image_view_clamp_offset(UniImageView *view, gdouble *x, gdouble *y)
 {
-    Size alloc = uni_image_view_get_allocated_size (view);
-    Size zoomed = uni_image_view_get_zoomed_size (view);
+    Size alloc = uni_image_view_get_allocated_size(view);
+    Size zoomed = uni_image_view_get_zoomed_size(view);
 
-    *x = MIN (*x, zoomed.width - alloc.width);
-    *y = MIN (*y, zoomed.height - alloc.height);
-    *x = MAX (*x, 0);
-    *y = MAX (*y, 0);
+    *x = MIN(*x, zoomed.width - alloc.width);
+    *y = MIN(*y, zoomed.height - alloc.height);
+    *x = MAX(*x, 0);
+    *y = MAX(*y, 0);
 }
 
 static void
-uni_image_view_update_adjustments (UniImageView * view)
+uni_image_view_update_adjustments(UniImageView *view)
 {
-    Size zoomed = uni_image_view_get_zoomed_size (view);
-    Size alloc = uni_image_view_get_allocated_size (view);
+    Size zoomed = uni_image_view_get_zoomed_size(view);
+    Size alloc = uni_image_view_get_allocated_size(view);
 
-    gtk_adjustment_configure (view->priv->hadjustment,
-                              view->offset_x,
-                              0.0,
-                              zoomed.width,
-                              20.0,
-                              alloc.width / 2,
-                              alloc.width);
+    gtk_adjustment_configure(view->priv->hadjustment,
+                             view->offset_x,
+                             0.0,
+                             zoomed.width,
+                             20.0,
+                             alloc.width / 2,
+                             alloc.width);
 
-    gtk_adjustment_configure (view->priv->vadjustment,
-                              view->offset_y,
-                              0.0,
-                              zoomed.height,
-                              20.0,
-                              alloc.height / 2,
-                              alloc.height);
+    gtk_adjustment_configure(view->priv->vadjustment,
+                             view->offset_y,
+                             0.0,
+                             zoomed.height,
+                             20.0,
+                             alloc.height / 2,
+                             alloc.height);
 
-    g_signal_handlers_block_by_data (G_OBJECT (view->priv->hadjustment), view);
-    g_signal_handlers_block_by_data (G_OBJECT (view->priv->vadjustment), view);
-    gtk_adjustment_changed (view->priv->hadjustment);
-    gtk_adjustment_changed (view->priv->vadjustment);
-    g_signal_handlers_unblock_by_data (G_OBJECT (view->priv->hadjustment), view);
-    g_signal_handlers_unblock_by_data (G_OBJECT (view->priv->vadjustment), view);
+    g_signal_handlers_block_by_data(G_OBJECT(view->priv->hadjustment), view);
+    g_signal_handlers_block_by_data(G_OBJECT(view->priv->vadjustment), view);
+    gtk_adjustment_changed(view->priv->hadjustment);
+    gtk_adjustment_changed(view->priv->vadjustment);
+    g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->hadjustment), view);
+    g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->vadjustment), view);
 }
 
 /**
@@ -166,99 +167,99 @@ uni_image_view_update_adjustments (UniImageView * view)
  * uni_image_view_set_zoom ().
  **/
 static void
-uni_image_view_set_zoom_with_center (UniImageView * view,
-                                     gdouble zoom,
-                                     gdouble center_x,
-                                     gdouble center_y, gboolean is_allocating)
+uni_image_view_set_zoom_with_center(UniImageView *view,
+                                    gdouble zoom,
+                                    gdouble center_x,
+                                    gdouble center_y, gboolean is_allocating)
 {
     gdouble zoom_ratio = zoom / view->zoom;
 
-    Size zoomed = uni_image_view_get_zoomed_size (view);
-    Size alloc = uni_image_view_get_allocated_size (view);
+    Size zoomed = uni_image_view_get_zoomed_size(view);
+    Size alloc = uni_image_view_get_allocated_size(view);
     gint x, y;
 
     x = alloc.width - zoomed.width;
     y = alloc.height - zoomed.height;
-    x = (x<0)?0:x;
-    y = (y<0)?0:y;
+    x = (x < 0) ? 0 : x;
+    y = (y < 0) ? 0 : y;
 
     gdouble offset_x, offset_y;
-    offset_x = (view->offset_x + center_x -x/2) * zoom_ratio - center_x;
-    offset_y = (view->offset_y + center_y -y/2) * zoom_ratio - center_y;
+    offset_x = (view->offset_x + center_x - x / 2) * zoom_ratio - center_x;
+    offset_y = (view->offset_y + center_y - y / 2) * zoom_ratio - center_y;
     view->zoom = zoom;
 
-    uni_image_view_clamp_offset (view, &offset_x, &offset_y);
+    uni_image_view_clamp_offset(view, &offset_x, &offset_y);
     view->offset_x = offset_x;
     view->offset_y = offset_y;
 
     if (!is_allocating && zoom_ratio != 1.0)
     {
         view->fitting = UNI_FITTING_NONE;
-        uni_image_view_update_adjustments (view);
-        gtk_widget_queue_draw (GTK_WIDGET (view));
+        uni_image_view_update_adjustments(view);
+        gtk_widget_queue_draw(GTK_WIDGET(view));
     }
 
-    g_signal_emit (G_OBJECT (view),
-                   uni_image_view_signals[ZOOM_CHANGED], 0);
+    g_signal_emit(G_OBJECT(view),
+                  uni_image_view_signals[ZOOM_CHANGED], 0);
 }
 
 static void
-uni_image_view_set_zoom_no_center (UniImageView * view,
-                                   gdouble zoom, gboolean is_allocating)
+uni_image_view_set_zoom_no_center(UniImageView *view,
+                                  gdouble zoom, gboolean is_allocating)
 {
-    Size alloc = uni_image_view_get_allocated_size (view);
+    Size alloc = uni_image_view_get_allocated_size(view);
     gdouble center_x = alloc.width / 2.0;
     gdouble center_y = alloc.height / 2.0;
-    uni_image_view_set_zoom_with_center (view, zoom,
-                                         center_x, center_y, is_allocating);
+    uni_image_view_set_zoom_with_center(view, zoom,
+                                        center_x, center_y, is_allocating);
 }
 
 static void
-uni_image_view_zoom_to_fit (UniImageView * view, gboolean is_allocating)
+uni_image_view_zoom_to_fit(UniImageView *view, gboolean is_allocating)
 {
-    Size img = uni_image_view_get_pixbuf_size (view);
+    Size img = uni_image_view_get_pixbuf_size(view);
     GtkAllocation alloc;
-    VnrWindow *vnr_win = VNR_WINDOW(gtk_widget_get_toplevel (GTK_WIDGET (view)));
-    gtk_widget_get_allocation (GTK_WIDGET (vnr_win->scroll_view), &alloc);
+    VnrWindow *vnr_win = VNR_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+    gtk_widget_get_allocation(GTK_WIDGET(vnr_win->scroll_view), &alloc);
 
-    gdouble ratio_x = (gdouble) alloc.width / img.width;
-    gdouble ratio_y = (gdouble) alloc.height / img.height;
+    gdouble ratio_x = (gdouble)alloc.width / img.width;
+    gdouble ratio_y = (gdouble)alloc.height / img.height;
 
-    gdouble zoom = MIN (ratio_y, ratio_x);
+    gdouble zoom = MIN(ratio_y, ratio_x);
 
     if (view->fitting == UNI_FITTING_NORMAL)
-        zoom = CLAMP (zoom, UNI_ZOOM_MIN, 1.0);
+        zoom = CLAMP(zoom, UNI_ZOOM_MIN, 1.0);
     else if (view->fitting == UNI_FITTING_FULL)
-        zoom = CLAMP (zoom, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+        zoom = CLAMP(zoom, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
 
-    uni_image_view_set_zoom_no_center (view, zoom, is_allocating);
+    uni_image_view_set_zoom_no_center(view, zoom, is_allocating);
 }
 
 static void
-uni_image_view_draw_background (UniImageView * view,
-                                GdkRectangle * image_area, Size alloc, cairo_t *cr)
+uni_image_view_draw_background(UniImageView *view,
+                               GdkRectangle *image_area, Size alloc, cairo_t *cr)
 {
-    GtkWidget *widget = GTK_WIDGET (view);
+    GtkWidget *widget = GTK_WIDGET(view);
     int n;
     GdkRGBA rgba;
 
-    cairo_save (cr);
-    GtkStyleContext *context = gtk_widget_get_style_context (widget);
-    GtkStateFlags state = gtk_widget_get_state_flags (widget);
-    gtk_style_context_get_background_color (context, state, &rgba);
-    gdk_cairo_set_source_rgba (cr, &rgba);
+    cairo_save(cr);
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+    GtkStateFlags state = gtk_widget_get_state_flags(widget);
+    gtk_style_context_get_background_color(context, state, &rgba);
+    gdk_cairo_set_source_rgba(cr, &rgba);
 
     GdkRectangle borders[4];
-    GdkRectangle outer = { 0, 0, alloc.width, alloc.height };
-    uni_rectangle_get_rects_around (&outer, image_area, borders);
+    GdkRectangle outer = {0, 0, alloc.width, alloc.height};
+    uni_rectangle_get_rects_around(&outer, image_area, borders);
     for (n = 0; n < 4; n++)
     {
         // Not sure why incrementing the size is necessary.
         borders[n].width++;
         borders[n].height++;
-        uni_draw_rect (cr, TRUE, &borders[n]);
+        uni_draw_rect(cr, TRUE, &borders[n]);
     }
-    cairo_restore (cr);
+    cairo_restore(cr);
 }
 
 /**
@@ -268,7 +269,7 @@ uni_image_view_draw_background (UniImageView * view,
  * Redraws the porition of the widget defined by @paint_rect.
  **/
 static int
-uni_image_view_repaint_area (UniImageView * view, GdkRectangle * paint_rect, cairo_t *cr)
+uni_image_view_repaint_area(UniImageView *view, GdkRectangle *paint_rect, cairo_t *cr)
 {
     if (view->is_rendering)
         return FALSE;
@@ -281,39 +282,40 @@ uni_image_view_repaint_area (UniImageView * view, GdkRectangle * paint_rect, cai
 
     // Image area is the area on the widget occupied by the pixbuf.
     GdkRectangle image_area = {0, 0, 0, 0};
-    Size alloc = uni_image_view_get_allocated_size (view);
-    uni_image_view_get_draw_rect (view, &image_area);
+    Size alloc = uni_image_view_get_allocated_size(view);
+    uni_image_view_get_draw_rect(view, &image_area);
     if (image_area.x > 0 ||
         image_area.y > 0 ||
         image_area.width < alloc.width || image_area.height < alloc.height)
     {
-        uni_image_view_draw_background (view, &image_area, alloc, cr);
+        uni_image_view_draw_background(view, &image_area, alloc, cr);
     }
 
     // Paint area is the area on the widget that should be redrawn.
     GdkRectangle paint_area = {0, 0, 0, 0};
-    gboolean intersects = gdk_rectangle_intersect (&image_area,
-                                                   paint_rect,
-                                                   &paint_area);
+    gboolean intersects = gdk_rectangle_intersect(&image_area,
+                                                  paint_rect,
+                                                  &paint_area);
     if (intersects && view->pixbuf)
     {
         int src_x =
-            (int) ((view->offset_x + (gdouble) paint_area.x -
-                    (gdouble) image_area.x) + 0.5);
+            (int)((view->offset_x + (gdouble)paint_area.x -
+                   (gdouble)image_area.x) +
+                  0.5);
         int src_y =
-            (int) ((view->offset_y + (gdouble) paint_area.y -
-                    (gdouble) image_area.y) + 0.5);
+            (int)((view->offset_y + (gdouble)paint_area.y -
+                   (gdouble)image_area.y) +
+                  0.5);
 
         UniPixbufDrawOpts opts = {
             view->zoom,
-            (GdkRectangle) {src_x, src_y,
-                            paint_area.width, paint_area.height},
+            (GdkRectangle){src_x, src_y,
+                           paint_area.width, paint_area.height},
             paint_area.x, paint_area.y,
             view->interp,
-            view->pixbuf
-        };
-        uni_dragger_paint_image (UNI_DRAGGER(view->tool), &opts,
-                                 cr);
+            view->pixbuf};
+        uni_dragger_paint_image(UNI_DRAGGER(view->tool), &opts,
+                                cr);
     }
 
     view->is_rendering = FALSE;
@@ -328,7 +330,7 @@ uni_image_view_repaint_area (UniImageView * view, GdkRectangle * paint_rect, cai
  * function.
  **/
 static void
-uni_image_view_fast_scroll (UniImageView * view, int delta_x, int delta_y)
+uni_image_view_fast_scroll(UniImageView *view, int delta_x, int delta_y)
 {
     int src_x, src_y;
     int dest_x, dest_y;
@@ -353,33 +355,31 @@ uni_image_view_fast_scroll (UniImageView * view, int delta_x, int delta_y)
         dest_y = 0;
     }
 
-    Size alloc = uni_image_view_get_allocated_size (view);
-    GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (view));
-    cairo_t *cr = gdk_cairo_create (window);
-    GdkPixbuf *win = gdk_pixbuf_get_from_window (window, src_x, src_y, alloc.width - abs (delta_x), alloc.height - abs (delta_y));
-    gdk_cairo_set_source_pixbuf (cr, win, dest_x, dest_y);
-    cairo_paint (cr);
-    g_object_unref (win);
+    Size alloc = uni_image_view_get_allocated_size(view);
+    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(view));
+    cairo_t *cr = gdk_cairo_create(window);
+    GdkPixbuf *win = gdk_pixbuf_get_from_window(window, src_x, src_y, alloc.width - abs(delta_x), alloc.height - abs(delta_y));
+    gdk_cairo_set_source_pixbuf(cr, win, dest_x, dest_y);
+    cairo_paint(cr);
+    g_object_unref(win);
 
     /* If we moved in both the x and y directions, two "strips" of the
        image becomes visible. One horizontal strip and one vertical
        strip. */
     GdkRectangle horiz_strip = {
         0,
-        (delta_y < 0) ? 0 : alloc.height - abs (delta_y),
+        (delta_y < 0) ? 0 : alloc.height - abs(delta_y),
         alloc.width,
-        abs (delta_y)
-    };
-    uni_image_view_repaint_area (view, &horiz_strip, cr);
+        abs(delta_y)};
+    uni_image_view_repaint_area(view, &horiz_strip, cr);
 
     GdkRectangle vert_strip = {
-        (delta_x < 0) ? 0 : alloc.width - abs (delta_x),
+        (delta_x < 0) ? 0 : alloc.width - abs(delta_x),
         0,
-        abs (delta_x),
-        alloc.height
-    };
-    uni_image_view_repaint_area (view, &vert_strip, cr);
-    cairo_destroy (cr);
+        abs(delta_x),
+        alloc.height};
+    uni_image_view_repaint_area(view, &vert_strip, cr);
+    cairo_destroy(cr);
 }
 
 /**
@@ -396,20 +396,20 @@ uni_image_view_fast_scroll (UniImageView * view, int delta_x, int delta_y)
  * to display image data.
  **/
 static void
-uni_image_view_scroll_to (UniImageView * view,
-                          gdouble offset_x,
-                          gdouble offset_y,
-                          gboolean set_adjustments, gboolean invalidate)
+uni_image_view_scroll_to(UniImageView *view,
+                         gdouble offset_x,
+                         gdouble offset_y,
+                         gboolean set_adjustments, gboolean invalidate)
 {
     GdkWindow *window;
     int delta_x, delta_y;
 
-    uni_image_view_clamp_offset (view, &offset_x, &offset_y);
+    uni_image_view_clamp_offset(view, &offset_x, &offset_y);
 
     /* Round avoids floating point to integer conversion errors. See
      */
-    delta_x = floor (offset_x - view->offset_x + 0.5);
-    delta_y = floor (offset_y - view->offset_y + 0.5);
+    delta_x = floor(offset_x - view->offset_x + 0.5);
+    delta_y = floor(offset_y - view->offset_y + 0.5);
 
     /* Exit early if the scroll was smaller than one (zoom space)
        pixel. */
@@ -419,37 +419,37 @@ uni_image_view_scroll_to (UniImageView * view,
     view->offset_x = offset_x;
     view->offset_y = offset_y;
 
-    window = gtk_widget_get_window (GTK_WIDGET (view));
+    window = gtk_widget_get_window(GTK_WIDGET(view));
     if (set_adjustments)
     {
-        g_signal_handlers_block_by_data (G_OBJECT (view->priv->hadjustment), view);
-        g_signal_handlers_block_by_data (G_OBJECT (view->priv->vadjustment), view);
-        gtk_adjustment_set_value (view->priv->hadjustment, view->offset_x);
-        gtk_adjustment_set_value (view->priv->vadjustment, view->offset_y);
-        g_signal_handlers_unblock_by_data (G_OBJECT (view->priv->hadjustment), view);
-        g_signal_handlers_unblock_by_data (G_OBJECT (view->priv->vadjustment), view);
+        g_signal_handlers_block_by_data(G_OBJECT(view->priv->hadjustment), view);
+        g_signal_handlers_block_by_data(G_OBJECT(view->priv->vadjustment), view);
+        gtk_adjustment_set_value(view->priv->hadjustment, view->offset_x);
+        gtk_adjustment_set_value(view->priv->vadjustment, view->offset_y);
+        g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->hadjustment), view);
+        g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->vadjustment), view);
     }
 
     if (window)
     {
         if (invalidate)
-            gdk_window_invalidate_rect (window, NULL, TRUE);
+            gdk_window_invalidate_rect(window, NULL, TRUE);
         else
-            uni_image_view_fast_scroll (view, delta_x, delta_y);
+            uni_image_view_fast_scroll(view, delta_x, delta_y);
     }
 }
 
 static void
-uni_image_view_scroll (UniImageView * view,
-                       GtkScrollType xscroll, GtkScrollType yscroll)
+uni_image_view_scroll(UniImageView *view,
+                      GtkScrollType xscroll, GtkScrollType yscroll)
 {
     GtkAdjustment *hadj = view->priv->hadjustment;
     GtkAdjustment *vadj = view->priv->vadjustment;
 
-    gdouble h_step = gtk_adjustment_get_step_increment (hadj);
-    gdouble v_step = gtk_adjustment_get_step_increment (vadj);
-    gdouble h_page = gtk_adjustment_get_page_increment (hadj);
-    gdouble v_page = gtk_adjustment_get_page_increment (vadj);
+    gdouble h_step = gtk_adjustment_get_step_increment(hadj);
+    gdouble v_step = gtk_adjustment_get_step_increment(vadj);
+    gdouble h_page = gtk_adjustment_get_page_increment(hadj);
+    gdouble v_page = gtk_adjustment_get_page_increment(vadj);
 
     int xstep = 0;
     if (xscroll == GTK_SCROLL_STEP_LEFT)
@@ -470,23 +470,23 @@ uni_image_view_scroll (UniImageView * view,
         ystep = -v_page;
     else if (yscroll == GTK_SCROLL_PAGE_DOWN)
         ystep = v_page;
-    
-    uni_image_view_scroll_to (view,
-                              view->offset_x + xstep,
-                              view->offset_y + ystep, TRUE, FALSE);
+
+    uni_image_view_scroll_to(view,
+                             view->offset_x + xstep,
+                             view->offset_y + ystep, TRUE, FALSE);
 }
 
 /*************************************************************/
 /***** Private signal handlers *******************************/
 /*************************************************************/
 static void
-uni_image_view_realize (GtkWidget * widget)
+uni_image_view_realize(GtkWidget *widget)
 {
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
-    gtk_widget_set_realized (widget, TRUE);
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
+    gtk_widget_set_realized(widget, TRUE);
 
     GtkAllocation allocation;
-    gtk_widget_get_allocation (widget, &allocation);
+    gtk_widget_get_allocation(widget, &allocation);
 
     GdkWindowAttr attrs;
     attrs.window_type = GDK_WINDOW_CHILD;
@@ -495,92 +495,87 @@ uni_image_view_realize (GtkWidget * widget)
     attrs.width = allocation.width;
     attrs.height = allocation.height;
     attrs.wclass = GDK_INPUT_OUTPUT;
-    attrs.visual = gtk_widget_get_visual (widget);
-    attrs.event_mask = (gtk_widget_get_events (widget)
-                        | GDK_SCROLL_MASK
-                        | GDK_EXPOSURE_MASK
-                        | GDK_BUTTON_MOTION_MASK
-                        | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
+    attrs.visual = gtk_widget_get_visual(widget);
+    attrs.event_mask = (gtk_widget_get_events(widget) | GDK_SCROLL_MASK | GDK_EXPOSURE_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
 
     int attr_mask = (GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL);
-    GdkWindow *parent = gtk_widget_get_parent_window (widget);
+    GdkWindow *parent = gtk_widget_get_parent_window(widget);
 
-    GdkWindow *window = gdk_window_new (parent, &attrs, attr_mask);
-    gtk_widget_set_window (widget, window);
-    gdk_window_set_user_data (window, view);
+    GdkWindow *window = gdk_window_new(parent, &attrs, attr_mask);
+    gtk_widget_set_window(widget, window);
+    gdk_window_set_user_data(window, view);
 
-    GtkStyleContext *context = gtk_widget_get_style_context (widget);
-    gtk_style_context_set_background (context, window);
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+    gtk_style_context_set_background(context, window);
 
-    view->void_cursor = gdk_cursor_new (GDK_ARROW);
+    view->void_cursor = gdk_cursor_new(GDK_ARROW);
 }
 
 static void
-uni_image_view_unrealize (GtkWidget * widget)
+uni_image_view_unrealize(GtkWidget *widget)
 {
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
-    gdk_cursor_unref (view->void_cursor);
-    GTK_WIDGET_CLASS (uni_image_view_parent_class)->unrealize (widget);
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
+    gdk_cursor_unref(view->void_cursor);
+    GTK_WIDGET_CLASS(uni_image_view_parent_class)->unrealize(widget);
 }
 
 static void
-uni_image_view_size_allocate (GtkWidget * widget, GtkAllocation * alloc)
+uni_image_view_size_allocate(GtkWidget *widget, GtkAllocation *alloc)
 {
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
-    if (gtk_widget_get_realized (widget))
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
+    if (gtk_widget_get_realized(widget))
     {
-        gtk_widget_set_allocation (widget, alloc);
+        gtk_widget_set_allocation(widget, alloc);
     }
     else
     {
-        GtkWidget *window = VNR_WINDOW (gtk_widget_get_toplevel (widget))->scroll_view;
+        GtkWidget *window = VNR_WINDOW(gtk_widget_get_toplevel(widget))->scroll_view;
         GtkAllocation allocation;
-        gtk_widget_get_allocation (window, &allocation);
-        gtk_widget_set_allocation (widget, &allocation);
+        gtk_widget_get_allocation(window, &allocation);
+        gtk_widget_set_allocation(widget, &allocation);
     }
 
     if (view->pixbuf && view->fitting != UNI_FITTING_NONE)
-        uni_image_view_zoom_to_fit (view, TRUE);
+        uni_image_view_zoom_to_fit(view, TRUE);
 
-    uni_image_view_clamp_offset (view, &view->offset_x, &view->offset_y);
+    uni_image_view_clamp_offset(view, &view->offset_x, &view->offset_y);
 
-    uni_image_view_update_adjustments (view);
+    uni_image_view_update_adjustments(view);
 
-    if (gtk_widget_get_realized (widget))
-        gdk_window_move_resize (gtk_widget_get_window (widget),
-                                alloc->x, alloc->y,
-                                alloc->width, alloc->height);
+    if (gtk_widget_get_realized(widget))
+        gdk_window_move_resize(gtk_widget_get_window(widget),
+                               alloc->x, alloc->y,
+                               alloc->width, alloc->height);
 }
 
 static int
-uni_image_view_expose (GtkWidget * widget, cairo_t *cr)
+uni_image_view_expose(GtkWidget *widget, cairo_t *cr)
 {
     GtkAllocation allocation;
-    gtk_widget_get_allocation (GTK_WIDGET (VNR_WINDOW (gtk_widget_get_toplevel (widget))->scroll_view), &allocation);
+    gtk_widget_get_allocation(GTK_WIDGET(VNR_WINDOW(gtk_widget_get_toplevel(widget))->scroll_view), &allocation);
     allocation.x = 0;
     allocation.y = 0;
-    return uni_image_view_repaint_area (UNI_IMAGE_VIEW (widget), &allocation, cr);
+    return uni_image_view_repaint_area(UNI_IMAGE_VIEW(widget), &allocation, cr);
 }
 
 static int
-uni_image_view_button_press (GtkWidget * widget, GdkEventButton * ev)
+uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
 {
     gtk_widget_grab_focus(widget);
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
     VnrWindow *vnr_win = VNR_WINDOW(gtk_widget_get_toplevel(widget));
     g_assert(gtk_widget_is_toplevel(GTK_WIDGET(vnr_win)));
 
-    if(ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_FULLSCREEN)
+    if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_FULLSCREEN)
     {
         window_toggle_fullscreen(vnr_win);
         return 1;
     }
-    else if(ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_NEXT)
+    else if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_NEXT)
     {
         int width = gdk_window_get_width(gtk_widget_get_window(widget));
 
-        if(ev->x/width < 0.5)
+        if (ev->x / width < 0.5)
             window_prev(vnr_win);
         else
             window_next(vnr_win, TRUE);
@@ -589,30 +584,29 @@ uni_image_view_button_press (GtkWidget * widget, GdkEventButton * ev)
     }
     else if (ev->type == GDK_BUTTON_PRESS && ev->button == 1)
     {
-        return uni_dragger_button_press (UNI_DRAGGER(view->tool), ev);
+        return uni_dragger_button_press(UNI_DRAGGER(view->tool), ev);
     }
     else if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1)
     {
         if (view->fitting == UNI_FITTING_FULL ||
             (view->fitting == UNI_FITTING_NORMAL && view->zoom != 1.0))
-            uni_image_view_set_zoom_with_center (view, 1., ev->x, ev->y,
-                                                 FALSE);
+            uni_image_view_set_zoom_with_center(view, 1., ev->x, ev->y,
+                                                FALSE);
         else
-            uni_image_view_set_fitting (view, UNI_FITTING_FULL);
+            uni_image_view_set_fitting(view, UNI_FITTING_FULL);
         return 1;
     }
-    else if(ev->type == GDK_BUTTON_PRESS && ev->button == 3)
+    else if (ev->type == GDK_BUTTON_PRESS && ev->button == 3)
     {
-        gtk_menu_popup(GTK_MENU(VNR_WINDOW(gtk_widget_get_toplevel (widget))->popup_menu),
-                NULL, NULL, NULL, NULL, ev->button,
-                gtk_get_current_event_time());
-
+        gtk_menu_popup(GTK_MENU(VNR_WINDOW(gtk_widget_get_toplevel(widget))->popup_menu),
+                       NULL, NULL, NULL, NULL, ev->button,
+                       gtk_get_current_event_time());
     }
-    else if(ev->type == GDK_BUTTON_PRESS && ev->button == 8)
+    else if (ev->type == GDK_BUTTON_PRESS && ev->button == 8)
     {
         window_prev(vnr_win);
     }
-    else if(ev->type == GDK_BUTTON_PRESS && ev->button == 9)
+    else if (ev->type == GDK_BUTTON_PRESS && ev->button == 9)
     {
         window_next(vnr_win, TRUE);
     }
@@ -620,183 +614,187 @@ uni_image_view_button_press (GtkWidget * widget, GdkEventButton * ev)
 }
 
 static int
-uni_image_view_button_release (GtkWidget * widget, GdkEventButton * ev)
+uni_image_view_button_release(GtkWidget *widget, GdkEventButton *ev)
 {
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
-    return uni_dragger_button_release (UNI_DRAGGER(view->tool), ev);
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
+    return uni_dragger_button_release(UNI_DRAGGER(view->tool), ev);
 }
 
 static int
-uni_image_view_motion_notify (GtkWidget * widget, GdkEventMotion * ev)
+uni_image_view_motion_notify(GtkWidget *widget, GdkEventMotion *ev)
 {
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
     if (view->is_rendering)
         return FALSE;
-    return uni_dragger_motion_notify (UNI_DRAGGER(view->tool), ev);
+    return uni_dragger_motion_notify(UNI_DRAGGER(view->tool), ev);
 }
 
 static gboolean
-uni_image_view_hadj_changed_cb (GtkAdjustment * adj, UniImageView * view)
+uni_image_view_hadj_changed_cb(GtkAdjustment *adj, UniImageView *view)
 {
     int offset_x;
-    offset_x = gtk_adjustment_get_value (adj);
-    uni_image_view_scroll_to (view, offset_x, view->offset_y, FALSE, FALSE);
+    offset_x = gtk_adjustment_get_value(adj);
+    uni_image_view_scroll_to(view, offset_x, view->offset_y, FALSE, FALSE);
     return FALSE;
 }
 
 static gboolean
-uni_image_view_vadj_changed_cb (GtkAdjustment * adj, UniImageView * view)
+uni_image_view_vadj_changed_cb(GtkAdjustment *adj, UniImageView *view)
 {
     int offset_y;
-    offset_y = gtk_adjustment_get_value (adj);
-    uni_image_view_scroll_to (view, view->offset_x, offset_y, FALSE, FALSE);
+    offset_y = gtk_adjustment_get_value(adj);
+    uni_image_view_scroll_to(view, view->offset_x, offset_y, FALSE, FALSE);
     return FALSE;
 }
 
 static int
-uni_image_view_scroll_event (GtkWidget * widget, GdkEventScroll * ev)
+uni_image_view_scroll_event(GtkWidget *widget, GdkEventScroll *ev)
 {
     gdouble zoom;
-    UniImageView *view = UNI_IMAGE_VIEW (widget);
+    UniImageView *view = UNI_IMAGE_VIEW(widget);
     VnrWindow *vnr_win = VNR_WINDOW(gtk_widget_get_toplevel(widget));
     g_assert(gtk_widget_is_toplevel(GTK_WIDGET(vnr_win)));
 
     /* Horizontal scroll left is equivalent to scroll up and right is
      * like scroll down. No idea if that is correct -- I have no input
      * device that can do horizontal scrolls. */
-    
-	if (vnr_win->prefs->behavior_wheel == VNR_PREFS_WHEEL_ZOOM || (ev->state & GDK_CONTROL_MASK) != 0)
-	{
+
+    if (vnr_win->prefs->behavior_wheel == VNR_PREFS_WHEEL_ZOOM || (ev->state & GDK_CONTROL_MASK) != 0)
+    {
         switch (ev->direction)
         {
-            case GDK_SCROLL_LEFT: 
-                // In Zoom mode left/right scroll is used for navigation
-                window_prev(vnr_win); 
-                break;
-            case GDK_SCROLL_RIGHT: 
-                window_next(vnr_win, TRUE); 
-                break;
-            case GDK_SCROLL_UP:
-                if( ev->state & GDK_SHIFT_MASK ) {
-                    window_prev(vnr_win);
-                } else {
-                    zoom = CLAMP (view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-                    uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
-                }
-                break;
-            default:
-                if( ev->state & GDK_SHIFT_MASK ) {
-                    window_next(vnr_win, TRUE);
-                } else {
-                    zoom = CLAMP (view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-                    uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
-                }
+        case GDK_SCROLL_LEFT:
+            // In Zoom mode left/right scroll is used for navigation
+            window_prev(vnr_win);
+            break;
+        case GDK_SCROLL_RIGHT:
+            window_next(vnr_win, TRUE);
+            break;
+        case GDK_SCROLL_UP:
+            if (ev->state & GDK_SHIFT_MASK)
+            {
+                window_prev(vnr_win);
+            }
+            else
+            {
+                zoom = CLAMP(view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+                uni_image_view_set_zoom_with_center(view, zoom, ev->x, ev->y, FALSE);
+            }
+            break;
+        default:
+            if (ev->state & GDK_SHIFT_MASK)
+            {
+                window_next(vnr_win, TRUE);
+            }
+            else
+            {
+                zoom = CLAMP(view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+                uni_image_view_set_zoom_with_center(view, zoom, ev->x, ev->y, FALSE);
+            }
         }
-
-	}
-	else if(vnr_win->prefs->behavior_wheel == VNR_PREFS_WHEEL_NAVIGATE)
-	{
+    }
+    else if (vnr_win->prefs->behavior_wheel == VNR_PREFS_WHEEL_NAVIGATE)
+    {
         switch (ev->direction)
         {
-            case GDK_SCROLL_LEFT:
-                zoom = CLAMP (view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-                uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
-                break;
+        case GDK_SCROLL_LEFT:
+            zoom = CLAMP(view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+            uni_image_view_set_zoom_with_center(view, zoom, ev->x, ev->y, FALSE);
+            break;
 
-            case GDK_SCROLL_RIGHT:
-                zoom = CLAMP (view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-                uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
-                break;
+        case GDK_SCROLL_RIGHT:
+            zoom = CLAMP(view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+            uni_image_view_set_zoom_with_center(view, zoom, ev->x, ev->y, FALSE);
+            break;
 
-            case GDK_SCROLL_UP:
-                if( ev->state & GDK_SHIFT_MASK )
-                {
-                    zoom = CLAMP (view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-                    uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
-                }
-                else
-                    window_prev(vnr_win);
+        case GDK_SCROLL_UP:
+            if (ev->state & GDK_SHIFT_MASK)
+            {
+                zoom = CLAMP(view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+                uni_image_view_set_zoom_with_center(view, zoom, ev->x, ev->y, FALSE);
+            }
+            else
+                window_prev(vnr_win);
 
-                break;
+            break;
 
-            default:
-                if( ev->state & GDK_SHIFT_MASK )
-                {
-                    zoom = CLAMP (view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-                    uni_image_view_set_zoom_with_center (view, zoom, ev->x, ev->y, FALSE);
-                }
-                else
-                    window_next(vnr_win, TRUE);
+        default:
+            if (ev->state & GDK_SHIFT_MASK)
+            {
+                zoom = CLAMP(view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+                uni_image_view_set_zoom_with_center(view, zoom, ev->x, ev->y, FALSE);
+            }
+            else
+                window_next(vnr_win, TRUE);
         }
-	}
-	else
-	{
-		switch (ev->direction) 
-		{
-			case GDK_SCROLL_LEFT: 
-                uni_image_view_scroll (view, GTK_SCROLL_PAGE_LEFT, GTK_SCROLL_NONE); 
-                break;
-			case GDK_SCROLL_RIGHT: 
-                uni_image_view_scroll (view, GTK_SCROLL_PAGE_RIGHT, GTK_SCROLL_NONE);
-                break;
-            case GDK_SCROLL_UP:
-                if( ev->state & GDK_SHIFT_MASK )
-                    uni_image_view_scroll (view, GTK_SCROLL_PAGE_LEFT, GTK_SCROLL_NONE);
-                else
-                    uni_image_view_scroll (view, GTK_SCROLL_NONE, GTK_SCROLL_PAGE_UP);
-                break;
-            default:
-                if( ev->state & GDK_SHIFT_MASK )
-                    uni_image_view_scroll (view, GTK_SCROLL_PAGE_RIGHT, GTK_SCROLL_NONE);
-                else
-                    uni_image_view_scroll (view, GTK_SCROLL_NONE, GTK_SCROLL_PAGE_DOWN);
-		}
-	}
+    }
+    else
+    {
+        switch (ev->direction)
+        {
+        case GDK_SCROLL_LEFT:
+            uni_image_view_scroll(view, GTK_SCROLL_PAGE_LEFT, GTK_SCROLL_NONE);
+            break;
+        case GDK_SCROLL_RIGHT:
+            uni_image_view_scroll(view, GTK_SCROLL_PAGE_RIGHT, GTK_SCROLL_NONE);
+            break;
+        case GDK_SCROLL_UP:
+            if (ev->state & GDK_SHIFT_MASK)
+                uni_image_view_scroll(view, GTK_SCROLL_PAGE_LEFT, GTK_SCROLL_NONE);
+            else
+                uni_image_view_scroll(view, GTK_SCROLL_NONE, GTK_SCROLL_PAGE_UP);
+            break;
+        default:
+            if (ev->state & GDK_SHIFT_MASK)
+                uni_image_view_scroll(view, GTK_SCROLL_PAGE_RIGHT, GTK_SCROLL_NONE);
+            else
+                uni_image_view_scroll(view, GTK_SCROLL_NONE, GTK_SCROLL_PAGE_DOWN);
+        }
+    }
 
     return TRUE;
 }
 
 static void
-uni_image_view_set_scroll_adjustments (UniImageView * view,
-                                       GtkAdjustment * hadj,
-                                       GtkAdjustment * vadj)
+uni_image_view_set_scroll_adjustments(UniImageView *view,
+                                      GtkAdjustment *hadj,
+                                      GtkAdjustment *vadj)
 {
     if (hadj && (view->priv->hadjustment != hadj))
     {
         if (view->priv->hadjustment)
         {
-            g_signal_handlers_disconnect_by_data (G_OBJECT (view->priv->hadjustment), view);
-            g_object_unref (view->priv->hadjustment);
+            g_signal_handlers_disconnect_by_data(G_OBJECT(view->priv->hadjustment), view);
+            g_object_unref(view->priv->hadjustment);
         }
-        g_signal_connect (hadj,
-                          "value_changed",
-                          G_CALLBACK(uni_image_view_hadj_changed_cb), view);
+        g_signal_connect(hadj,
+                         "value_changed",
+                         G_CALLBACK(uni_image_view_hadj_changed_cb), view);
         view->priv->hadjustment = hadj;
-        g_object_ref_sink (view->priv->hadjustment);
+        g_object_ref_sink(view->priv->hadjustment);
     }
     if (vadj && (view->priv->vadjustment != vadj))
     {
         if (view->priv->vadjustment)
         {
-            g_signal_handlers_disconnect_by_data (G_OBJECT (view->priv->vadjustment), view);
-            g_object_unref (view->priv->vadjustment);
+            g_signal_handlers_disconnect_by_data(G_OBJECT(view->priv->vadjustment), view);
+            g_object_unref(view->priv->vadjustment);
         }
-        g_signal_connect (vadj,
-                          "value_changed",
-                          G_CALLBACK(uni_image_view_vadj_changed_cb), view);
+        g_signal_connect(vadj,
+                         "value_changed",
+                         G_CALLBACK(uni_image_view_vadj_changed_cb), view);
         view->priv->vadjustment = vadj;
-        g_object_ref_sink (view->priv->vadjustment);
+        g_object_ref_sink(view->priv->vadjustment);
     }
 }
-
 
 /*************************************************************/
 /***** Stuff that deals with the type ************************/
 /*************************************************************/
 static void
-uni_image_view_init (UniImageView * view)
+uni_image_view_init(UniImageView *view)
 {
-    gtk_widget_set_can_focus (GTK_WIDGET(view), TRUE);
+    gtk_widget_set_can_focus(GTK_WIDGET(view), TRUE);
 
     view->interp = GDK_INTERP_BILINEAR;
     view->fitting = UNI_FITTING_NORMAL;
@@ -807,93 +805,91 @@ uni_image_view_init (UniImageView * view)
     view->is_rendering = FALSE;
     view->show_cursor = TRUE;
     view->void_cursor = NULL;
-    view->tool = G_OBJECT (uni_dragger_new ((GtkWidget *) view));
+    view->tool = G_OBJECT(uni_dragger_new((GtkWidget *)view));
 
-    view->priv = (UniImageViewPrivate *) g_type_instance_get_private ((GTypeInstance *) view, UNI_TYPE_IMAGE_VIEW);
+    view->priv = (UniImageViewPrivate *)g_type_instance_get_private((GTypeInstance *)view, UNI_TYPE_IMAGE_VIEW);
 
     view->priv->hadjustment = view->priv->vadjustment = NULL;
-    uni_image_view_set_scroll_adjustments(view, GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 1.0, 0.0,
-                                          1.0, 1.0, 1.0)), GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 1.0, 0.0,
-                                          1.0, 1.0, 1.0)));
-    g_object_ref_sink (view->priv->hadjustment);
-    g_object_ref_sink (view->priv->vadjustment);
+    uni_image_view_set_scroll_adjustments(view, GTK_ADJUSTMENT(gtk_adjustment_new(0.0, 1.0, 0.0, 1.0, 1.0, 1.0)), GTK_ADJUSTMENT(gtk_adjustment_new(0.0, 1.0, 0.0, 1.0, 1.0, 1.0)));
+    g_object_ref_sink(view->priv->hadjustment);
+    g_object_ref_sink(view->priv->vadjustment);
 }
 
 static void
-uni_image_view_finalize (GObject * object)
+uni_image_view_finalize(GObject *object)
 {
-    UniImageView *view = UNI_IMAGE_VIEW (object);
+    UniImageView *view = UNI_IMAGE_VIEW(object);
     if (view->priv->hadjustment)
     {
-        g_signal_handlers_disconnect_by_data (G_OBJECT (view->priv->hadjustment), view);
-        g_object_unref (view->priv->hadjustment);
+        g_signal_handlers_disconnect_by_data(G_OBJECT(view->priv->hadjustment), view);
+        g_object_unref(view->priv->hadjustment);
         view->priv->hadjustment = NULL;
     }
     if (view->priv->vadjustment)
     {
-        g_signal_handlers_disconnect_by_data (G_OBJECT (view->priv->vadjustment), view);
-        g_object_unref (view->priv->vadjustment);
+        g_signal_handlers_disconnect_by_data(G_OBJECT(view->priv->vadjustment), view);
+        g_object_unref(view->priv->vadjustment);
         view->priv->vadjustment = NULL;
     }
     if (view->pixbuf)
     {
-        g_object_unref (view->pixbuf);
+        g_object_unref(view->pixbuf);
         view->pixbuf = NULL;
     }
-    g_object_unref (view->tool);
+    g_object_unref(view->tool);
     /* Chain up. */
-    G_OBJECT_CLASS (uni_image_view_parent_class)->finalize (object);
+    G_OBJECT_CLASS(uni_image_view_parent_class)->finalize(object);
 }
 
 static void
-uni_image_view_init_signals (UniImageViewClass * klass)
+uni_image_view_init_signals(UniImageViewClass *klass)
 {
     uni_image_view_signals[SET_ZOOM] =
-        g_signal_new ("set_zoom",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniImageViewClass, set_zoom),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__DOUBLE,
-                      G_TYPE_NONE, 1, G_TYPE_DOUBLE);
+        g_signal_new("set_zoom",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniImageViewClass, set_zoom),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__DOUBLE,
+                     G_TYPE_NONE, 1, G_TYPE_DOUBLE);
     uni_image_view_signals[ZOOM_IN] =
-        g_signal_new ("zoom_in",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniImageViewClass, zoom_in),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+        g_signal_new("zoom_in",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniImageViewClass, zoom_in),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
     uni_image_view_signals[ZOOM_OUT] =
-        g_signal_new ("zoom_out",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniImageViewClass, zoom_out),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+        g_signal_new("zoom_out",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniImageViewClass, zoom_out),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
     uni_image_view_signals[SET_FITTING] =
-        g_signal_new ("set_fitting",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniImageViewClass, set_fitting),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__ENUM,
-                      G_TYPE_NONE, 1, G_TYPE_INT);
+        g_signal_new("set_fitting",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniImageViewClass, set_fitting),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__ENUM,
+                     G_TYPE_NONE, 1, G_TYPE_INT);
     uni_image_view_signals[SCROLL] =
-        g_signal_new ("scroll",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (UniImageViewClass, scroll),
-                      NULL, NULL,
-                      uni_marshal_VOID__ENUM_ENUM,
-                      G_TYPE_NONE,
-                      2, GTK_TYPE_SCROLL_TYPE, GTK_TYPE_SCROLL_TYPE);
+        g_signal_new("scroll",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                     G_STRUCT_OFFSET(UniImageViewClass, scroll),
+                     NULL, NULL,
+                     uni_marshal_VOID__ENUM_ENUM,
+                     G_TYPE_NONE,
+                     2, GTK_TYPE_SCROLL_TYPE, GTK_TYPE_SCROLL_TYPE);
     uni_image_view_signals[ZOOM_CHANGED] =
-        g_signal_new ("zoom_changed",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST,
-                      0,
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+        g_signal_new("zoom_changed",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST,
+                     0,
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
     /**
      * UniImageView::pixbuf-changed:
      * @view: The view that emitted the signal.
@@ -905,85 +901,85 @@ uni_image_view_init_signals (UniImageViewClass * klass)
      * view.
      **/
     uni_image_view_signals[PIXBUF_CHANGED] =
-        g_signal_new ("pixbuf_changed",
-                      G_TYPE_FROM_CLASS (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (UniImageViewClass, pixbuf_changed),
-                      NULL, NULL,
-                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+        g_signal_new("pixbuf_changed",
+                     G_TYPE_FROM_CLASS(klass),
+                     G_SIGNAL_RUN_LAST,
+                     G_STRUCT_OFFSET(UniImageViewClass, pixbuf_changed),
+                     NULL, NULL,
+                     g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 static void
-uni_image_view_get_property (GObject     *object,
-			 guint        prop_id,
-			 GValue      *value,
-			 GParamSpec  *pspec)
+uni_image_view_get_property(GObject *object,
+                            guint prop_id,
+                            GValue *value,
+                            GParamSpec *pspec)
 {
-  UniImageView *iv = UNI_IMAGE_VIEW (object);
-  UniImageViewPrivate *priv = iv->priv;
+    UniImageView *iv = UNI_IMAGE_VIEW(object);
+    UniImageViewPrivate *priv = iv->priv;
 
-  switch (prop_id)
+    switch (prop_id)
     {
     case P_HADJUSTMENT:
-      g_value_set_object (value, priv->hadjustment);
-      break;
+        g_value_set_object(value, priv->hadjustment);
+        break;
     case P_VADJUSTMENT:
-      g_value_set_object (value, priv->vadjustment);
-      break;
+        g_value_set_object(value, priv->vadjustment);
+        break;
     case P_HSCROLLPOLICY:
-      g_value_set_enum (value, priv->hscroll_policy);
-      break;
+        g_value_set_enum(value, priv->hscroll_policy);
+        break;
     case P_VSCROLLPOLICY:
-      g_value_set_enum (value, priv->vscroll_policy);
-      break;
+        g_value_set_enum(value, priv->vscroll_policy);
+        break;
     default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+        break;
     }
 }
 
 static void
-uni_image_view_set_property (GObject      *object,
-			 guint         prop_id,
-			 const GValue *value,
-			 GParamSpec   *pspec)
+uni_image_view_set_property(GObject *object,
+                            guint prop_id,
+                            const GValue *value,
+                            GParamSpec *pspec)
 {
-  UniImageView *iv = UNI_IMAGE_VIEW (object);
-  UniImageViewPrivate *priv = iv->priv;
+    UniImageView *iv = UNI_IMAGE_VIEW(object);
+    UniImageViewPrivate *priv = iv->priv;
 
-  switch (prop_id)
+    switch (prop_id)
     {
     case P_HADJUSTMENT:
-      uni_image_view_set_hadjustment (iv, 
-				  (GtkAdjustment*) g_value_get_object (value));
-      break;
+        uni_image_view_set_hadjustment(iv,
+                                       (GtkAdjustment *)g_value_get_object(value));
+        break;
     case P_VADJUSTMENT:
-      uni_image_view_set_vadjustment (iv, 
-				  (GtkAdjustment*) g_value_get_object (value));
-      break;
+        uni_image_view_set_vadjustment(iv,
+                                       (GtkAdjustment *)g_value_get_object(value));
+        break;
     case P_HSCROLLPOLICY:
-      priv->hscroll_policy = g_value_get_enum (value);
-      gtk_widget_queue_resize (GTK_WIDGET (iv));
-      break;
+        priv->hscroll_policy = g_value_get_enum(value);
+        gtk_widget_queue_resize(GTK_WIDGET(iv));
+        break;
     case P_VSCROLLPOLICY:
-      priv->vscroll_policy = g_value_get_enum (value);
-      gtk_widget_queue_resize (GTK_WIDGET (iv));
-      break;
+        priv->vscroll_policy = g_value_get_enum(value);
+        gtk_widget_queue_resize(GTK_WIDGET(iv));
+        break;
     default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+        break;
     }
 }
 
 static void
-uni_image_view_class_init (UniImageViewClass * klass)
+uni_image_view_class_init(UniImageViewClass *klass)
 {
-    uni_image_view_init_signals (klass);
+    uni_image_view_init_signals(klass);
 
-    GObjectClass *object_class = (GObjectClass *) klass;
+    GObjectClass *object_class = (GObjectClass *)klass;
     object_class->finalize = uni_image_view_finalize;
 
-    GtkWidgetClass *widget_class = (GtkWidgetClass *) klass;
+    GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
     widget_class->button_press_event = uni_image_view_button_press;
     widget_class->button_release_event = uni_image_view_button_release;
     widget_class->draw = uni_image_view_expose;
@@ -1002,106 +998,106 @@ uni_image_view_class_init (UniImageViewClass * klass)
     klass->scroll = uni_image_view_scroll;
     klass->pixbuf_changed = NULL;
 
-    g_object_class_override_property (object_class, P_HADJUSTMENT, "hadjustment");
-    g_object_class_override_property (object_class, P_VADJUSTMENT, "vadjustment");
-    g_object_class_override_property (object_class, P_HSCROLLPOLICY, "hscroll-policy");
-    g_object_class_override_property (object_class, P_VSCROLLPOLICY, "vscroll-policy");
-    
+    g_object_class_override_property(object_class, P_HADJUSTMENT, "hadjustment");
+    g_object_class_override_property(object_class, P_VADJUSTMENT, "vadjustment");
+    g_object_class_override_property(object_class, P_HSCROLLPOLICY, "hscroll-policy");
+    g_object_class_override_property(object_class, P_VSCROLLPOLICY, "vscroll-policy");
+
     /* Set up scrolling.*/
     klass->set_scroll_adjustments = uni_image_view_set_scroll_adjustments;
 
     /* Add keybindings. */
-    GtkBindingSet *binding_set = gtk_binding_set_by_class (klass);
+    GtkBindingSet *binding_set = gtk_binding_set_by_class(klass);
 
     /* Set zoom. */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_1, 0,
-                                  "set_zoom", 1, G_TYPE_DOUBLE, 1.0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_2, 0,
-                                  "set_zoom", 1, G_TYPE_DOUBLE, 2.0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_3, 0,
-                                  "set_zoom", 1, G_TYPE_DOUBLE, 3.0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_1, 0,
-                                  "set_zoom", 1, G_TYPE_DOUBLE, 1.0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_2, 0,
-                                  "set_zoom", 1, G_TYPE_DOUBLE, 2.0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_3, 0,
-                                  "set_zoom", 1, G_TYPE_DOUBLE, 3.0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_1, 0,
+                                 "set_zoom", 1, G_TYPE_DOUBLE, 1.0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_2, 0,
+                                 "set_zoom", 1, G_TYPE_DOUBLE, 2.0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_3, 0,
+                                 "set_zoom", 1, G_TYPE_DOUBLE, 3.0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_KP_1, 0,
+                                 "set_zoom", 1, G_TYPE_DOUBLE, 1.0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_KP_2, 0,
+                                 "set_zoom", 1, G_TYPE_DOUBLE, 2.0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_KP_3, 0,
+                                 "set_zoom", 1, G_TYPE_DOUBLE, 3.0);
 
     /* Zoom in */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_plus, 0, "zoom_in", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_equal, 0, "zoom_in", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_Add, 0, "zoom_in", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_plus, 0, "zoom_in", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_equal, 0, "zoom_in", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_KP_Add, 0, "zoom_in", 0);
 
     /* Zoom out */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_minus, 0, "zoom_out", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_Subtract, 0,
-                                  "zoom_out", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_minus, 0, "zoom_out", 0);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_KP_Subtract, 0,
+                                 "zoom_out", 0);
 
     /* Set fitting */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_f, 0,
-                                  "set_fitting", 1, G_TYPE_ENUM, UNI_FITTING_FULL);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_0, 0,
-                                  "set_fitting", 1, G_TYPE_ENUM, UNI_FITTING_FULL);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_0, 0,
-                                  "set_fitting", 1, G_TYPE_ENUM, UNI_FITTING_FULL);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_f, 0,
+                                 "set_fitting", 1, G_TYPE_ENUM, UNI_FITTING_FULL);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_0, 0,
+                                 "set_fitting", 1, G_TYPE_ENUM, UNI_FITTING_FULL);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_KP_0, 0,
+                                 "set_fitting", 1, G_TYPE_ENUM, UNI_FITTING_FULL);
 
     /* Unmodified scrolling */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Right, 0,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_STEP_RIGHT,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Left, 0,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_STEP_LEFT,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Down, 0,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_NONE,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_STEP_DOWN);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Up, 0,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_NONE,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_STEP_UP);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Right, 0,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_STEP_RIGHT,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Left, 0,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_STEP_LEFT,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Down, 0,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_NONE,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_STEP_DOWN);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Up, 0,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_NONE,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_STEP_UP);
 
     /* Shifted scrolling */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Right, GDK_SHIFT_MASK,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_PAGE_RIGHT,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Left, GDK_SHIFT_MASK,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_PAGE_LEFT,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Up, GDK_SHIFT_MASK,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_NONE,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_UP);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Down, GDK_SHIFT_MASK,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_NONE,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_DOWN);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Right, GDK_SHIFT_MASK,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_PAGE_RIGHT,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Left, GDK_SHIFT_MASK,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_PAGE_LEFT,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_NONE);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Up, GDK_SHIFT_MASK,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_NONE,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_UP);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Down, GDK_SHIFT_MASK,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_NONE,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_DOWN);
 
     /* Page Up & Down */
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Page_Up, 0,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_NONE,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_UP);
-    gtk_binding_entry_add_signal (binding_set, GDK_KEY_Page_Down, 0,
-                                  "scroll", 2,
-                                  GTK_TYPE_SCROLL_TYPE,
-                                  GTK_SCROLL_NONE,
-                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_DOWN);
-    
-    g_type_class_add_private (object_class, sizeof (UniImageViewPrivate));
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Page_Up, 0,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_NONE,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_UP);
+    gtk_binding_entry_add_signal(binding_set, GDK_KEY_Page_Down, 0,
+                                 "scroll", 2,
+                                 GTK_TYPE_SCROLL_TYPE,
+                                 GTK_SCROLL_NONE,
+                                 GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_DOWN);
+
+    g_type_class_add_private(object_class, sizeof(UniImageViewPrivate));
 }
 
 /**
@@ -1111,9 +1107,9 @@ uni_image_view_class_init (UniImageViewClass * klass)
  * Creates a new image view with default values.
  **/
 GtkWidget *
-uni_image_view_new (void)
+uni_image_view_new(void)
 {
-    GtkWidget *view = g_object_new (UNI_TYPE_IMAGE_VIEW, NULL);
+    GtkWidget *view = g_object_new(UNI_TYPE_IMAGE_VIEW, NULL);
     return view;
 }
 
@@ -1136,18 +1132,18 @@ uni_image_view_new (void)
  * currently showing.
  **/
 gboolean
-uni_image_view_get_viewport (UniImageView * view, GdkRectangle * rect)
+uni_image_view_get_viewport(UniImageView *view, GdkRectangle *rect)
 {
     gboolean ret_val = (view->pixbuf != NULL);
     if (!rect || !ret_val)
         return ret_val;
 
-    Size alloc = uni_image_view_get_allocated_size (view);
-    Size zoomed = uni_image_view_get_zoomed_size (view);
+    Size alloc = uni_image_view_get_allocated_size(view);
+    Size zoomed = uni_image_view_get_zoomed_size(view);
     rect->x = view->offset_x;
     rect->y = view->offset_y;
-    rect->width = MIN (alloc.width, zoomed.width);
-    rect->height = MIN (alloc.height, zoomed.height);
+    rect->width = MIN(alloc.width, zoomed.width);
+    rect->height = MIN(alloc.height, zoomed.height);
     return TRUE;
 }
 
@@ -1170,19 +1166,19 @@ uni_image_view_get_viewport (UniImageView * view, GdkRectangle * rect)
  * space coordinates.
  **/
 gboolean
-uni_image_view_get_draw_rect (UniImageView * view, GdkRectangle * rect)
+uni_image_view_get_draw_rect(UniImageView *view, GdkRectangle *rect)
 {
     if (!view->pixbuf)
         return FALSE;
-    Size alloc = uni_image_view_get_allocated_size (view);
-    Size zoomed = uni_image_view_get_zoomed_size (view);
+    Size alloc = uni_image_view_get_allocated_size(view);
+    Size zoomed = uni_image_view_get_zoomed_size(view);
 
     rect->x = (alloc.width - zoomed.width) / 2;
     rect->y = (alloc.height - zoomed.height) / 2;
-    rect->x = MAX (rect->x, 0);
-    rect->y = MAX (rect->y, 0);
-    rect->width = MIN (zoomed.width, alloc.width);
-    rect->height = MIN (zoomed.height, alloc.height);
+    rect->x = MAX(rect->x, 0);
+    rect->y = MAX(rect->y, 0);
+    rect->width = MIN(zoomed.width, alloc.width);
+    rect->height = MIN(zoomed.height, alloc.height);
     return TRUE;
 }
 
@@ -1217,47 +1213,43 @@ uni_image_view_get_draw_rect (UniImageView * view, GdkRectangle * rect)
  * Normally, @invalidate should always be %FALSE because it is much
  * faster to repaint immedately than invalidating.
  **/
-void
-uni_image_view_set_offset (UniImageView * view,
-                           gdouble offset_x,
-                           gdouble offset_y, gboolean invalidate)
+void uni_image_view_set_offset(UniImageView *view,
+                               gdouble offset_x,
+                               gdouble offset_y, gboolean invalidate)
 {
-    uni_image_view_scroll_to (view, offset_x, offset_y, TRUE, invalidate);
+    uni_image_view_scroll_to(view, offset_x, offset_y, TRUE, invalidate);
 }
 
 /*************************************************************/
 /***** Read-write properties *********************************/
 /*************************************************************/
-void
-uni_image_view_set_fitting (UniImageView * view, UniFittingMode fitting)
+void uni_image_view_set_fitting(UniImageView *view, UniFittingMode fitting)
 {
-    g_return_if_fail (UNI_IS_IMAGE_VIEW (view));
+    g_return_if_fail(UNI_IS_IMAGE_VIEW(view));
     view->fitting = fitting;
-    gtk_widget_queue_resize (GTK_WIDGET (view));
+    gtk_widget_queue_resize(GTK_WIDGET(view));
 }
 
-void
-uni_image_view_set_vadjustment(UniImageView * view, GtkAdjustment *vadj)
+void uni_image_view_set_vadjustment(UniImageView *view, GtkAdjustment *vadj)
 {
     uni_image_view_set_scroll_adjustments(view, NULL, vadj);
 }
 
-void
-uni_image_view_set_hadjustment(UniImageView * view, GtkAdjustment *hadj)
+void uni_image_view_set_hadjustment(UniImageView *view, GtkAdjustment *hadj)
 {
     uni_image_view_set_scroll_adjustments(view, hadj, NULL);
 }
 
 GtkAdjustment *
-uni_image_view_get_vadjustment(UniImageView * view)
+uni_image_view_get_vadjustment(UniImageView *view)
 {
-  return view->priv->vadjustment;
+    return view->priv->vadjustment;
 }
 
 GtkAdjustment *
-uni_image_view_get_hadjustment(UniImageView * view)
+uni_image_view_get_hadjustment(UniImageView *view)
 {
-  return view->priv->hadjustment;
+    return view->priv->hadjustment;
 }
 
 /**
@@ -1268,9 +1260,9 @@ uni_image_view_get_hadjustment(UniImageView * view)
  * Returns the pixbuf this view shows.
  **/
 GdkPixbuf *
-uni_image_view_get_pixbuf (UniImageView * view)
+uni_image_view_get_pixbuf(UniImageView *view)
 {
-    g_return_val_if_fail (UNI_IS_IMAGE_VIEW (view), NULL);
+    g_return_val_if_fail(UNI_IS_IMAGE_VIEW(view), NULL);
     return view->pixbuf;
 }
 
@@ -1297,21 +1289,20 @@ uni_image_view_get_pixbuf (UniImageView * view)
  *
  * The default pixbuf is %NULL.
  **/
-void
-uni_image_view_set_pixbuf (UniImageView * view,
-                           GdkPixbuf * pixbuf, gboolean reset_fit)
+void uni_image_view_set_pixbuf(UniImageView *view,
+                               GdkPixbuf *pixbuf, gboolean reset_fit)
 {
     if (view->pixbuf != pixbuf)
     {
         if (view->pixbuf)
-            g_object_unref (view->pixbuf);
+            g_object_unref(view->pixbuf);
         view->pixbuf = pixbuf;
         if (view->pixbuf)
-            g_object_ref (pixbuf);
+            g_object_ref(pixbuf);
     }
 
     if (reset_fit)
-        uni_image_view_set_fitting (view, UNI_FITTING_NORMAL);
+        uni_image_view_set_fitting(view, UNI_FITTING_NORMAL);
     else
     {
         /*
@@ -1320,15 +1311,15 @@ uni_image_view_set_pixbuf (UniImageView * view,
            make it valid again. And if the size is different, naturally
            we must also update the adjustments.
          */
-        uni_image_view_scroll_to (view, view->offset_x, view->offset_y,
-                                  FALSE, FALSE);
-        uni_image_view_update_adjustments (view);
-        gtk_widget_queue_draw (GTK_WIDGET (view));
+        uni_image_view_scroll_to(view, view->offset_x, view->offset_y,
+                                 FALSE, FALSE);
+        uni_image_view_update_adjustments(view);
+        gtk_widget_queue_draw(GTK_WIDGET(view));
     }
 
-    g_signal_emit (G_OBJECT (view),
-                   uni_image_view_signals[PIXBUF_CHANGED], 0);
-    uni_dragger_pixbuf_changed (UNI_DRAGGER(view->tool), reset_fit, NULL);
+    g_signal_emit(G_OBJECT(view),
+                  uni_image_view_signals[PIXBUF_CHANGED], 0);
+    uni_dragger_pixbuf_changed(UNI_DRAGGER(view->tool), reset_fit, NULL);
 }
 
 /**
@@ -1341,32 +1332,30 @@ uni_image_view_set_pixbuf (UniImageView * view,
  * Fitting is always disabled after this method has run. The
  * ::zoom-changed signal is unconditionally emitted.
  **/
-void
-uni_image_view_set_zoom (UniImageView * view, gdouble zoom)
+void uni_image_view_set_zoom(UniImageView *view, gdouble zoom)
 {
-    g_return_if_fail (UNI_IS_IMAGE_VIEW (view));
-    zoom = CLAMP (zoom, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-    uni_image_view_set_zoom_no_center (view, zoom, FALSE);
+    g_return_if_fail(UNI_IS_IMAGE_VIEW(view));
+    zoom = CLAMP(zoom, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+    uni_image_view_set_zoom_no_center(view, zoom, FALSE);
 }
 
-
-void
-uni_image_view_set_zoom_mode (UniImageView * view, VnrPrefsZoom mode)
+void uni_image_view_set_zoom_mode(UniImageView *view, VnrPrefsZoom mode)
 {
-    switch(mode)
+    switch (mode)
     {
-        case VNR_PREFS_ZOOM_NORMAL:
-            uni_image_view_set_fitting(view, UNI_FITTING_NONE);
-            //view->zoom = 1.0;
-            uni_image_view_set_zoom (view, 1.0);
+    case VNR_PREFS_ZOOM_NORMAL:
+        uni_image_view_set_fitting(view, UNI_FITTING_NONE);
+        // view->zoom = 1.0;
+        uni_image_view_set_zoom(view, 1.0);
         break;
-        case VNR_PREFS_ZOOM_FIT:
-            uni_image_view_set_fitting(view, UNI_FITTING_FULL);
+    case VNR_PREFS_ZOOM_FIT:
+        uni_image_view_set_fitting(view, UNI_FITTING_FULL);
         break;
-        case VNR_PREFS_ZOOM_SMART:
-            uni_image_view_set_fitting(view, UNI_FITTING_NORMAL);
+    case VNR_PREFS_ZOOM_SMART:
+        uni_image_view_set_fitting(view, UNI_FITTING_NORMAL);
         break;
-        default: break;
+    default:
+        break;
     }
 }
 
@@ -1380,12 +1369,11 @@ uni_image_view_set_zoom_mode (UniImageView * view, VnrPrefsZoom mode)
  * Zoom in the view one step. Calling this method causes the widget to
  * immediately repaint itself.
  **/
-void
-uni_image_view_zoom_in (UniImageView * view)
+void uni_image_view_zoom_in(UniImageView *view)
 {
     gdouble zoom;
-    zoom = CLAMP (view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-    uni_image_view_set_zoom (view, zoom);
+    zoom = CLAMP(view->zoom * UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+    uni_image_view_set_zoom(view, zoom);
 }
 
 /**
@@ -1395,10 +1383,9 @@ uni_image_view_zoom_in (UniImageView * view)
  * Zoom out the view one step. Calling this method causes the widget to
  * immediately repaint itself.
  **/
-void
-uni_image_view_zoom_out (UniImageView * view)
+void uni_image_view_zoom_out(UniImageView *view)
 {
     gdouble zoom;
-    zoom = CLAMP (view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
-    uni_image_view_set_zoom (view, zoom);
+    zoom = CLAMP(view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
+    uni_image_view_set_zoom(view, zoom);
 }

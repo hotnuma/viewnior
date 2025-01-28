@@ -29,31 +29,30 @@
  * on the number of channels in the source image. The last four
  * parameters are only used in the composite color case.
  **/
-void
-uni_pixbuf_scale_blend (GdkPixbuf * src,
-                        GdkPixbuf * dst,
-                        int dst_x,
-                        int dst_y,
-                        int dst_width,
-                        int dst_height,
-                        gdouble offset_x,
-                        gdouble offset_y,
-                        gdouble zoom,
-                        GdkInterpType interp, int check_x, int check_y)
+void uni_pixbuf_scale_blend(GdkPixbuf *src,
+                            GdkPixbuf *dst,
+                            int dst_x,
+                            int dst_y,
+                            int dst_width,
+                            int dst_height,
+                            gdouble offset_x,
+                            gdouble offset_y,
+                            gdouble zoom,
+                            GdkInterpType interp, int check_x, int check_y)
 {
-    if (gdk_pixbuf_get_has_alpha (src))
-        gdk_pixbuf_composite_color (src, dst,
-                                    dst_x, dst_y, dst_width, dst_height,
-                                    offset_x, offset_y,
-                                    zoom, zoom,
-                                    interp,
-                                    255,
-                                    check_x, check_y,
-                                    CHECK_SIZE, CHECK_LIGHT, CHECK_DARK);
+    if (gdk_pixbuf_get_has_alpha(src))
+        gdk_pixbuf_composite_color(src, dst,
+                                   dst_x, dst_y, dst_width, dst_height,
+                                   offset_x, offset_y,
+                                   zoom, zoom,
+                                   interp,
+                                   255,
+                                   check_x, check_y,
+                                   CHECK_SIZE, CHECK_LIGHT, CHECK_DARK);
     else
-        gdk_pixbuf_scale (src, dst,
-                          dst_x, dst_y, dst_width, dst_height,
-                          offset_x, offset_y, zoom, zoom, interp);
+        gdk_pixbuf_scale(src, dst,
+                         dst_x, dst_y, dst_width, dst_height,
+                         offset_x, offset_y, zoom, zoom, interp);
 }
 
 /**
@@ -63,51 +62,45 @@ uni_pixbuf_scale_blend (GdkPixbuf * src,
  * function is broken in that drawing a the rectangle (0,0)-[0,0] will
  * draw a pixel at position (0,0).
  **/
-void
-uni_draw_rect (cairo_t *cr, gboolean filled, GdkRectangle * rect)
+void uni_draw_rect(cairo_t *cr, gboolean filled, GdkRectangle *rect)
 {
     if (rect->width <= 0 || rect->height <= 0)
         return;
-    cairo_save (cr);
-    cairo_rectangle (cr, rect->x, rect->y, rect->width - 1, rect->height - 1);
-    cairo_clip (cr);
+    cairo_save(cr);
+    cairo_rectangle(cr, rect->x, rect->y, rect->width - 1, rect->height - 1);
+    cairo_clip(cr);
     if (filled)
-        cairo_paint (cr);
+        cairo_paint(cr);
     else
-        cairo_stroke (cr);
-    cairo_restore (cr);
+        cairo_stroke(cr);
+    cairo_restore(cr);
 }
 
-void
-uni_rectangle_get_rects_around (GdkRectangle * outer,
-                                GdkRectangle * inner, GdkRectangle around[4])
+void uni_rectangle_get_rects_around(GdkRectangle *outer,
+                                    GdkRectangle *inner, GdkRectangle around[4])
 {
     /* Top */
-    around[0] = (GdkRectangle)
-    {
-    outer->x, outer->y, outer->width, inner->y - outer->y};
+    around[0] = (GdkRectangle){
+        outer->x, outer->y, outer->width, inner->y - outer->y};
     /* Left */
-    around[1] = (GdkRectangle)
-    {
-    outer->x, inner->y, inner->x - outer->x, inner->height};
+    around[1] = (GdkRectangle){
+        outer->x, inner->y, inner->x - outer->x, inner->height};
     /* Right */
-    around[2] = (GdkRectangle)
-    {
-    inner->x + inner->width,
-            inner->y,
-            (outer->x + outer->width) - (inner->x + inner->width),
-            inner->height};
+    around[2] = (GdkRectangle){
+        inner->x + inner->width,
+        inner->y,
+        (outer->x + outer->width) - (inner->x + inner->width),
+        inner->height};
     /* Bottom */
-    around[3] = (GdkRectangle)
-    {
-    outer->x,
-            inner->y + inner->height,
-            outer->width,
-            (outer->y + outer->height) - (inner->y + inner->height)};
+    around[3] = (GdkRectangle){
+        outer->x,
+        inner->y + inner->height,
+        outer->width,
+        (outer->y + outer->height) - (inner->y + inner->height)};
 }
 
 VnrPrefsDesktop
-uni_detect_desktop_environment ()
+uni_detect_desktop_environment()
 {
     VnrPrefsDesktop environment = VNR_PREFS_DESKTOP_GNOME3;
 

@@ -25,35 +25,34 @@
 #include <string.h>
 
 static gboolean
-uni_rectangle_contains_rect (GdkRectangle r1, GdkRectangle r2)
+uni_rectangle_contains_rect(GdkRectangle r1, GdkRectangle r2)
 {
-    return
-        r1.x <= r2.x &&
-        r1.y <= r2.y &&
-        (r2.x + r2.width) <= (r1.x + r1.width) &&
-        (r2.y + r2.height) <= (r1.y + r1.height);
+    return r1.x <= r2.x &&
+           r1.y <= r2.y &&
+           (r2.x + r2.width) <= (r1.x + r1.width) &&
+           (r2.y + r2.height) <= (r1.y + r1.height);
 }
 
 static void
-uni_pixbuf_copy_area_intact (GdkPixbuf * src,
-                             int src_x,
-                             int src_y,
-                             int width,
-                             int height,
-                             GdkPixbuf * dst, int dst_x, int dst_y)
+uni_pixbuf_copy_area_intact(GdkPixbuf *src,
+                            int src_x,
+                            int src_y,
+                            int width,
+                            int height,
+                            GdkPixbuf *dst, int dst_x, int dst_y)
 {
     int y;
     if (src_x == dst_x && src_y == dst_y && src == dst)
         return;
 
-    int src_stride = gdk_pixbuf_get_rowstride (src);
-    int dst_stride = gdk_pixbuf_get_rowstride (dst);
-    int chans = gdk_pixbuf_get_n_channels (src);
+    int src_stride = gdk_pixbuf_get_rowstride(src);
+    int dst_stride = gdk_pixbuf_get_rowstride(dst);
+    int chans = gdk_pixbuf_get_n_channels(src);
 
     int linelen = width * chans;
 
-    guchar *src_base = gdk_pixbuf_get_pixels (src);
-    guchar *dst_base = gdk_pixbuf_get_pixels (dst);
+    guchar *src_base = gdk_pixbuf_get_pixels(src);
+    guchar *dst_base = gdk_pixbuf_get_pixels(dst);
 
     int src_y_ofs = src_y * src_stride;
     int dst_y_ofs = dst_y * dst_stride;
@@ -67,13 +66,13 @@ uni_pixbuf_copy_area_intact (GdkPixbuf * src,
     guchar *src_ofs = src_base + src_y_ofs + src_x * chans;
     guchar *dst_ofs = dst_base + dst_y_ofs + dst_x * chans;
 
-    void (*copy_func) (void *, void *, size_t) = (void *) memcpy;
+    void (*copy_func)(void *, void *, size_t) = (void *)memcpy;
     if (dst_x > src_x)
-        copy_func = (void *) memmove;
+        copy_func = (void *)memmove;
 
     for (y = 0; y < height; y++)
     {
-        copy_func (dst_ofs, src_ofs, linelen);
+        copy_func(dst_ofs, src_ofs, linelen);
         src_ofs += src_stride;
         dst_ofs += dst_stride;
     }
@@ -90,15 +89,15 @@ uni_pixbuf_copy_area_intact (GdkPixbuf * src,
  * @new_opts is the one to use this time.
  **/
 UniPixbufDrawMethod
-uni_pixbuf_draw_cache_get_method (UniPixbufDrawOpts * old,
-                                  UniPixbufDrawOpts * new_)
+uni_pixbuf_draw_cache_get_method(UniPixbufDrawOpts *old,
+                                 UniPixbufDrawOpts *new_)
 {
     if (new_->zoom != old->zoom ||
         new_->interp != old->interp || new_->pixbuf != old->pixbuf)
     {
         return UNI_PIXBUF_DRAW_METHOD_SCALE;
     }
-    else if (uni_rectangle_contains_rect (old->zoom_rect, new_->zoom_rect))
+    else if (uni_rectangle_contains_rect(old->zoom_rect, new_->zoom_rect))
     {
         return UNI_PIXBUF_DRAW_METHOD_CONTAINS;
     }
@@ -115,17 +114,18 @@ uni_pixbuf_draw_cache_get_method (UniPixbufDrawOpts * old,
  * Creates a new pixbuf draw cache.
  **/
 UniPixbufDrawCache *
-uni_pixbuf_draw_cache_new ()
+uni_pixbuf_draw_cache_new()
 {
-    UniPixbufDrawCache *cache = g_new0 (UniPixbufDrawCache, 1);
-    cache->last_pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 1, 1);
+    UniPixbufDrawCache *cache = g_new0(UniPixbufDrawCache, 1);
+    cache->last_pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, 1, 1);
     cache->check_size = 16;
-    cache->old = (UniPixbufDrawOpts)
-    {
+    cache->old = (UniPixbufDrawOpts){
         0,
-        {
-        0, 0, 0, 0}
-    , 0, 0, GDK_INTERP_NEAREST, cache->last_pixbuf};
+        {0, 0, 0, 0},
+        0,
+        0,
+        GDK_INTERP_NEAREST,
+        cache->last_pixbuf};
     return cache;
 }
 
@@ -135,11 +135,10 @@ uni_pixbuf_draw_cache_new ()
  *
  * Deallocates a pixbuf draw cache and all its data.
  **/
-void
-uni_pixbuf_draw_cache_free (UniPixbufDrawCache * cache)
+void uni_pixbuf_draw_cache_free(UniPixbufDrawCache *cache)
 {
-    g_object_unref (cache->last_pixbuf);
-    g_free (cache);
+    g_object_unref(cache->last_pixbuf);
+    g_free(cache);
 }
 
 /**
@@ -157,8 +156,7 @@ uni_pixbuf_draw_cache_free (UniPixbufDrawCache * cache)
  * However, when the image data is modified, this assumtion breaks,
  * which is why this method must be used to tell draw cache about it.
  **/
-void
-uni_pixbuf_draw_cache_invalidate (UniPixbufDrawCache * cache)
+void uni_pixbuf_draw_cache_invalidate(UniPixbufDrawCache *cache)
 {
     /* Set the cached zoom to a bogus value, to force a
        DRAW_FLAGS_SCALE. */
@@ -166,38 +164,38 @@ uni_pixbuf_draw_cache_invalidate (UniPixbufDrawCache * cache)
 }
 
 static GdkPixbuf *
-uni_pixbuf_draw_cache_scroll_intersection (GdkPixbuf * pixbuf,
-                                           int new_width,
-                                           int new_height,
-                                           int src_x,
-                                           int src_y,
-                                           int inter_width,
-                                           int inter_height,
-                                           int dst_x, int dst_y)
+uni_pixbuf_draw_cache_scroll_intersection(GdkPixbuf *pixbuf,
+                                          int new_width,
+                                          int new_height,
+                                          int src_x,
+                                          int src_y,
+                                          int inter_width,
+                                          int inter_height,
+                                          int dst_x, int dst_y)
 {
-    int last_width = gdk_pixbuf_get_width (pixbuf);
-    int last_height = gdk_pixbuf_get_height (pixbuf);
+    int last_width = gdk_pixbuf_get_width(pixbuf);
+    int last_height = gdk_pixbuf_get_height(pixbuf);
 
-    int width = MAX (last_width, new_width);
-    int height = MAX (last_height, new_height);
+    int width = MAX(last_width, new_width);
+    int height = MAX(last_height, new_height);
     if (width > last_width || height > last_height)
     {
-        GdkColorspace cs = gdk_pixbuf_get_colorspace (pixbuf);
-        int bps = gdk_pixbuf_get_bits_per_sample (pixbuf);
-        gboolean alpha = gdk_pixbuf_get_has_alpha (pixbuf);
-        GdkPixbuf *tmp = gdk_pixbuf_new (cs, alpha, bps, width, height);
+        GdkColorspace cs = gdk_pixbuf_get_colorspace(pixbuf);
+        int bps = gdk_pixbuf_get_bits_per_sample(pixbuf);
+        gboolean alpha = gdk_pixbuf_get_has_alpha(pixbuf);
+        GdkPixbuf *tmp = gdk_pixbuf_new(cs, alpha, bps, width, height);
 
-        uni_pixbuf_copy_area_intact (pixbuf,
-                                     src_x, src_y,
-                                     inter_width, inter_height,
-                                     tmp, dst_x, dst_y);
-        g_object_unref (pixbuf);
+        uni_pixbuf_copy_area_intact(pixbuf,
+                                    src_x, src_y,
+                                    inter_width, inter_height,
+                                    tmp, dst_x, dst_y);
+        g_object_unref(pixbuf);
         return tmp;
     }
-    uni_pixbuf_copy_area_intact (pixbuf,
-                                 src_x, src_y,
-                                 inter_width, inter_height,
-                                 pixbuf, dst_x, dst_y);
+    uni_pixbuf_copy_area_intact(pixbuf,
+                                src_x, src_y,
+                                inter_width, inter_height,
+                                pixbuf, dst_x, dst_y);
     return pixbuf;
 }
 
@@ -209,8 +207,8 @@ uni_pixbuf_draw_cache_scroll_intersection (GdkPixbuf * pixbuf,
  * the pixbuf.
  **/
 static void
-uni_pixbuf_draw_cache_intersect_draw (UniPixbufDrawCache * cache,
-                                      UniPixbufDrawOpts * opts)
+uni_pixbuf_draw_cache_intersect_draw(UniPixbufDrawCache *cache,
+                                     UniPixbufDrawOpts *opts)
 {
     GdkRectangle this = opts->zoom_rect;
     GdkRectangle old_rect = cache->old.zoom_rect;
@@ -223,34 +221,33 @@ uni_pixbuf_draw_cache_intersect_draw (UniPixbufDrawCache * cache,
         this,
         {0, 0, 0, 0},
         {0, 0, 0, 0},
-        {0, 0, 0, 0}
-    };
-    if (gdk_rectangle_intersect (&old_rect, &this, &inter))
-        uni_rectangle_get_rects_around (&this, &inter, around);
+        {0, 0, 0, 0}};
+    if (gdk_rectangle_intersect(&old_rect, &this, &inter))
+        uni_rectangle_get_rects_around(&this, &inter, around);
 
     cache->last_pixbuf =
-        uni_pixbuf_draw_cache_scroll_intersection (cache->last_pixbuf,
-                                                   this.width,
-                                                   this.height,
-                                                   inter.x - old_rect.x,
-                                                   inter.y - old_rect.y,
-                                                   inter.width,
-                                                   inter.height,
-                                                   around[1].width,
-                                                   around[0].height);
+        uni_pixbuf_draw_cache_scroll_intersection(cache->last_pixbuf,
+                                                  this.width,
+                                                  this.height,
+                                                  inter.x - old_rect.x,
+                                                  inter.y - old_rect.y,
+                                                  inter.width,
+                                                  inter.height,
+                                                  around[1].width,
+                                                  around[0].height);
 
     for (n = 0; n < 4; n++)
     {
         if (!around[n].width || !around[n].height)
             continue;
-        uni_pixbuf_scale_blend (opts->pixbuf,
-                                cache->last_pixbuf,
-                                around[n].x - this.x,
-                                around[n].y - this.y,
-                                around[n].width, around[n].height,
-                                -this.x, -this.y,
-                                opts->zoom,
-                                opts->interp, around[n].x, around[n].y);
+        uni_pixbuf_scale_blend(opts->pixbuf,
+                               cache->last_pixbuf,
+                               around[n].x - this.x,
+                               around[n].y - this.y,
+                               around[n].width, around[n].height,
+                               -this.x, -this.y,
+                               opts->zoom,
+                               opts->interp, around[n].x, around[n].y);
     }
 }
 
@@ -263,13 +260,12 @@ uni_pixbuf_draw_cache_intersect_draw (UniPixbufDrawCache * cache,
  * Redraws the area specified in the pixbuf draw options in an
  * efficient way by using caching.
  **/
-void
-uni_pixbuf_draw_cache_draw (UniPixbufDrawCache * cache,
-                            UniPixbufDrawOpts * opts, cairo_t *cr)
+void uni_pixbuf_draw_cache_draw(UniPixbufDrawCache *cache,
+                                UniPixbufDrawOpts *opts, cairo_t *cr)
 {
     GdkRectangle this = opts->zoom_rect;
     UniPixbufDrawMethod method =
-        uni_pixbuf_draw_cache_get_method (&cache->old, opts);
+        uni_pixbuf_draw_cache_get_method(&cache->old, opts);
     int deltax = 0;
     int deltay = 0;
     if (method == UNI_PIXBUF_DRAW_METHOD_CONTAINS)
@@ -279,32 +275,32 @@ uni_pixbuf_draw_cache_draw (UniPixbufDrawCache * cache,
     }
     else if (method == UNI_PIXBUF_DRAW_METHOD_SCROLL)
     {
-        uni_pixbuf_draw_cache_intersect_draw (cache, opts);
+        uni_pixbuf_draw_cache_intersect_draw(cache, opts);
     }
     else if (method == UNI_PIXBUF_DRAW_METHOD_SCALE)
     {
-        int last_width = gdk_pixbuf_get_width (cache->last_pixbuf);
-        int last_height = gdk_pixbuf_get_height (cache->last_pixbuf);
-        GdkColorspace new_cs = gdk_pixbuf_get_colorspace (opts->pixbuf);
+        int last_width = gdk_pixbuf_get_width(cache->last_pixbuf);
+        int last_height = gdk_pixbuf_get_height(cache->last_pixbuf);
+        GdkColorspace new_cs = gdk_pixbuf_get_colorspace(opts->pixbuf);
         GdkColorspace last_cs =
-            gdk_pixbuf_get_colorspace (cache->last_pixbuf);
-        int new_bps = gdk_pixbuf_get_bits_per_sample (opts->pixbuf);
-        int last_bps = gdk_pixbuf_get_bits_per_sample (cache->last_pixbuf);
+            gdk_pixbuf_get_colorspace(cache->last_pixbuf);
+        int new_bps = gdk_pixbuf_get_bits_per_sample(opts->pixbuf);
+        int last_bps = gdk_pixbuf_get_bits_per_sample(cache->last_pixbuf);
 
         if (this.width > last_width || this.height > last_height ||
             new_cs != last_cs || new_bps != last_bps)
         {
-            g_object_unref (cache->last_pixbuf);
-            cache->last_pixbuf = gdk_pixbuf_new (new_cs, FALSE, new_bps,
-                                                 this.width, this.height);
+            g_object_unref(cache->last_pixbuf);
+            cache->last_pixbuf = gdk_pixbuf_new(new_cs, FALSE, new_bps,
+                                                this.width, this.height);
         }
 
-        uni_pixbuf_scale_blend (opts->pixbuf,
-                                cache->last_pixbuf,
-                                0, 0,
-                                this.width, this.height,
-                                (double) -this.x, (double) -this.y,
-                                opts->zoom, opts->interp, this.x, this.y);
+        uni_pixbuf_scale_blend(opts->pixbuf,
+                               cache->last_pixbuf,
+                               0, 0,
+                               this.width, this.height,
+                               (double)-this.x, (double)-this.y,
+                               opts->zoom, opts->interp, this.x, this.y);
     }
     cairo_save(cr);
     GdkRectangle rect;

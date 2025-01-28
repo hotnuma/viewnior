@@ -32,21 +32,23 @@ G_BEGIN_DECLS
 typedef struct _VnrPrefs VnrPrefs;
 typedef struct _VnrPrefsClass VnrPrefsClass;
 
-#define VNR_TYPE_PREFS             (vnr_prefs_get_type ())
-#define VNR_PREFS(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), VNR_TYPE_PREFS, VnrPrefs))
-#define VNR_PREFS_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass),  VNR_TYPE_PREFS, VnrPrefsClass))
-#define VNR_IS_PREFS(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VNR_TYPE_PREFS))
-#define VNR_IS_PREFS_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass),  VNR_TYPE_PREFS))
-#define VNR_PREFS_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),  VNR_TYPE_PREFS, VnrPrefsClass))
+#define VNR_TYPE_PREFS (vnr_prefs_get_type())
+#define VNR_PREFS(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_PREFS, VnrPrefs))
+#define VNR_PREFS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_PREFS, VnrPrefsClass))
+#define VNR_IS_PREFS(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_PREFS))
+#define VNR_IS_PREFS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_PREFS))
+#define VNR_PREFS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_PREFS, VnrPrefsClass))
 
-typedef enum{
+typedef enum
+{
     VNR_PREFS_ZOOM_SMART,
     VNR_PREFS_ZOOM_NORMAL,
     VNR_PREFS_ZOOM_FIT,
     VNR_PREFS_ZOOM_LAST_USED,
 } VnrPrefsZoom;
 
-typedef enum{
+typedef enum
+{
     VNR_PREFS_DESKTOP_GNOME2,
     VNR_PREFS_DESKTOP_GNOME3,
     VNR_PREFS_DESKTOP_XFCE,
@@ -59,25 +61,29 @@ typedef enum{
     VNR_PREFS_DESKTOP_AUTO,
 } VnrPrefsDesktop;
 
-typedef enum{
-    VNR_PREFS_WHEEL_NAVIGATE ,
-    VNR_PREFS_WHEEL_ZOOM ,
+typedef enum
+{
+    VNR_PREFS_WHEEL_NAVIGATE,
+    VNR_PREFS_WHEEL_ZOOM,
     VNR_PREFS_WHEEL_SCROLL,
 } VnrPrefsWheel;
 
-typedef enum{
-    VNR_PREFS_CLICK_ZOOM ,
-    VNR_PREFS_CLICK_FULLSCREEN ,
-    VNR_PREFS_CLICK_NEXT ,
+typedef enum
+{
+    VNR_PREFS_CLICK_ZOOM,
+    VNR_PREFS_CLICK_FULLSCREEN,
+    VNR_PREFS_CLICK_NEXT,
 } VnrPrefsClick;
 
-typedef enum{
-    VNR_PREFS_MODIFY_ASK ,
-    VNR_PREFS_MODIFY_SAVE ,
-    VNR_PREFS_MODIFY_IGNORE ,
+typedef enum
+{
+    VNR_PREFS_MODIFY_ASK,
+    VNR_PREFS_MODIFY_SAVE,
+    VNR_PREFS_MODIFY_IGNORE,
 } VnrPrefsModify;
 
-struct _VnrPrefs {
+struct _VnrPrefs
+{
     GObject parent;
 
     VnrPrefsZoom zoom;
@@ -111,20 +117,21 @@ struct _VnrPrefs {
     GtkSpinButton *slideshow_timeout_widget;
 };
 
-struct _VnrPrefsClass {
+struct _VnrPrefsClass
+{
     GObjectClass parent_class;
 };
 
-GType     vnr_prefs_get_type (void) G_GNUC_CONST;
+GType vnr_prefs_get_type(void) G_GNUC_CONST;
 
-GObject*  vnr_prefs_new (GtkWidget *window);
-void      vnr_prefs_show_dialog (VnrPrefs *prefs);
-void      vnr_prefs_set_slideshow_timeout (VnrPrefs *prefs, int value);
-void      vnr_prefs_set_show_menu_bar     (VnrPrefs *prefs, gboolean show_menu_bar);
-void      vnr_prefs_set_show_toolbar      (VnrPrefs *prefs, gboolean show_toolbar);
-void      vnr_prefs_set_show_scrollbar    (VnrPrefs *prefs, gboolean show_scollbar);
-void      vnr_prefs_set_show_statusbar    (VnrPrefs *prefs, gboolean show_statusbar);
-gboolean  vnr_prefs_save (VnrPrefs *prefs);
+GObject *vnr_prefs_new(GtkWidget *window);
+void vnr_prefs_show_dialog(VnrPrefs *prefs);
+void vnr_prefs_set_slideshow_timeout(VnrPrefs *prefs, int value);
+void vnr_prefs_set_show_menu_bar(VnrPrefs *prefs, gboolean show_menu_bar);
+void vnr_prefs_set_show_toolbar(VnrPrefs *prefs, gboolean show_toolbar);
+void vnr_prefs_set_show_scrollbar(VnrPrefs *prefs, gboolean show_scollbar);
+void vnr_prefs_set_show_statusbar(VnrPrefs *prefs, gboolean show_statusbar);
+gboolean vnr_prefs_save(VnrPrefs *prefs);
 
 G_END_DECLS
 #endif /* __VNR_PREFS_H__ */

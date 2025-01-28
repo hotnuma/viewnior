@@ -8,47 +8,46 @@
 //#include <stdlib.h>
 #include <libintl.h>
 //#include <glib/gi18n.h>
-#define _(String) gettext (String)
+#define _(String) gettext(String)
 
 #include "xfce-filename-input.h"
 
 // dialog_file_rename
 static void _dialog_select_filename(GtkWidget *entry, const gchar *filename);
 
-gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
+gchar *dialog_file_rename(GtkWindow *window, const gchar *filename)
 {
-    //g_return_val_if_fail(parent == NULL
-    //                     || GDK_IS_SCREEN(parent)
-    //                     || GTK_IS_WINDOW(parent), FALSE);
+    // g_return_val_if_fail(parent == NULL
+    //                      || GDK_IS_SCREEN(parent)
+    //                      || GTK_IS_WINDOW(parent), FALSE);
 
-    //IconFactory *icon_factory;
-    //ThunarJob         *job = NULL;
-    // get the filename of the file
-    //const gchar       *filename;
-    //filename = th_file_get_display_name(file);
+    // IconFactory *icon_factory;
+    // ThunarJob         *job = NULL;
+    //  get the filename of the file
+    // const gchar       *filename;
+    // filename = th_file_get_display_name(file);
 
     // create a new dialog window
     gchar *title = g_strdup_printf(_("Rename \"%s\""), filename);
     GtkWidget *dialog = gtk_dialog_new_with_buttons(
-                                        title,
-                                        window,
-                                        GTK_DIALOG_MODAL
-                                        | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                        _("_Cancel"),
-                                        GTK_RESPONSE_CANCEL,
-                                        _("_Rename"),
-                                        GTK_RESPONSE_OK,
-                                        NULL);
+        title,
+        window,
+        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        _("_Cancel"),
+        GTK_RESPONSE_CANCEL,
+        _("_Rename"),
+        GTK_RESPONSE_OK,
+        NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
     g_free(title);
 
     // move the dialog to the appropriate screen
-    //GtkWindow *window;
-    //GdkScreen *screen = util_parse_parent(parent, &window);
-    //if (window == NULL && screen != NULL)
+    // GtkWindow *window;
+    // GdkScreen *screen = util_parse_parent(parent, &window);
+    // if (window == NULL && screen != NULL)
     //    gtk_window_set_screen(GTK_WINDOW(dialog), screen);
 
-    GtkWidget         *grid;
+    GtkWidget *grid;
     grid = gtk_grid_new();
     gtk_grid_set_column_spacing(GTK_GRID(grid), 6);
     gtk_grid_set_row_spacing(GTK_GRID(grid), 3);
@@ -56,24 +55,24 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
     gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), grid, TRUE, TRUE, 0);
     gtk_widget_show(grid);
 
-    //GtkIconTheme      *icon_theme;
-    //icon_theme = gtk_icon_theme_get_for_screen(gtk_widget_get_screen(dialog));
-    //icon_factory = iconfact_get_for_icon_theme(icon_theme);
-    //GdkPixbuf         *icon;
-    //icon = iconfact_load_file_icon(icon_factory, file, FILE_ICON_STATE_DEFAULT, 48);
-    //g_object_unref(G_OBJECT(icon_factory));
+    // GtkIconTheme      *icon_theme;
+    // icon_theme = gtk_icon_theme_get_for_screen(gtk_widget_get_screen(dialog));
+    // icon_factory = iconfact_get_for_icon_theme(icon_theme);
+    // GdkPixbuf         *icon;
+    // icon = iconfact_load_file_icon(icon_factory, file, FILE_ICON_STATE_DEFAULT, 48);
+    // g_object_unref(G_OBJECT(icon_factory));
 
-    //GtkWidget         *image;
-    //image = gtk_image_new_from_pixbuf(icon);
-    //gtk_widget_set_margin_start(GTK_WIDGET(image), 6);
-    //gtk_widget_set_margin_end(GTK_WIDGET(image), 6);
-    //gtk_widget_set_margin_top(GTK_WIDGET(image), 6);
-    //gtk_widget_set_margin_bottom(GTK_WIDGET(image), 6);
-    //gtk_grid_attach(GTK_GRID(grid), image, 0, 0, 1, 2);
-    //g_object_unref(G_OBJECT(icon));
-    //gtk_widget_show(image);
+    // GtkWidget         *image;
+    // image = gtk_image_new_from_pixbuf(icon);
+    // gtk_widget_set_margin_start(GTK_WIDGET(image), 6);
+    // gtk_widget_set_margin_end(GTK_WIDGET(image), 6);
+    // gtk_widget_set_margin_top(GTK_WIDGET(image), 6);
+    // gtk_widget_set_margin_bottom(GTK_WIDGET(image), 6);
+    // gtk_grid_attach(GTK_GRID(grid), image, 0, 0, 1, 2);
+    // g_object_unref(G_OBJECT(icon));
+    // gtk_widget_show(image);
 
-    GtkWidget         *label;
+    GtkWidget *label;
     label = gtk_label_new(_("Enter the new name:"));
     gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
     gtk_widget_set_hexpand(label, TRUE);
@@ -86,7 +85,7 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
     gtk_widget_set_hexpand(GTK_WIDGET(filename_input), TRUE);
     gtk_widget_set_valign(GTK_WIDGET(filename_input), GTK_ALIGN_CENTER);
 
-        /* connect to signals so that the sensitivity of the Create button is updated according to whether there
+    /* connect to signals so that the sensitivity of the Create button is updated according to whether there
      * is a valid file name entered */
     g_signal_connect_swapped(
         filename_input, "text-invalid",
@@ -100,9 +99,9 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
 
     gtk_grid_attach(GTK_GRID(grid), GTK_WIDGET(filename_input), 1, 1, 1, 1);
 
-    //etk_label_set_a11y_relation(
-    //                GTK_LABEL(label),
-    //                GTK_WIDGET(xfce_filename_input_get_entry(filename_input)));
+    // etk_label_set_a11y_relation(
+    //                 GTK_LABEL(label),
+    //                 GTK_WIDGET(xfce_filename_input_get_entry(filename_input)));
 
     gtk_widget_show_all(GTK_WIDGET(filename_input));
 
@@ -120,7 +119,7 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
     pango_layout_get_pixel_size(layout, &layout_width, NULL);
     gint layout_offset;
     gtk_entry_get_layout_offsets(entry, &layout_offset, NULL);
-    layout_width +=(layout_offset * 2) +(12 * 4) + 48; // 12px free space in entry
+    layout_width += (layout_offset * 2) + (12 * 4) + 48; // 12px free space in entry
 
     gint parent_width = 500;
 
@@ -138,7 +137,7 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
                                 -1);
 
     // automatically close the dialog when the file is destroyed
-    //g_signal_connect_swapped(G_OBJECT(file), "destroy",
+    // g_signal_connect_swapped(G_OBJECT(file), "destroy",
     //                         G_CALLBACK(gtk_widget_destroy), dialog);
 
     // run the dialog
@@ -156,7 +155,7 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
         if (g_strcmp0(filename, text) != 0)
         {
             // try to rename the file
-            //job = io_rename_file(file, text);
+            // job = io_rename_file(file, text);
         }
     }
 
@@ -165,7 +164,7 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
         return NULL;
 
     // unregister handler
-    //g_signal_handlers_disconnect_by_func(G_OBJECT(file),
+    // g_signal_handlers_disconnect_by_func(G_OBJECT(file),
     //                                     gtk_widget_destroy,
     //                                     dialog);
 
@@ -176,17 +175,17 @@ gchar* dialog_file_rename(GtkWindow *window, const gchar *filename)
 
 static void _dialog_select_filename(GtkWidget *entry, const gchar *filename)
 {
-    //const gchar *filename;
-    // check if we have a directory here
-    //if (th_file_is_directory(file))
+    // const gchar *filename;
+    //  check if we have a directory here
+    // if (th_file_is_directory(file))
     //{
-    //    gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
-    //    return;
-    //}
+    //     gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+    //     return;
+    // }
 
-    //filename = th_file_get_display_name(file);
+    // filename = th_file_get_display_name(file);
 
- #if 0
+#if 0
     // check if the filename contains an extension
     const gchar *ext = util_str_get_extension(filename);
     if (ext == NULL)
@@ -202,7 +201,4 @@ static void _dialog_select_filename(GtkWidget *entry, const gchar *filename)
     if (offset > 0)
         gtk_editable_select_region(GTK_EDITABLE(entry), 0, offset);
 #endif
-
 }
-
-

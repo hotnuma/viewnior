@@ -25,12 +25,11 @@
 #include "uni-dragger.h"
 #include "uni-image-view.h"
 
-G_DEFINE_TYPE (UniDragger, uni_dragger, G_TYPE_OBJECT);
-
+G_DEFINE_TYPE(UniDragger, uni_dragger, G_TYPE_OBJECT);
 
 /* Drag 'n Drop */
 static GtkTargetEntry target_table[] = {
-	{ "text/uri-list", 0, 0},
+    {"text/uri-list", 0, 0},
 };
 
 /*************************************************************/
@@ -38,16 +37,15 @@ static GtkTargetEntry target_table[] = {
 /*************************************************************/
 
 static void
-uni_dragger_grab_pointer (UniDragger * tool,
-                            GdkWindow * window, guint32 time)
+uni_dragger_grab_pointer(UniDragger *tool,
+                         GdkWindow *window, guint32 time)
 {
-    int mask = (GDK_POINTER_MOTION_MASK
-                | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_RELEASE_MASK);
-    gdk_pointer_grab (window, FALSE, mask, NULL, tool->grab_cursor, time);
+    int mask = (GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_RELEASE_MASK);
+    gdk_pointer_grab(window, FALSE, mask, NULL, tool->grab_cursor, time);
 }
 
 static void
-uni_dragger_get_drag_delta (UniDragger * tool, int *x, int *y)
+uni_dragger_get_drag_delta(UniDragger *tool, int *x, int *y)
 {
     *x = tool->drag_base_x - tool->drag_ofs_x;
     *y = tool->drag_base_y - tool->drag_ofs_y;
@@ -58,9 +56,9 @@ uni_dragger_get_drag_delta (UniDragger * tool, int *x, int *y)
 /*************************************************************/
 
 gboolean
-uni_dragger_button_press (UniDragger * tool, GdkEventButton * ev)
+uni_dragger_button_press(UniDragger *tool, GdkEventButton *ev)
 {
-    uni_dragger_grab_pointer (tool, ev->window, ev->time);
+    uni_dragger_grab_pointer(tool, ev->window, ev->time);
     tool->pressed = TRUE;
     tool->drag_base_x = ev->x;
     tool->drag_base_y = ev->y;
@@ -71,58 +69,58 @@ uni_dragger_button_press (UniDragger * tool, GdkEventButton * ev)
 }
 
 gboolean
-uni_dragger_button_release (UniDragger * tool, GdkEventButton * ev)
+uni_dragger_button_release(UniDragger *tool, GdkEventButton *ev)
 {
     if (ev->button != 1)
         return FALSE;
-    gdk_pointer_ungrab (ev->time);
+    gdk_pointer_ungrab(ev->time);
     tool->pressed = FALSE;
     tool->dragging = FALSE;
     return TRUE;
 }
 
 gboolean
-uni_dragger_motion_notify (UniDragger * tool, GdkEventMotion * ev)
+uni_dragger_motion_notify(UniDragger *tool, GdkEventMotion *ev)
 {
-    GtkAdjustment * vadj;
-    GtkAdjustment * hadj;
+    GtkAdjustment *vadj;
+    GtkAdjustment *hadj;
 
     if (tool->pressed)
         tool->dragging = TRUE;
     else
-    	return FALSE;
+        return FALSE;
 
     tool->drag_ofs_x = ev->x;
     tool->drag_ofs_y = ev->y;
 
     int dx, dy;
-    uni_dragger_get_drag_delta (tool, &dx, &dy);
-    if (abs (dx) < 1 && abs (dy) < 1)
+    uni_dragger_get_drag_delta(tool, &dx, &dy);
+    if (abs(dx) < 1 && abs(dy) < 1)
         return FALSE;
 
     vadj = uni_image_view_get_vadjustment(UNI_IMAGE_VIEW(tool->view));
     hadj = uni_image_view_get_hadjustment(UNI_IMAGE_VIEW(tool->view));
-    if ( pow(dx, 2) + pow(dy, 2) > 7 && UNI_IMAGE_VIEW(tool->view)->pixbuf != NULL && 
-    		gtk_adjustment_get_upper(vadj) <= gtk_adjustment_get_page_size(vadj) && 
-    		gtk_adjustment_get_upper(hadj) <= gtk_adjustment_get_page_size(hadj) ) 
+    if (pow(dx, 2) + pow(dy, 2) > 7 && UNI_IMAGE_VIEW(tool->view)->pixbuf != NULL &&
+        gtk_adjustment_get_upper(vadj) <= gtk_adjustment_get_page_size(vadj) &&
+        gtk_adjustment_get_upper(hadj) <= gtk_adjustment_get_page_size(hadj))
     {
-		uni_dragger_button_release (tool, (GdkEventButton*)ev);
-    	gtk_drag_begin (GTK_WIDGET(tool->view),
-                gtk_target_list_new(target_table, G_N_ELEMENTS(target_table)),
-                GDK_ACTION_COPY,
-                1,
-                (GdkEvent*)ev);
-		return TRUE;
+        uni_dragger_button_release(tool, (GdkEventButton *)ev);
+        gtk_drag_begin(GTK_WIDGET(tool->view),
+                       gtk_target_list_new(target_table, G_N_ELEMENTS(target_table)),
+                       GDK_ACTION_COPY,
+                       1,
+                       (GdkEvent *)ev);
+        return TRUE;
     }
 
     GdkRectangle viewport;
-    uni_image_view_get_viewport (UNI_IMAGE_VIEW (tool->view), &viewport);
+    uni_image_view_get_viewport(UNI_IMAGE_VIEW(tool->view), &viewport);
 
     int offset_x = viewport.x + dx;
     int offset_y = viewport.y + dy;
 
-    uni_image_view_set_offset (UNI_IMAGE_VIEW (tool->view), offset_x,
-                               offset_y, FALSE);
+    uni_image_view_set_offset(UNI_IMAGE_VIEW(tool->view), offset_x,
+                              offset_y, FALSE);
 
     tool->drag_base_x = tool->drag_ofs_x;
     tool->drag_base_y = tool->drag_ofs_y;
@@ -130,18 +128,16 @@ uni_dragger_motion_notify (UniDragger * tool, GdkEventMotion * ev)
     return TRUE;
 }
 
-void
-uni_dragger_pixbuf_changed (UniDragger * tool,
-                            gboolean reset_fit, GdkRectangle * rect)
+void uni_dragger_pixbuf_changed(UniDragger *tool,
+                                gboolean reset_fit, GdkRectangle *rect)
 {
-    uni_pixbuf_draw_cache_invalidate (tool->cache);
+    uni_pixbuf_draw_cache_invalidate(tool->cache);
 }
 
-void
-uni_dragger_paint_image (UniDragger * tool,
-                         UniPixbufDrawOpts * opts, cairo_t *cr)
+void uni_dragger_paint_image(UniDragger *tool,
+                             UniPixbufDrawOpts *opts, cairo_t *cr)
 {
-    uni_pixbuf_draw_cache_draw (tool->cache, opts, cr);
+    uni_pixbuf_draw_cache_draw(tool->cache, opts, cr);
 }
 
 /*************************************************************/
@@ -149,60 +145,61 @@ uni_dragger_paint_image (UniDragger * tool,
 /*************************************************************/
 
 static void
-uni_dragger_finalize (GObject * object)
+uni_dragger_finalize(GObject *object)
 {
-    UniDragger *dragger = UNI_DRAGGER (object);
-    uni_pixbuf_draw_cache_free (dragger->cache);
+    UniDragger *dragger = UNI_DRAGGER(object);
+    uni_pixbuf_draw_cache_free(dragger->cache);
 
     /* Chain up */
-    G_OBJECT_CLASS (uni_dragger_parent_class)->finalize (object);
+    G_OBJECT_CLASS(uni_dragger_parent_class)->finalize(object);
 }
 
-enum {
+enum
+{
     PROP_IMAGE_VIEW = 1
 };
 
 static void
-uni_dragger_set_property (GObject * object,
-                          guint prop_id,
-                          const GValue * value, GParamSpec * pspec)
+uni_dragger_set_property(GObject *object,
+                         guint prop_id,
+                         const GValue *value, GParamSpec *pspec)
 {
-    UniDragger *dragger = UNI_DRAGGER (object);
+    UniDragger *dragger = UNI_DRAGGER(object);
     if (prop_id == PROP_IMAGE_VIEW)
-        dragger->view = g_value_get_object (value);
+        dragger->view = g_value_get_object(value);
     else
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 }
 
 static void
-uni_dragger_class_init (UniDraggerClass * klass)
+uni_dragger_class_init(UniDraggerClass *klass)
 {
-    GObjectClass *object_class = (GObjectClass *) klass;
+    GObjectClass *object_class = (GObjectClass *)klass;
     object_class->finalize = uni_dragger_finalize;
     object_class->set_property = uni_dragger_set_property;
 
-    GParamSpec *pspec = g_param_spec_object ("view",
-                                             "Image View",
-                                             "Image View to navigate",
-                                             UNI_TYPE_IMAGE_VIEW,
-                                             G_PARAM_CONSTRUCT_ONLY |
-                                             G_PARAM_WRITABLE);
-    g_object_class_install_property (object_class, PROP_IMAGE_VIEW, pspec);
+    GParamSpec *pspec = g_param_spec_object("view",
+                                            "Image View",
+                                            "Image View to navigate",
+                                            UNI_TYPE_IMAGE_VIEW,
+                                            G_PARAM_CONSTRUCT_ONLY |
+                                                G_PARAM_WRITABLE);
+    g_object_class_install_property(object_class, PROP_IMAGE_VIEW, pspec);
 }
 
 static void
-uni_dragger_init (UniDragger * tool)
+uni_dragger_init(UniDragger *tool)
 {
     tool->view = NULL;
-    tool->cache = uni_pixbuf_draw_cache_new ();
-    
+    tool->cache = uni_pixbuf_draw_cache_new();
+
     tool->pressed = FALSE;
     tool->dragging = FALSE;
     tool->drag_base_x = 0;
     tool->drag_base_y = 0;
     tool->drag_ofs_x = 0;
     tool->drag_ofs_y = 0;
-    tool->grab_cursor = gdk_cursor_new (GDK_FLEUR);
+    tool->grab_cursor = gdk_cursor_new(GDK_FLEUR);
 }
 
 /**
@@ -213,12 +210,12 @@ uni_dragger_init (UniDragger * tool)
  * Creates and returns a new dragger tool.
  **/
 UniDragger *
-uni_dragger_new (GtkWidget * view)
+uni_dragger_new(GtkWidget *view)
 {
-    g_return_val_if_fail (view != NULL, NULL);
+    g_return_val_if_fail(view != NULL, NULL);
     UniDragger *data;
 
-    data = UNI_DRAGGER (g_object_new (UNI_TYPE_DRAGGER, "view", view, NULL));
+    data = UNI_DRAGGER(g_object_new(UNI_TYPE_DRAGGER, "view", view, NULL));
 
     return data;
 }

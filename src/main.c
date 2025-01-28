@@ -18,7 +18,7 @@
  */
 
 #include <libintl.h>
-#define _(String) gettext (String)
+#define _(String) gettext(String)
 
 #include <config.h>
 #include <gtk/gtk.h>
@@ -28,9 +28,9 @@
 #include "vnr-file.h"
 #include "vnr-tools.h"
 
-#define PIXMAP_DIR        PACKAGE_DATA_DIR"/viewnior/pixmaps/"
+#define PIXMAP_DIR PACKAGE_DATA_DIR "/viewnior/pixmaps/"
 
-static gchar **files = NULL;     //array of files specified to be opened
+static gchar **files = NULL; // array of files specified to be opened
 static gboolean version = FALSE;
 static gboolean slideshow = FALSE;
 static gboolean fullscreen = FALSE;
@@ -42,11 +42,9 @@ static GOptionEntry opt_entries[] = {
     {"version", 0, 0, G_OPTION_ARG_NONE, &version, NULL, NULL},
     {"slideshow", 0, 0, G_OPTION_ARG_NONE, &slideshow, NULL, NULL},
     {"fullscreen", 0, 0, G_OPTION_ARG_NONE, &fullscreen, NULL, NULL},
-    {NULL}
-};
+    {NULL}};
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     GError *error = NULL;
     GOptionContext *opt_context;
@@ -54,24 +52,22 @@ main(int argc, char **argv)
 
     GSList *uri_list = NULL;
 
+    bindtextdomain(GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+    bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+    textdomain(GETTEXT_PACKAGE);
 
-    bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-    textdomain (GETTEXT_PACKAGE);
-
-    opt_context = g_option_context_new ("- Elegant Image Viewer");
-    g_option_context_add_main_entries (opt_context, opt_entries, NULL);
-    g_option_context_add_group (opt_context, gtk_get_option_group (TRUE));
-    g_option_context_parse (opt_context, &argc, &argv, &error);
+    opt_context = g_option_context_new("- Elegant Image Viewer");
+    g_option_context_add_main_entries(opt_context, opt_entries, NULL);
+    g_option_context_add_group(opt_context, gtk_get_option_group(TRUE));
+    g_option_context_parse(opt_context, &argc, &argv, &error);
 
     if (error != NULL)
     {
-        printf
-            ("%s\nRun 'viewnior --help' to see a full list of available command line options.\n",
-             error->message);
+        printf("%s\nRun 'viewnior --help' to see a full list of available command line options.\n",
+               error->message);
         return 1;
     }
-    else if(version)
+    else if (version)
     {
         printf("%s\n", PACKAGE_STRING);
         return 0;
@@ -79,42 +75,42 @@ main(int argc, char **argv)
 
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), PIXMAP_DIR);
 
-    window = window_new ();
-    gtk_window_set_default_size (window, 480, 300);
-    gtk_window_set_position (window, GTK_WIN_POS_CENTER);
+    window = window_new();
+    gtk_window_set_default_size(window, 480, 300);
+    gtk_window_set_position(window, GTK_WIN_POS_CENTER);
 
-    uri_list = vnr_tools_get_list_from_array (files);
+    uri_list = vnr_tools_get_list_from_array(files);
 
     GList *file_list = NULL;
 
-    if(uri_list != NULL)
+    if (uri_list != NULL)
     {
         if (g_slist_length(uri_list) == 1)
         {
-            vnr_file_load_single_uri (uri_list->data, &file_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
+            vnr_file_load_single_uri(uri_list->data, &file_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
         }
         else
         {
-            vnr_file_load_uri_list (uri_list, &file_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
+            vnr_file_load_uri_list(uri_list, &file_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
         }
 
-        if(error != NULL && file_list != NULL)
+        if (error != NULL && file_list != NULL)
         {
             window_slideshow_deny(VNR_WINDOW(window));
-            vnr_message_area_show(VNR_MESSAGE_AREA (VNR_WINDOW(window)->msg_area),
+            vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(window)->msg_area),
                                   TRUE, error->message, TRUE);
             window_set_list(VNR_WINDOW(window), file_list, TRUE);
         }
-        else if(error != NULL)
+        else if (error != NULL)
         {
             window_slideshow_deny(VNR_WINDOW(window));
-            vnr_message_area_show(VNR_MESSAGE_AREA (VNR_WINDOW(window)->msg_area),
+            vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(window)->msg_area),
                                   TRUE, error->message, TRUE);
         }
-        else if(file_list == NULL)
+        else if (file_list == NULL)
         {
             window_slideshow_deny(VNR_WINDOW(window));
-            vnr_message_area_show(VNR_MESSAGE_AREA (VNR_WINDOW(window)->msg_area),
+            vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(window)->msg_area),
                                   TRUE, _("The given locations contain no images."),
                                   TRUE);
         }
@@ -123,17 +119,15 @@ main(int argc, char **argv)
             window_set_list(VNR_WINDOW(window), file_list, TRUE);
         }
     }
-    
+
     VNR_WINDOW(window)->prefs->start_slideshow = slideshow;
     VNR_WINDOW(window)->prefs->start_fullscreen = fullscreen;
     if (VNR_WINDOW(window)->prefs->start_maximized)
     {
-    	gtk_window_maximize(window);
+        gtk_window_maximize(window);
     }
-    gtk_widget_show (GTK_WIDGET (window));
-    gtk_main ();
+    gtk_widget_show(GTK_WIDGET(window));
+    gtk_main();
 
     return 0;
 }
-
-

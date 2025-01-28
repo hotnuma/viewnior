@@ -3,6 +3,4 @@
 
 #include <gtk/gtk.h>
 
-
-
 #endif // DIALOG_H
