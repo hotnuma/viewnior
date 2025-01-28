@@ -20,7 +20,7 @@
 #include <gtk/gtk.h>
 #include "vnr-message-area.h"
 
-G_DEFINE_TYPE(VnrMessageArea, vnr_message_area, GTK_TYPE_EVENT_BOX);
+G_DEFINE_TYPE(VnrMessageArea, vnr_message_area, GTK_TYPE_EVENT_BOX)
 
 static void
 vnr_message_area_class_init(VnrMessageAreaClass *klass) {}

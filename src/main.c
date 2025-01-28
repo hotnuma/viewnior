@@ -18,7 +18,9 @@
  */
 
 #include <libintl.h>
-#define _(String) gettext(String)
+// clang-format off
+#define _(String) gettext (String)
+// clang-format on
 
 #include <config.h>
 #include <gtk/gtk.h>

@@ -23,7 +23,7 @@
 #include "uni-nav.h"
 #include "uni-utils.h"
 
-G_DEFINE_TYPE(UniNav, uni_nav, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(UniNav, uni_nav, GTK_TYPE_WINDOW)
 
 /*************************************************************/
 /***** Static stuff ******************************************/

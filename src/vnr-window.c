@@ -18,9 +18,12 @@
  */
 
 #include <stdlib.h>
+
 #include <libintl.h>
 #include <glib/gi18n.h>
+// clang-format off
 #define _(String) gettext (String)
+// clang-format on
 
 #include "config.h"
 #include <glib/gstdio.h>

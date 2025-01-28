@@ -24,7 +24,7 @@
 
 #define CROP_UI_PATH PACKAGE_DATA_DIR "/viewnior/vnr-crop-dialog.ui"
 
-G_DEFINE_TYPE(VnrCrop, vnr_crop, G_TYPE_OBJECT);
+G_DEFINE_TYPE(VnrCrop, vnr_crop, G_TYPE_OBJECT)
 
 static void spin_x_cb(GtkSpinButton *spinbutton, VnrCrop *crop);
 static void spin_width_cb(GtkSpinButton *spinbutton, VnrCrop *crop);

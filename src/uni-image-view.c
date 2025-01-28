@@ -34,6 +34,7 @@
 #include "uni-utils.h"
 #include "vnr-window.h"
 
+// clang-format off
 #define g_signal_handlers_disconnect_by_data(instance, data) \
     g_signal_handlers_disconnect_matched ((instance), G_SIGNAL_MATCH_DATA, \
                                          0, 0, NULL, NULL, (data))
@@ -43,6 +44,7 @@
 #define g_signal_handlers_unblock_by_data(instance, data) \
     g_signal_handlers_unblock_matched ((instance), G_SIGNAL_MATCH_DATA, \
                                       0, 0, NULL, NULL, (data))
+// clang-format on
 
 /*************************************************************/
 /***** Private data ******************************************/

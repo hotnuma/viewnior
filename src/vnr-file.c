@@ -18,8 +18,10 @@
  */
 
 #include <libintl.h>
-#include <glib/gi18n.h>
+//#include <glib/gi18n.h>
+// clang-format off
 #define _(String) gettext (String)
+// clang-format on
 
 #include <gtk/gtk.h>
 #include <gio/gio.h>

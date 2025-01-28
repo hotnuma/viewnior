@@ -37,7 +37,7 @@ enum
 
 static guint uni_anim_view_signals[LAST_SIGNAL] = {0};
 
-G_DEFINE_TYPE(UniAnimView, uni_anim_view, UNI_TYPE_IMAGE_VIEW);
+G_DEFINE_TYPE(UniAnimView, uni_anim_view, UNI_TYPE_IMAGE_VIEW)
 
 /*************************************************************/
 /***** Static stuff ******************************************/

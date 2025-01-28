@@ -25,7 +25,7 @@
 #include "uni-dragger.h"
 #include "uni-image-view.h"
 
-G_DEFINE_TYPE(UniDragger, uni_dragger, G_TYPE_OBJECT);
+G_DEFINE_TYPE(UniDragger, uni_dragger, G_TYPE_OBJECT)
 
 /* Drag 'n Drop */
 static GtkTargetEntry target_table[] = {

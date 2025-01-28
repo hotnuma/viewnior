@@ -5,10 +5,10 @@
 #include "dialog.h"
 #include "config.h"
 
-//#include <stdlib.h>
 #include <libintl.h>
-//#include <glib/gi18n.h>
-#define _(String) gettext(String)
+// clang-format off
+#define _(String) gettext (String)
+// clang-format on
 
 #include "xfce-filename-input.h"
 

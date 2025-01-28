@@ -18,9 +18,11 @@
  */
 
 #include <libintl.h>
-#include <glib/gstdio.h>
-#include <glib/gi18n.h>
+//#include <glib/gstdio.h>
+//#include <glib/gi18n.h>
+// clang-format off
 #define _(String) gettext (String)
+// clang-format on
 
 #include <time.h>
 #include <locale.h>
