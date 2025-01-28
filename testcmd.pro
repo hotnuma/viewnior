@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = src/viewnior
+TARGET = viewnior
 CONFIG = c99 link_pkgconfig
 DEFINES = _GNU_SOURCE
 INCLUDEPATH =
@@ -37,8 +37,7 @@ DISTFILES = \
     Readme.md \
     install.sh \
     meson.build \
-    meson_post_install.py \
-    src/meson.build
+    meson_post_install.py
 
 HEADERS = \
     src/dialog.h \

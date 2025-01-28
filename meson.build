@@ -1,28 +1,22 @@
-project('viewnior', 'c', 'cpp',
-  version: '1.8',
-  license: 'GPL3+',
-  meson_version: '>= 0.43.0'
+project(
+    'viewnior',
+    ['c', 'cpp'],
+    version: '1.8',
+    license: 'GPL3+',
 )
 
-add_global_arguments('-Wno-deprecated-declarations', language: 'c')
+add_global_arguments(
+    '-Wno-deprecated-declarations',
+    language: 'c')
 
-# Directory variables
 datadir = get_option('datadir')
-#
-
-# Compiler variables
 cc = meson.get_compiler('c')
-#
-
-# Imports
 gnome = import('gnome')
 i18n = import('i18n')
-#
 
-# Dependencies
 glib_ver = '>= 2.32'
 
-viewnior_deps = [
+app_deps = [
   dependency('gtk+-3.0'),
   dependency('glib-2.0', version: glib_ver),
   dependency('gio-2.0', version: glib_ver),
@@ -30,9 +24,7 @@ viewnior_deps = [
   dependency('gdk-pixbuf-2.0', version: '>= 0.21'),
   dependency('exiv2', version: '>= 0.21'),
 ]
-#
 
-# Configuration
 conf = configuration_data()
 
 conf.set_quoted('VERSION', meson.project_version())
@@ -44,13 +36,53 @@ conf.set_quoted('PACKAGE_DATA_DIR', join_paths(get_option('prefix'), get_option(
 conf.set_quoted('PACKAGE_LOCALE_DIR', join_paths(get_option('prefix'), get_option('datadir'), 'locale'))
 
 configure_file(output: 'config.h', configuration: conf)
-#
 
-viewnior_include_dirs = include_directories('.')
+app_includes = [
+    'src',
+]
 
 subdir('po')
 subdir('data')
 subdir('man')
-subdir('src')
+
+app_sources = [
+    'src/dialog.c',
+    'src/main.c',
+    'src/uni-anim-view.c',
+    'src/uni-cache.c',
+    'src/uni-dragger.c',
+    'src/uni-exiv2.cpp',
+    'src/uni-image-view.c',
+    'src/uni-nav.c',
+    'src/uni-scroll-win.c',
+    'src/uni-utils.c',
+    'src/vnr-crop.c',
+    'src/vnr-file.c',
+    'src/vnr-message-area.c',
+    'src/vnr-prefs.c',
+    'src/vnr-properties-dialog.c',
+    'src/vnr-tools.c',
+    'src/vnr-window.c',
+    'src/xfce-filename-input.c',
+]
+
+marshal = 'uni-marshal'
+
+app_sources += gnome.genmarshal(
+    marshal,
+    sources: 'src/' + marshal + '.list',
+    prefix: 'uni_marshal',
+    internal: true
+)
+
+executable(
+    meson.project_name(),
+    include_directories: app_includes,
+    sources: app_sources,
+    dependencies: app_deps,
+    install: true
+)
 
 meson.add_install_script('meson_post_install.py')
+
+
