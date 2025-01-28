@@ -5,11 +5,6 @@
 #include "dialog.h"
 #include "config.h"
 
-#include <libintl.h>
-// clang-format off
-#define _(String) gettext (String)
-// clang-format on
-
 #include "xfce-filename-input.h"
 
 // dialog_file_rename

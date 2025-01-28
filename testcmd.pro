@@ -40,6 +40,7 @@ DISTFILES = \
     meson_post_install.py
 
 HEADERS = \
+    src/config.h.in \
     src/dialog.h \
     src/uni-anim-view.h \
     src/uni-cache.h \

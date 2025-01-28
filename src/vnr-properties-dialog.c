@@ -17,13 +17,6 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libintl.h>
-//#include <glib/gstdio.h>
-//#include <glib/gi18n.h>
-// clang-format off
-#define _(String) gettext (String)
-// clang-format on
-
 #include <time.h>
 #include <locale.h>
 #include "vnr-properties-dialog.h"
@@ -31,7 +24,7 @@
 #include "vnr-tools.h"
 #include "uni-exiv2.hpp"
 
-G_DEFINE_TYPE(VnrPropertiesDialog, vnr_properties_dialog, GTK_TYPE_DIALOG);
+G_DEFINE_TYPE(VnrPropertiesDialog, vnr_properties_dialog, GTK_TYPE_DIALOG)
 
 static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog);
 

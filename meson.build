@@ -25,17 +25,26 @@ app_deps = [
   dependency('exiv2', version: '>= 0.21'),
 ]
 
-conf = configuration_data()
+config = configuration_data()
+config.set_quoted('VERSION', meson.project_version())
+config.set_quoted('PACKAGE', 'viewnior')
+config.set_quoted('PACKAGE_VERSION', meson.project_version())
+config.set_quoted('PACKAGE_STRING', 'viewnior ' + meson.project_version())
+config.set_quoted('GETTEXT_PACKAGE', 'viewnior')
+config.set_quoted(
+    'PACKAGE_DATA_DIR',
+    join_paths(get_option('prefix'), get_option('datadir'))
+)
+config.set_quoted(
+    'PACKAGE_LOCALE_DIR',
+    join_paths(get_option('prefix'), get_option('datadir'), 'locale')
+)
 
-conf.set_quoted('VERSION', meson.project_version())
-conf.set_quoted('PACKAGE', 'viewnior')
-conf.set_quoted('PACKAGE_VERSION', meson.project_version())
-conf.set_quoted('PACKAGE_STRING', 'viewnior ' + meson.project_version())
-conf.set_quoted('GETTEXT_PACKAGE', 'viewnior')
-conf.set_quoted('PACKAGE_DATA_DIR', join_paths(get_option('prefix'), get_option('datadir')))
-conf.set_quoted('PACKAGE_LOCALE_DIR', join_paths(get_option('prefix'), get_option('datadir'), 'locale'))
-
-configure_file(output: 'config.h', configuration: conf)
+configure_file(
+    input: 'src/config.h.in',
+    output: 'config.h',
+    configuration: config
+)
 
 app_includes = [
     'src',

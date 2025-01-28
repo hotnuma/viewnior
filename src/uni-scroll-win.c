@@ -20,11 +20,6 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libintl.h>
-// clang-format off
-#define _(String) gettext (String)
-// clang-format on
-
 #include "uni-scroll-win.h"
 #include "uni-image-view.h"
 #include "uni-nav.h"

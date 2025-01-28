@@ -17,11 +17,6 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libintl.h>
-// clang-format off
-#define _(String) gettext (String)
-// clang-format on
-
 #include <config.h>
 #include <gtk/gtk.h>
 #include "config.h"

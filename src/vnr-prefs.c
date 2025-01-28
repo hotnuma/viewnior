@@ -17,19 +17,13 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libintl.h>
-//#include <glib/gi18n.h>
-// clang-format off
-#define _(String) gettext (String)
-// clang-format on
-
 #include "config.h"
 #include "vnr-prefs.h"
 #include "vnr-window.h"
 
 #define UI_PATH PACKAGE_DATA_DIR "/viewnior/vnr-preferences-dialog.ui"
 
-G_DEFINE_TYPE(VnrPrefs, vnr_prefs, G_TYPE_OBJECT);
+G_DEFINE_TYPE(VnrPrefs, vnr_prefs, G_TYPE_OBJECT)
 
 /**
  * VNR_PREF_LOAD_KEY:

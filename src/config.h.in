@@ -1,0 +1,16 @@
+
+#include <libintl.h>
+#include <glib/gi18n.h>
+// clang-format off
+#define _(String) gettext (String)
+// clang-format on
+
+#mesondefine VERSION
+#mesondefine PACKAGE
+#mesondefine PACKAGE_VERSION
+#mesondefine PACKAGE_STRING
+#mesondefine GETTEXT_PACKAGE
+#mesondefine PACKAGE_DATA_DIR
+#mesondefine PACKAGE_LOCALE_DIR
+
+
