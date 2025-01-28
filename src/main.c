@@ -99,7 +99,7 @@ int main(int argc, char **argv)
             window_slideshow_deny(VNR_WINDOW(window));
             vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(window)->msg_area),
                                   TRUE, error->message, TRUE);
-            window_set_list(VNR_WINDOW(window), file_list, TRUE);
+            window_list_set(VNR_WINDOW(window), file_list, TRUE);
         }
         else if (error != NULL)
         {
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            window_set_list(VNR_WINDOW(window), file_list, TRUE);
+            window_list_set(VNR_WINDOW(window), file_list, TRUE);
         }
     }
 

@@ -81,8 +81,6 @@ struct _VnrWindow
     GtkWidget *view;
     GtkWidget *scroll_view;
 
-    GList *file_list;
-
     VnrPrefs *prefs;
 
     gint max_width;
@@ -94,10 +92,12 @@ struct _VnrWindow
 
     WindowMode mode;
     guint8 modifications;
-
     gboolean cursor_is_hidden;
 
-    /* Fullscreen (fs) variables */
+    // List
+    GList *filelist;
+
+    // Fullscreen (fs) variables
     GtkWidget *fs_controls;
     GtkWidget *toggle_btn;
     GtkWidget *fs_seconds_label;
@@ -105,11 +105,11 @@ struct _VnrWindow
     GSource *fs_source;
     gboolean disable_autohide;
 
-    /* Slideshow (ss) variables */
+    // Slideshow (sl) variables
     gboolean slideshow;
-    guint ss_source_tag;
-    gint ss_timeout;
-    GtkWidget *ss_timeout_widget;
+    guint sl_source_tag;
+    gint sl_timeout;
+    GtkWidget *sl_timeout_widget;
 
     GtkActionGroup *action_wallpaper;
 };
@@ -121,24 +121,27 @@ struct _VnrWindowClass
 
 GType window_get_type() G_GNUC_CONST;
 
-/* Constructors */
+// Constructor
 GtkWindow *window_new();
 
-/* Actions */
+// Actions
 gboolean window_open(VnrWindow *window, gboolean fit_to_screen);
 void window_open_from_list(VnrWindow *window, GSList *uri_list);
 void window_close(VnrWindow *window);
 
-void window_set_list(VnrWindow *window, GList *list, gboolean free_current);
+void window_list_set(VnrWindow *window, GList *list, gboolean free_current);
 VnrFile *window_list_get_current(VnrWindow *window);
 gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_prev(VnrWindow *window);
 gboolean window_first(VnrWindow *window);
 gboolean window_last(VnrWindow *window);
+
+void window_fullscreen_toggle(VnrWindow *window);
 void window_slideshow_deny(VnrWindow *window);
-void window_apply_preferences(VnrWindow *window);
-void window_toggle_fullscreen(VnrWindow *window);
+void window_preferences_apply(VnrWindow *window);
 
 G_END_DECLS
 
-#endif /* __VNR_WINDOW_H__ */
+#endif // __VNR_WINDOW_H__
+
+

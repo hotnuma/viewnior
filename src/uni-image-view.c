@@ -568,7 +568,7 @@ uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
 
     if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_FULLSCREEN)
     {
-        window_toggle_fullscreen(vnr_win);
+        window_fullscreen_toggle(vnr_win);
         return 1;
     }
     else if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1 && vnr_win->prefs->behavior_click == VNR_PREFS_CLICK_NEXT)
