@@ -20,10 +20,8 @@
 #ifndef __VNR_WINDOW_H__
 #define __VNR_WINDOW_H__
 
-#include <glib.h>
-#include <glib-object.h>
-#include <gtk/gtk.h>
 #include "vnr-prefs.h"
+#include "vnr-file.h"
 
 G_BEGIN_DECLS
 
@@ -132,6 +130,7 @@ void     window_open_from_list(VnrWindow *window, GSList *uri_list);
 void     window_close(VnrWindow *window);
 
 void     window_set_list(VnrWindow *window, GList *list, gboolean free_current);
+VnrFile* window_list_get_current(VnrWindow *window);
 gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_prev(VnrWindow *window);
 gboolean window_first(VnrWindow *window);
@@ -141,6 +140,6 @@ void     window_apply_preferences(VnrWindow *window);
 void     window_toggle_fullscreen(VnrWindow *window);
 
 G_END_DECLS
-#endif /* __VNR_WINDOW_H__ */
 
+#endif /* __VNR_WINDOW_H__ */
 

@@ -34,7 +34,6 @@
 #include "uni-scroll-win.h"
 #include "uni-anim-view.h"
 #include "vnr-tools.h"
-#include "vnr-file.h"
 #include "vnr-message-area.h"
 #include "vnr-properties-dialog.h"
 #include "vnr-crop.h"
@@ -252,7 +251,8 @@ _window_update_openwith_menu(VnrWindow *window)
     GList *apps;
     guint action_id = 0;
 
-    file = g_file_new_for_path((gchar*)VNR_FILE(window->file_list->data)->path);
+    VnrFile *current = window_list_get_current(window);
+    file = g_file_new_for_path((gchar*) current->path);
     file_info = g_file_query_info(file,
                        G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
                        0, NULL, NULL);
@@ -396,9 +396,12 @@ _window_update_fs_filename_label(VnrWindow *window)
     char *buf;
 
     get_position_of_element_in_list(window->file_list, &position, &total);
+    VnrFile *current = window_list_get_current(window);
+
     buf = g_strdup_printf("%s - %i/%i",
-                           VNR_FILE(window->file_list->data)->display_name,
-                           position, total);
+                          current->display_name,
+                          position,
+                          total);
 
     gtk_label_set_text(GTK_LABEL(window->fs_filename_label), buf);
 
@@ -869,8 +872,8 @@ _on_open_with_launch_application(GtkAction *action, VnrWindow *window)
 {
     // Modified version of eog's open_with_launch_application_cb
 
-    GFile *file;
-    file = g_file_new_for_path((gchar*)VNR_FILE(window->file_list->data)->path);
+    VnrFile *current = window_list_get_current(window);
+    GFile *file = g_file_new_for_path((gchar*) current->path);
 
     GList *files = NULL;
     files = g_list_append(files, file);
@@ -956,15 +959,19 @@ _on_save_image(GtkWidget *widget, VnrWindow *window)
 {
     GError *error = NULL;
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_WATCH));
+        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+                              gdk_cursor_new(GDK_WATCH));
+
     /* This makes the cursor show NOW */
     gdk_flush();
 
     if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
 
+    VnrFile *current = window_list_get_current(window);
+
     /* Store exiv2 metadata to cache, so we can restore it afterwards */
-    uni_read_exiv2_to_cache(VNR_FILE(window->file_list->data)->path);
+    uni_read_exiv2_to_cache(current->path);
 
     if (g_strcmp0(window->writable_format_name, "jpeg" ) == 0)
     {
@@ -972,8 +979,8 @@ _on_save_image(GtkWidget *widget, VnrWindow *window)
         quality = g_strdup_printf("%i", window->prefs->jpeg_quality);
 
         gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                         VNR_FILE(window->file_list->data)->path, "jpeg",
-                         &error, "quality", quality, NULL);
+                        current->path, "jpeg",
+                        &error, "quality", quality, NULL);
         g_free(quality);
     }
     else if (g_strcmp0(window->writable_format_name, "png" ) == 0)
@@ -982,20 +989,22 @@ _on_save_image(GtkWidget *widget, VnrWindow *window)
         compression = g_strdup_printf("%i", window->prefs->png_compression);
 
         gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                         VNR_FILE(window->file_list->data)->path, "png",
-                         &error, "compression", compression, NULL);
+                        current->path, "png",
+                        &error, "compression", compression, NULL);
         g_free(compression);
     }
     else
     {
         gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                         VNR_FILE(window->file_list->data)->path,
-                         window->writable_format_name, &error, NULL);
+                        current->path,
+                        window->writable_format_name, &error, NULL);
     }
-    uni_write_exiv2_from_cache(VNR_FILE(window->file_list->data)->path);
+
+    uni_write_exiv2_from_cache(current->path);
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_LEFT_PTR));
+        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+                              gdk_cursor_new(GDK_LEFT_PTR));
 
     if (error != NULL)
     {
@@ -1097,12 +1106,18 @@ _window_on_realize(GtkWidget *widget, gpointer user_data)
 
             window_open(VNR_WINDOW(widget), TRUE);
         }
-        if ( VNR_WINDOW(widget)->prefs->start_slideshow && VNR_WINDOW(widget)->file_list != NULL ) {
+
+        if (VNR_WINDOW(widget)->prefs->start_slideshow
+            && VNR_WINDOW(widget)->file_list != NULL)
+        {
             _window_fullscreen(VNR_WINDOW(widget));
             VNR_WINDOW(widget)->mode = WINDOW_MODE_NORMAL;
             _window_slideshow_allow(VNR_WINDOW(widget));
             _window_slideshow_start(VNR_WINDOW(widget));
-        } else if ( VNR_WINDOW(widget)->prefs->start_fullscreen && VNR_WINDOW(widget)->file_list != NULL ) {
+        }
+        else if (VNR_WINDOW(widget)->prefs->start_fullscreen
+                 && VNR_WINDOW(widget)->file_list != NULL)
+        {
             _window_fullscreen(VNR_WINDOW(widget));
         }
     }
@@ -1149,11 +1164,17 @@ _window_on_zoom_changed(UniImageView *view, VnrWindow *window)
     if (gtk_action_group_get_sensitive(window->actions_image))
     {
         get_position_of_element_in_list(window->file_list, &position, &total);
-        buf = g_strdup_printf("%s%s - %i/%i - %ix%i - %i%%",(window->modifications)?"*":"",
-                               VNR_FILE(window->file_list->data)->display_name,
-                               position, total,
-                               window->current_image_width, window->current_image_height,
-                              (int)(view->zoom*100.));
+
+        VnrFile *current = window_list_get_current(window);
+
+        buf = g_strdup_printf("%s%s - %i/%i - %ix%i - %i%%",
+                              (window->modifications) ? "*" : "",
+                              current->display_name,
+                              position,
+                              total,
+                              window->current_image_width,
+                              window->current_image_height,
+                              (int) (view->zoom * 100.));
 
         gtk_window_set_title(GTK_WINDOW(window), buf);
 
@@ -1176,7 +1197,9 @@ _window_on_drag_begin(GtkWidget *widget,
 {
     gchar *uris[2];
 
-    uris[0] = g_filename_to_uri((gchar*)VNR_FILE(VNR_WINDOW(user_data)->file_list->data)->path, NULL, NULL);
+    VnrFile *current = window_list_get_current(VNR_WINDOW(user_data));
+
+    uris[0] = g_filename_to_uri((gchar*)  current->path, NULL, NULL);
     uris[1] = NULL;
 
     gtk_selection_data_set_uris(data, uris);
@@ -1395,7 +1418,8 @@ _action_open(GtkAction *action, VnrWindow *window)
 
     if (window->file_list != NULL)
     {
-        gchar *dirname = g_path_get_dirname(VNR_FILE(window->file_list->data)->path);
+        VnrFile *current = window_list_get_current(window);
+        gchar *dirname = g_path_get_dirname(current->path);
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), dirname);
         g_free(dirname);
     }
@@ -1426,7 +1450,8 @@ _action_open_dir(GtkAction *action, VnrWindow *window)
 
     if (window->file_list != NULL)
     {
-        gchar *dirname = g_path_get_dirname(VNR_FILE(window->file_list->data)->path);
+        VnrFile *current = window_list_get_current(window);
+        gchar *dirname = g_path_get_dirname(current->path);
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), dirname);
         g_free(dirname);
     }
@@ -1494,22 +1519,24 @@ _action_set_wallpaper(GtkAction *action, VnrWindow *win)
             desktop_environment = uni_detect_desktop_environment();
         }
 
+        VnrFile *current = window_list_get_current(win);
+
         switch(desktop_environment) {
             case VNR_PREFS_DESKTOP_GNOME2:
                 execlp("gconftool-2", "gconftool-2",
                         "--set", "/desktop/gnome/background/picture_filename",
                         "--type", "string",
-                        VNR_FILE(win->file_list->data)->path,
+                        current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_MATE:
                 execlp("gsettings", "gsettings",
                         "set", "org.mate.background",
-                        "picture-filename", VNR_FILE(win->file_list->data)->path,
+                        "picture-filename", current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_GNOME3:
-                tmp = g_strdup_printf("file://%s", VNR_FILE(win->file_list->data)->path);
+                tmp = g_strdup_printf("file://%s", current->path);
                 execlp("gsettings", "gsettings",
                         "set", "org.gnome.desktop.background",
                         "picture-uri", tmp,
@@ -1523,33 +1550,34 @@ _action_set_wallpaper(GtkAction *action, VnrWindow *win)
                         "-p", tmp,
                         "--type", "string",
                         "--set",
-                        VNR_FILE(win->file_list->data)->path,
+                        current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_LXDE:
                 execlp("pcmanfm", "pcmanfm",
                         "--set-wallpaper",
-                        VNR_FILE(win->file_list->data)->path,
+                        current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_PUPPY:
                 execlp("set_bg", "set_bg",
-                        VNR_FILE(win->file_list->data)->path,
+                        current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_FLUXBOX:
                 execlp("fbsetbg", "fbsetbg",
-                        "-f", VNR_FILE(win->file_list->data)->path,
+                        "-f", current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_NITROGEN:
                 execlp("nitrogen", "nitrogen",
                         "--set-zoom-fill", "--save",
-                        VNR_FILE(win->file_list->data)->path,
+                        current->path,
                         NULL);
                 break;
             case VNR_PREFS_DESKTOP_CINNAMON:
-                tmp = g_strdup_printf("file://%s", VNR_FILE(win->file_list->data)->path);
+                tmp = g_strdup_printf("file://%s",
+                                      current->path);
                 execlp("gsettings", "gsettings",
                         "set", "org.cinnamon.desktop.background",
                         "picture-uri", tmp,
@@ -1688,7 +1716,9 @@ _action_delete(GtkAction *action, VnrWindow *window)
 
     g_return_if_fail(window->file_list != NULL);
 
-    file_path = VNR_FILE(window->file_list->data)->path;
+    VnrFile *current = window_list_get_current(window);
+
+    file_path = current->path;
 
     if (window->prefs->confirm_delete)
     {
@@ -1697,7 +1727,7 @@ _action_delete(GtkAction *action, VnrWindow *window)
         /* I18N: The '%s' is replaced with the name of the file to be deleted. */
         prompt = g_strdup_printf(_("Are you sure you want to\n"
                                     "permanently delete \"%s\"?"),
-                                  VNR_FILE(window->file_list->data)->display_name);
+                                  current->display_name);
         markup = g_markup_printf_escaped("<span weight=\"bold\" size=\"larger\">%s</span>\n\n%s",
                                           prompt, warning);
 
@@ -2472,7 +2502,7 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
     if (window->file_list == NULL)
         return FALSE;
 
-    file = VNR_FILE(window->file_list->data);
+    file = window_list_get_current(window);
 
     _window_update_fs_filename_label(window);
 
@@ -2642,6 +2672,12 @@ window_set_list(VnrWindow *window, GList *list, gboolean free_current)
     }
 
     window->file_list = list;
+}
+
+VnrFile*
+window_list_get_current(VnrWindow *window)
+{
+    return VNR_FILE(window->file_list->data);
 }
 
 gboolean
