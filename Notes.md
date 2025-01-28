@@ -8,3 +8,23 @@
     
     Parse a directory and return a sorted list of files.
 
+* menu_bar
+    
+    ```
+    File
+        Open file
+        Open dir
+        Open with
+        Save
+        Reload
+        Properties
+        Close
+    Edit
+        Delete
+        Preferences
+    Show
+    Image
+    Goto
+    Help
+    ```
+    

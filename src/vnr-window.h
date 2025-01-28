@@ -66,15 +66,14 @@ struct _VnrWindow
     guint open_with_menu_id;
 
     GtkWidget *layout;
-    GtkWidget *menus;
-
+    GtkWidget *menu_box;
     GtkWidget *menu_bar;
     GtkWidget *button_menu;
     GtkWidget *toolbar;
     GtkWidget *statusbar;
+
     GtkWidget *properties_button;
     GtkWidget *popup_menu;
-
     GtkWidget *msg_area;
     GtkWidget *props_dlg;
 

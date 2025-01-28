@@ -46,6 +46,7 @@ G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 static void window_class_init(VnrWindowClass *klass);
 GtkWindow* window_new();
 static void window_init(VnrWindow *window);
+
 static void _window_update_openwith_menu(VnrWindow *window);
 static void _window_save_accel_map();
 static void _window_load_accel_map();
@@ -105,6 +106,7 @@ static void _window_on_drag_begin(GtkWidget *widget,
 static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           gint response_id,
                                           VnrWindow *window);
+
 static void _action_preferences(GtkAction *action, gpointer user_data);
 static void _action_flip_horizontal(GtkAction *action, VnrWindow *window);
 static void _action_flip_vertical(GtkAction *action, VnrWindow *window);
@@ -135,12 +137,14 @@ static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
 static void _action_delete(GtkAction *action, VnrWindow *window);
 static void _action_crop(GtkAction *action, VnrWindow *window);
+
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
 static void _window_drag_data_received(GtkWidget *widget,
                                        GdkDragContext *context,
                                        gint x, gint y,
                                        GtkSelectionData *selection_data,
                                        guint info, guint time);
+
 gboolean window_open(VnrWindow *window, gboolean fit_to_screen);
 void window_open_from_list(VnrWindow *window, GSList *uri_list);
 void window_close(VnrWindow *window);
@@ -338,7 +342,8 @@ const gchar* _ui_definition_wallpaper =
     "</ui>";
 // clang-format on
 
-static const GtkActionEntry _action_entries_window[] = {
+static const GtkActionEntry _action_entries_window[] =
+{
     {"File", NULL, N_("_File")},
     {"Edit", NULL, N_("_Edit")},
     {"View", NULL, N_("_View")},
@@ -346,80 +351,109 @@ static const GtkActionEntry _action_entries_window[] = {
     {"Go", NULL, N_("_Go")},
     {"Help", NULL, N_("_Help")},
 
-    {"FileOpen", GTK_STOCK_FILE, N_("Open _Image..."), "<control>O",
+    {"FileOpen", GTK_STOCK_FILE,
+     N_("Open _Image..."), "<control>O",
      N_("Open an Image"),
      G_CALLBACK(_action_open)},
-    {"FileOpenDir", GTK_STOCK_DIRECTORY, N_("Open _Folder..."), "<control>F",
+
+    {"FileOpenDir", GTK_STOCK_DIRECTORY,
+     N_("Open _Folder..."), "<control>F",
      N_("Open a Folder"),
      G_CALLBACK(_action_open_dir)},
-    {"FileClose", GTK_STOCK_CLOSE, N_("_Close"), "<control>W",
+
+    {"FileClose", GTK_STOCK_CLOSE,
+     N_("_Close"), "<control>W",
      N_("Close window"),
      G_CALLBACK(gtk_main_quit)},
-    {"HelpAbout", GTK_STOCK_ABOUT, N_("_About"), NULL,
+
+    {"HelpAbout", GTK_STOCK_ABOUT,
+     N_("_About"), NULL,
      N_("About this application"),
      G_CALLBACK(_action_about)},
-    {"EditPreferences", GTK_STOCK_PREFERENCES, N_("_Preferences..."), NULL,
+
+    {"EditPreferences", GTK_STOCK_PREFERENCES,
+     N_("_Preferences..."), NULL,
      N_("User preferences for Viewnior"),
      G_CALLBACK(_action_preferences)}};
 
-static const GtkActionEntry _action_entry_save[] = {
+static const GtkActionEntry _action_entry_save[] =
+{
     {"FileSave", GTK_STOCK_SAVE, N_("_Save"), "<control>S",
      N_("Save changes"),
      G_CALLBACK(_action_save_image)},
 };
 
-static const GtkToggleActionEntry _toggle_entry_properties[] = {
+static const GtkToggleActionEntry _toggle_entry_properties[] =
+{
     {"Properties", GTK_STOCK_PROPERTIES, N_("_Properties"), NULL,
      N_("Properties"),
      G_CALLBACK(_action_open_menu)},
 };
 
-static const GtkActionEntry _action_entry_wallpaper[] = {
+static const GtkActionEntry _action_entry_wallpaper[] =
+{
     {"SetAsWallpaper", NULL, N_("Set as _Wallpaper"), "<control>F8",
      N_("Set the selected image as the desktop background"),
      G_CALLBACK(_action_set_wallpaper)},
 };
 
-static const GtkActionEntry _action_entries_image[] = {
-    {"FileOpenWith", NULL, N_("Open _With"), NULL,
+static const GtkActionEntry _action_entries_image[] =
+{
+    {"FileOpenWith", NULL,
+     N_("Open _With"), NULL,
      N_("Open the selected image with a different application"),
      NULL},
-    {"FileDelete", GTK_STOCK_DELETE, N_("_Delete"), NULL,
+
+    {"FileDelete", GTK_STOCK_DELETE,
+     N_("_Delete"), NULL,
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
-    {"FileProperties", GTK_STOCK_PROPERTIES, N_("_Properties..."), "<Alt>Return",
+
+    {"FileProperties", GTK_STOCK_PROPERTIES,
+     N_("_Properties..."), "<Alt>Return",
      N_("Show information about the current file"),
      G_CALLBACK(_action_properties)},
-    {"FileReload", GTK_STOCK_REFRESH, N_("_Reload"), NULL,
+
+    {"FileReload", GTK_STOCK_REFRESH,
+     N_("_Reload"), NULL,
      N_("Reload the current file"),
      G_CALLBACK(_action_reload)},
+
     {"Delete", NULL, N_("_Delete"), "Delete",
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
+
     {"ViewZoomIn", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>plus",
      N_("Enlarge the image"),
      G_CALLBACK(_action_zoom_in)},
+
     {"ViewZoomOut", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>minus",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
+
     {"ViewZoomNormal", GTK_STOCK_ZOOM_100, N_("_Normal Size"), "<control>0",
      N_("Show the image at its normal size"),
      G_CALLBACK(_action_normal_size)},
+
     {"ViewZoomFit", GTK_STOCK_ZOOM_FIT, N_("Best _Fit"), NULL,
      N_("Fit the image to the window"),
      G_CALLBACK(_action_fit)},
+
     {"ControlEqual", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>equal",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_in)},
+
     {"ControlKpAdd", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>KP_Add",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_in)},
+
     {"ControlKpSub", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>KP_Subtract",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
 };
 
-static const GtkActionEntry _action_entries_static_image[] = {
+static const GtkActionEntry _action_entries_static_image[] =
+{
     {"ImageRotateCW", "object-rotate-right", N_("Rotate _Clockwise"), "<control>R",
      N_("Rotate image clockwise"),
      G_CALLBACK(_action_rotate_cw)},
@@ -437,7 +471,8 @@ static const GtkActionEntry _action_entries_static_image[] = {
      G_CALLBACK(_action_crop)},
 };
 
-static const GtkToggleActionEntry _toggle_entries_image[] = {
+static const GtkToggleActionEntry _toggle_entries_image[] =
+{
     {"ViewFullscreen", GTK_STOCK_FULLSCREEN, N_("Full _Screen"), "F11",
      N_("Show in fullscreen mode"),
      G_CALLBACK(_action_fullscreen)},
@@ -446,7 +481,8 @@ static const GtkToggleActionEntry _toggle_entries_image[] = {
      G_CALLBACK(_action_resize)},
 };
 
-static const GtkToggleActionEntry _toggle_entries_window[] = {
+static const GtkToggleActionEntry _toggle_entries_window[] =
+{
     {"ViewMenuBar", NULL, N_("Menu Bar"), NULL,
      N_("Show Menu Bar"),
      G_CALLBACK(_action_menu_bar)},
@@ -461,13 +497,15 @@ static const GtkToggleActionEntry _toggle_entries_window[] = {
      G_CALLBACK(_action_statusbar)},
 };
 
-static const GtkToggleActionEntry _toggle_entries_collection[] = {
+static const GtkToggleActionEntry _toggle_entries_collection[] =
+{
     {"ViewSlideshow", GTK_STOCK_NETWORK, N_("Sli_deshow"), "F6",
      N_("Show in slideshow mode"),
      G_CALLBACK(_action_slideshow)},
 };
 
-static const GtkActionEntry _action_entries_collection[] = {
+static const GtkActionEntry _action_entries_collection[] =
+{
     {"GoPrevious", GTK_STOCK_GO_BACK, N_("_Previous Image"), "<Alt>Left",
      N_("Go to the previous image of the collection"),
      G_CALLBACK(_action_prev)},
@@ -482,17 +520,20 @@ static const GtkActionEntry _action_entries_collection[] = {
      G_CALLBACK(_action_last)},
 };
 
+
+// Window creation -----------------------------------------------------------
+
+GtkWindow* window_new()
+{
+    return (GtkWindow *)g_object_new(VNR_TYPE_WINDOW, NULL);
+}
+
 static void window_class_init(VnrWindowClass *klass)
 {
     GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
     widget_class->key_press_event = _window_on_key_press;
     widget_class->drag_data_received = _window_drag_data_received;
-}
-
-GtkWindow* window_new()
-{
-    return (GtkWindow *)g_object_new(VNR_TYPE_WINDOW, NULL);
 }
 
 static void window_init(VnrWindow *window)
@@ -518,7 +559,7 @@ static void window_init(VnrWindow *window)
     gtk_window_set_title((GtkWindow *)window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
 
-    /* Build MENUBAR and TOOLBAR */
+    // Build MENUBAR and TOOLBAR
     window->ui_manager = gtk_ui_manager_new();
 
     window->actions_window = gtk_action_group_new("MenuActionsWindow");
@@ -535,10 +576,8 @@ static void window_init(VnrWindow *window)
                                        window->actions_window, 0);
 
     window->action_save = gtk_action_group_new("MenuActionSave");
-
     gtk_action_group_set_translation_domain(window->action_save,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_actions(window->action_save,
                                  _action_entry_save,
                                  G_N_ELEMENTS(_action_entry_save),
@@ -546,38 +585,29 @@ static void window_init(VnrWindow *window)
 
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->action_save, 0);
-
     window->action_properties = gtk_action_group_new("MenuActionProperties");
-
     gtk_action_group_set_translation_domain(window->action_properties,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_toggle_actions(window->action_properties,
                                         _toggle_entry_properties,
                                         G_N_ELEMENTS(_toggle_entry_properties),
                                         window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->action_properties, 0);
 
     window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
-
     gtk_action_group_set_translation_domain(window->actions_static_image,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_actions(window->actions_static_image,
                                  _action_entries_static_image,
                                  G_N_ELEMENTS(_action_entries_static_image),
                                  window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_static_image, 0);
 
     window->actions_image = gtk_action_group_new("MenuActionsImage");
-
     gtk_action_group_set_translation_domain(window->actions_image,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_actions(window->actions_image,
                                  _action_entries_image,
                                  G_N_ELEMENTS(_action_entries_image),
@@ -586,29 +616,22 @@ static void window_init(VnrWindow *window)
                                         _toggle_entries_image,
                                         G_N_ELEMENTS(_toggle_entries_image),
                                         window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_image, 0);
-    /**********/
-    window->actions_bars = gtk_action_group_new("MenuActionsBars");
 
+    window->actions_bars = gtk_action_group_new("MenuActionsBars");
     gtk_action_group_set_translation_domain(window->actions_bars,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_toggle_actions(window->actions_bars,
                                         _toggle_entries_window,
                                         G_N_ELEMENTS(_toggle_entries_window),
                                         window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_bars, 0);
 
-    /*****************/
     window->actions_collection = gtk_action_group_new("MenuActionsCollection");
-
     gtk_action_group_set_translation_domain(window->actions_collection,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_actions(window->actions_collection,
                                  _action_entries_collection,
                                  G_N_ELEMENTS(_action_entries_collection),
@@ -617,12 +640,12 @@ static void window_init(VnrWindow *window)
                                         _toggle_entries_collection,
                                         G_N_ELEMENTS(_toggle_entries_collection),
                                         window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_collection, 0);
 
     if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
-                                           _ui_definition, -1,
+                                           _ui_definition,
+                                           -1,
                                            &error))
     {
         g_error("building menus failed: %s\n", error->message);
@@ -630,15 +653,12 @@ static void window_init(VnrWindow *window)
     }
 
     window->action_wallpaper = gtk_action_group_new("ActionWallpaper");
-
     gtk_action_group_set_translation_domain(window->action_wallpaper,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_actions(window->action_wallpaper,
                                  _action_entry_wallpaper,
                                  G_N_ELEMENTS(_action_entry_wallpaper),
                                  window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->action_wallpaper, 0);
 
@@ -649,26 +669,26 @@ static void window_init(VnrWindow *window)
         g_error("building menus failed: %s\n", error->message);
         g_error_free(error);
     }
-    gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
 
+    gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     gtk_action_group_set_sensitive(window->actions_collection, FALSE);
     gtk_action_group_set_sensitive(window->actions_image, FALSE);
     gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
     gtk_action_group_set_sensitive(window->action_save, FALSE);
     gtk_action_group_set_sensitive(window->actions_bars, TRUE);
 
-    /* Continue with layout */
+    // Continue with layout
 
     window->layout = gtk_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(window), window->layout);
     gtk_widget_show(window->layout);
 
-    window->menus = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(window->layout), window->menus, FALSE, FALSE, 0);
+    window->menu_box = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window->layout), window->menu_box, FALSE, FALSE, 0);
 
     window->menu_bar = gtk_ui_manager_get_widget(window->ui_manager, "/MainMenu");
     g_assert(GTK_IS_WIDGET(window->menu_bar));
-    gtk_box_pack_start(GTK_BOX(window->menus), window->menu_bar, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window->menu_box), window->menu_bar, FALSE, FALSE, 0);
 
     window->properties_button = gtk_ui_manager_get_widget(window->ui_manager, "/Toolbar/Properties");
     g_assert(GTK_IS_WIDGET(window->properties_button));
@@ -677,21 +697,29 @@ static void window_init(VnrWindow *window)
     g_assert(GTK_IS_WIDGET(window->button_menu));
     gtk_menu_attach_to_widget(GTK_MENU(window->button_menu), GTK_WIDGET(window->properties_button), NULL);
 
-    window->toolbar = gtk_ui_manager_get_widget(window->ui_manager, "/Toolbar");
+    window->toolbar = gtk_ui_manager_get_widget(window->ui_manager,
+                                                "/Toolbar");
     g_assert(GTK_IS_WIDGET(window->toolbar));
-    gtk_toolbar_set_style(GTK_TOOLBAR(window->toolbar), GTK_TOOLBAR_ICONS);
-    g_object_set(G_OBJECT(window->toolbar), "show-arrow", FALSE, NULL);
-    gtk_toolbar_insert(GTK_TOOLBAR(window->toolbar),
-                       GTK_TOOL_ITEM(_window_get_fs_controls(window)), -1);
-    GtkStyleContext *context = gtk_widget_get_style_context(window->toolbar);
-    gtk_style_context_add_class(context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-    gtk_box_pack_start(GTK_BOX(window->menus), window->toolbar, FALSE, FALSE, 0);
+    gtk_toolbar_set_style(GTK_TOOLBAR(window->toolbar),
+                          GTK_TOOLBAR_ICONS);
+    g_object_set(G_OBJECT(window->toolbar),
+                 "show-arrow", FALSE, NULL);
+    gtk_toolbar_insert(
+            GTK_TOOLBAR(window->toolbar),
+            GTK_TOOL_ITEM(_window_get_fs_controls(window)), -1);
+    GtkStyleContext *context =
+            gtk_widget_get_style_context(window->toolbar);
+    gtk_style_context_add_class(context,
+                                GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+    gtk_box_pack_start(GTK_BOX(window->menu_box),
+                       window->toolbar, FALSE, FALSE, 0);
 
-    window->popup_menu = gtk_ui_manager_get_widget(window->ui_manager, "/PopupMenu");
+    window->popup_menu =
+        gtk_ui_manager_get_widget(window->ui_manager, "/PopupMenu");
     g_assert(GTK_IS_WIDGET(window->popup_menu));
 
     gtk_ui_manager_ensure_update(window->ui_manager);
-    gtk_widget_show_all(window->menus);
+    gtk_widget_show_all(window->menu_box);
 
     gtk_widget_hide(_window_get_fs_controls(window));
 
@@ -752,12 +780,13 @@ static void window_init(VnrWindow *window)
     // Initialize slideshow timeout
     window->sl_timeout = window->prefs->slideshow_timeout;
 
-    /* Care for Properties dialog */
-    window->props_dlg = vnr_properties_dialog_new(window,
-                                                  gtk_action_group_get_action(window->actions_collection,
-                                                                              "GoNext"),
-                                                  gtk_action_group_get_action(window->actions_collection,
-                                                                              "GoPrevious"));
+    // Care for Properties dialog
+    window->props_dlg = vnr_properties_dialog_new(
+            window,
+            gtk_action_group_get_action(window->actions_collection,
+            "GoNext"),
+            gtk_action_group_get_action(window->actions_collection,
+            "GoPrevious"));
 
     window_preferences_apply(window);
 
@@ -781,8 +810,9 @@ static void window_init(VnrWindow *window)
     g_signal_connect(G_OBJECT(window->button_menu), "hide",
                      G_CALLBACK(_window_on_main_menu_hidden), window);
 
-    gtk_window_add_accel_group(GTK_WINDOW(window),
-                               gtk_ui_manager_get_accel_group(window->ui_manager));
+    gtk_window_add_accel_group(
+            GTK_WINDOW(window),
+            gtk_ui_manager_get_accel_group(window->ui_manager));
 
     _window_load_accel_map();
 }
@@ -790,9 +820,10 @@ static void window_init(VnrWindow *window)
 
 // Private actions -----------------------------------------------------------
 
-// Modified version of eog's eog_window_update_openwith_menu
 static void _window_update_openwith_menu(VnrWindow *window)
 {
+    // Modified version of eog's eog_window_update_openwith_menu
+
     GFile *file;
     GFileInfo *file_info;
     GList *iter;
@@ -883,6 +914,7 @@ static void _window_update_openwith_menu(VnrWindow *window)
                               name,
                               GTK_UI_MANAGER_MENUITEM,
                               FALSE);
+
         gtk_ui_manager_add_ui(window->ui_manager,
                               window->open_with_menu_id,
                               "/MainMenu/FileOpenWith/AppEntries",
@@ -890,6 +922,7 @@ static void _window_update_openwith_menu(VnrWindow *window)
                               name,
                               GTK_UI_MANAGER_MENUITEM,
                               FALSE);
+
         gtk_ui_manager_add_ui(window->ui_manager,
                               window->open_with_menu_id,
                               "/PopupMenu/FileOpenWith/AppEntries",
@@ -1259,7 +1292,7 @@ static gint _window_get_top_widgets_height(VnrWindow *window)
         return 0;
     }
 
-    gtk_widget_get_allocation(window->menus, &allocation);
+    gtk_widget_get_allocation(window->menu_box, &allocation);
 
     return allocation.height;
 }
