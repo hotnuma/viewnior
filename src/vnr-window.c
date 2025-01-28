@@ -53,11 +53,12 @@ static void _window_slideshow_restart(VnrWindow *window);
 static void _window_slideshow_allow(VnrWindow *window);
 static gint _window_get_top_widgets_height(VnrWindow *window);
 
+static void _action_save_image(GtkWidget *widget, VnrWindow *window);
+
 static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
 static void _on_toggle_show_next(GtkToggleButton *togglebutton, VnrWindow *window);
 static void _on_spin_value_change(GtkSpinButton *spinbutton, VnrWindow *window);
-static void _on_save_image(GtkWidget *widget, VnrWindow *window);
-static void _window_on_zoom_changed(UniImageView *view, VnrWindow *window);
+static void _on_zoom_changed(UniImageView *view, VnrWindow *window);
 static gboolean _on_fullscreen_timeout(VnrWindow *window);
 static gboolean _on_leave_image_area(GtkWidget * widget, GdkEventCrossing * ev, VnrWindow *window);
 static gboolean _on_fullscreen_motion(GtkWidget * widget, GdkEventMotion * ev, VnrWindow *window);
@@ -797,13 +798,13 @@ _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle)
                               _("Image modifications cannot be saved.\nWriting in this format is not supported."),
                               FALSE);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _on_save_image(NULL, window);
+        _action_save_image(NULL, window);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, GTK_STOCK_SAVE,
-                                          G_CALLBACK(_on_save_image));
+                                          G_CALLBACK(_action_save_image));
 }
 
 static void
@@ -855,13 +856,13 @@ _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
                               _("Image modifications cannot be saved.\nWriting in this format is not supported."),
                               FALSE);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _on_save_image(NULL, window);
+        _action_save_image(NULL, window);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, GTK_STOCK_SAVE,
-                                          G_CALLBACK(_on_save_image));
+                                          G_CALLBACK(_action_save_image));
 }
 
 
@@ -955,7 +956,7 @@ _on_toggle_show_next(GtkToggleButton *togglebutton, VnrWindow *window)
 }
 
 static void
-_on_save_image(GtkWidget *widget, VnrWindow *window)
+_action_save_image(GtkWidget *widget, VnrWindow *window)
 {
     GError *error = NULL;
     if (!window->cursor_is_hidden)
@@ -1024,7 +1025,7 @@ _on_save_image(GtkWidget *widget, VnrWindow *window)
     gtk_action_group_set_sensitive(window->action_save, FALSE);
 
     if (window->prefs->behavior_modify != VNR_PREFS_MODIFY_ASK)
-        _window_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+        _on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
 
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
@@ -1154,7 +1155,7 @@ _window_on_destroy(GtkWidget *widget, gpointer user_data)
 }
 
 static void
-_window_on_zoom_changed(UniImageView *view, VnrWindow *window)
+_on_zoom_changed(UniImageView *view, VnrWindow *window)
 {
     gint position, total;
     char *buf = NULL;
@@ -1872,13 +1873,13 @@ _action_crop(GtkAction *action, VnrWindow *window)
                               _("Image modifications cannot be saved.\nWriting in this format is not supported."),
                               FALSE);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _on_save_image(NULL, window);
+        _action_save_image(NULL, window);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, GTK_STOCK_SAVE,
-                                          G_CALLBACK(_on_save_image));
+                                          G_CALLBACK(_action_save_image));
 
     g_object_unref(crop);
 }
@@ -1911,7 +1912,7 @@ static const GtkActionEntry _action_entries_window[] = {
 static const GtkActionEntry _action_entry_save[] = {
     { "FileSave", GTK_STOCK_SAVE, N_("_Save"), "<control>S",
       N_("Save changes"),
-      G_CALLBACK(_on_save_image) },
+      G_CALLBACK(_action_save_image) },
 };
 
 static const GtkToggleActionEntry _toggle_entry_properties[] = {
@@ -2473,7 +2474,7 @@ window_init(VnrWindow *window)
                       G_CALLBACK(_window_on_change_state), NULL);
 
     g_signal_connect(G_OBJECT(window->view), "zoom_changed",
-                      G_CALLBACK(_window_on_zoom_changed), window);
+                      G_CALLBACK(_on_zoom_changed), window);
 
     g_signal_connect(G_OBJECT(window->view), "drag-data-get",
                       G_CALLBACK(_window_on_drag_begin), window);
@@ -2566,7 +2567,7 @@ window_open(VnrWindow *window, gboolean fit_to_screen)
     else if (window->prefs->zoom == VNR_PREFS_ZOOM_LAST_USED )
     {
         uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view), last_fit_mode);
-        _window_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+        _on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
     }
     else
     {
