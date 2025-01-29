@@ -285,8 +285,6 @@ const gchar* _ui_definition_wallpaper =
     "</ui>";
 // clang-format on
 
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
 static const GtkActionEntry _action_entries_window[] =
 {
     {"File", NULL, N_("_File")},
@@ -296,41 +294,41 @@ static const GtkActionEntry _action_entries_window[] =
     {"Go", NULL, N_("_Go")},
     {"Help", NULL, N_("_Help")},
 
-    {"FileOpen", GTK_STOCK_FILE,
+    {"FileOpen", "gtk-file",
      N_("Open _Image..."), "<control>O",
      N_("Open an Image"),
      G_CALLBACK(_action_open)},
 
-    {"FileOpenDir", GTK_STOCK_DIRECTORY,
+    {"FileOpenDir", "gtk-directory",
      N_("Open _Folder..."), "<control>F",
      N_("Open a Folder"),
      G_CALLBACK(_action_open_dir)},
 
-    {"FileClose", GTK_STOCK_CLOSE,
+    {"FileClose", "gtk-close",
      N_("_Close"), "<control>W",
      N_("Close window"),
      G_CALLBACK(gtk_main_quit)},
 
-    {"HelpAbout", GTK_STOCK_ABOUT,
+    {"HelpAbout", "gtk-about",
      N_("_About"), NULL,
      N_("About this application"),
      G_CALLBACK(_action_about)},
 
-    {"EditPreferences", GTK_STOCK_PREFERENCES,
+    {"EditPreferences", "gtk-preferences",
      N_("_Preferences..."), NULL,
      N_("User preferences for Viewnior"),
      G_CALLBACK(_action_preferences)}};
 
 static const GtkActionEntry _action_entry_save[] =
 {
-    {"FileSave", GTK_STOCK_SAVE, N_("_Save"), "<control>S",
+    {"FileSave", "gtk-save", N_("_Save"), "<control>S",
      N_("Save changes"),
      G_CALLBACK(_action_save_image)},
 };
 
 static const GtkToggleActionEntry _toggle_entry_properties[] =
 {
-    {"Properties", GTK_STOCK_PROPERTIES, N_("_Properties"), NULL,
+    {"Properties", "gtk-properties", N_("_Properties"), NULL,
      N_("Properties"),
      G_CALLBACK(_action_open_menu)},
 };
@@ -349,17 +347,17 @@ static const GtkActionEntry _action_entries_image[] =
      N_("Open the selected image with a different application"),
      NULL},
 
-    {"FileDelete", GTK_STOCK_DELETE,
+    {"FileDelete", "gtk-delete",
      N_("_Delete"), NULL,
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
 
-    {"FileProperties", GTK_STOCK_PROPERTIES,
+    {"FileProperties", "gtk-properties",
      N_("_Properties..."), "<Alt>Return",
      N_("Show information about the current file"),
      G_CALLBACK(_action_properties)},
 
-    {"FileReload", GTK_STOCK_REFRESH,
+    {"FileReload", "gtk-refresh",
      N_("_Reload"), NULL,
      N_("Reload the current file"),
      G_CALLBACK(_action_reload)},
@@ -373,31 +371,31 @@ static const GtkActionEntry _action_entries_image[] =
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
 
-    {"ViewZoomIn", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>plus",
+    {"ViewZoomIn", "gtk-zoom-in", N_("_Zoom In"), "<control>plus",
      N_("Enlarge the image"),
      G_CALLBACK(_action_zoom_in)},
 
-    {"ViewZoomOut", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>minus",
+    {"ViewZoomOut", "gtk-zoom-out", N_("Zoom _Out"), "<control>minus",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
 
-    {"ViewZoomNormal", GTK_STOCK_ZOOM_100, N_("_Normal Size"), "<control>0",
+    {"ViewZoomNormal", "gtk-zoom-100", N_("_Normal Size"), "<control>0",
      N_("Show the image at its normal size"),
      G_CALLBACK(_action_normal_size)},
 
-    {"ViewZoomFit", GTK_STOCK_ZOOM_FIT, N_("Best _Fit"), NULL,
+    {"ViewZoomFit", "gtk-zoom-fit", N_("Best _Fit"), NULL,
      N_("Fit the image to the window"),
      G_CALLBACK(_action_fit)},
 
-    {"ControlEqual", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>equal",
+    {"ControlEqual", "gtk-zoom-in", N_("_Zoom In"), "<control>equal",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_in)},
 
-    {"ControlKpAdd", GTK_STOCK_ZOOM_IN, N_("_Zoom In"), "<control>KP_Add",
+    {"ControlKpAdd", "gtk-zoom-in", N_("_Zoom In"), "<control>KP_Add",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_in)},
 
-    {"ControlKpSub", GTK_STOCK_ZOOM_OUT, N_("Zoom _Out"), "<control>KP_Subtract",
+    {"ControlKpSub", "gtk-zoom-out", N_("Zoom _Out"), "<control>KP_Subtract",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
 };
@@ -423,7 +421,7 @@ static const GtkActionEntry _action_entries_static_image[] =
 
 static const GtkToggleActionEntry _toggle_entries_image[] =
 {
-    {"ViewFullscreen", GTK_STOCK_FULLSCREEN, N_("Full _Screen"), "F11",
+    {"ViewFullscreen", "gtk-fullscreen", N_("Full _Screen"), "F11",
      N_("Show in fullscreen mode"),
      G_CALLBACK(_action_fullscreen)},
     {"ViewResizeWindow", NULL, N_("_Adjust window size"), NULL,
@@ -448,23 +446,23 @@ static const GtkToggleActionEntry _toggle_entries_window[] =
 
 static const GtkToggleActionEntry _toggle_entries_collection[] =
 {
-    {"ViewSlideshow", GTK_STOCK_NETWORK, N_("Sli_deshow"), "F6",
+    {"ViewSlideshow", "gtk-network", N_("Sli_deshow"), "F6",
      N_("Show in slideshow mode"),
      G_CALLBACK(_action_slideshow)},
 };
 
 static const GtkActionEntry _action_entries_collection[] =
 {
-    {"GoPrevious", GTK_STOCK_GO_BACK, N_("_Previous Image"), "<Alt>Left",
+    {"GoPrevious", "gtk-go-back", N_("_Previous Image"), "<Alt>Left",
      N_("Go to the previous image of the collection"),
      G_CALLBACK(_action_prev)},
-    {"GoNext", GTK_STOCK_GO_FORWARD, N_("_Next Image"), "<Alt>Right",
+    {"GoNext", "gtk-go-forward", N_("_Next Image"), "<Alt>Right",
      N_("Go to the next image of the collection"),
      G_CALLBACK(_action_next)},
-    {"GoFirst", GTK_STOCK_GOTO_FIRST, N_("_First Image"), "<Alt>Home",
+    {"GoFirst", "gtk-go-first", N_("_First Image"), "<Alt>Home",
      N_("Go to the first image of the collection"),
      G_CALLBACK(_action_first)},
-    {"GoLast", GTK_STOCK_GOTO_LAST, N_("_Last Image"), "<Alt>End",
+    {"GoLast", "gtk-goto-last", N_("_Last Image"), "<Alt>End",
      N_("Go to the last image of the collection"),
      G_CALLBACK(_action_last)},
 };
@@ -474,7 +472,7 @@ static const GtkActionEntry _action_entries_collection[] =
 
 GtkWindow* window_new()
 {
-    return (GtkWindow *)g_object_new(VNR_TYPE_WINDOW, NULL);
+    return (GtkWindow*) g_object_new(VNR_TYPE_WINDOW, NULL);
 }
 
 static void window_class_init(VnrWindowClass *klass)
@@ -484,6 +482,8 @@ static void window_class_init(VnrWindowClass *klass)
     widget_class->key_press_event = _window_on_key_press;
     widget_class->drag_data_received = _window_drag_data_received;
 }
+
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 static void window_init(VnrWindow *window)
 {
