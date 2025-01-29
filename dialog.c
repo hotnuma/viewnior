@@ -119,20 +119,11 @@ gchar* dialog_file_rename(GtkWindow *window, VnrFile *file)
         const gchar *text = xfce_filename_input_get_text(filename_input);
 
         // check if we have a new name here
-        if (g_strcmp0(filename, text) != 0)
+        if (g_strcmp0(filename, text) != 0
+            && g_utf8_validate(text, -1, NULL))
         {
-            // try to rename the file
-
-            //e_return_val_if_fail(g_utf8_validate(display_name, -1, NULL), NULL);
-            //GFile *renamed_file = g_file_set_display_name(file->gfile,
-            //                                              name,
-            //                                              cancellable,
-            //                                              error);
-
             gboolean ret = vnr_file_rename(file, text);
-
-
-            // job = io_rename_file(file, text);
+            (void) ret;
         }
     }
 

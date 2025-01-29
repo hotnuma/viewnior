@@ -12,38 +12,7 @@ PKGCONFIG += glib-2.0
 PKGCONFIG += exiv2
 PKGCONFIG += shared-mime-info
 
-SOURCES = \
-    src/dialog.c \
-    src/file.c \
-    src/main.c \
-    src/preferences.c \
-    src/uni-anim-view.c \
-    src/uni-cache.c \
-    src/uni-dragger.c \
-    src/uni-exiv2.cpp \
-    src/uni-image-view.c \
-    src/uni-nav.c \
-    src/uni-scroll-win.c \
-    src/uni-utils.c \
-    src/vnr-crop.c \
-    src/vnr-message-area.c \
-    src/vnr-properties-dialog.c \
-    src/vnr-tools.c \
-    src/window.c \
-    src/xfce-filename-input.c
-
-DISTFILES = \
-    Notes.md \
-    Readme.md \
-    install.sh \
-    meson.build \
-    meson_post_install.py
-
 HEADERS = \
-    src/config.h.in \
-    src/dialog.h \
-    src/file.h \
-    src/preferences.h \
     src/uni-anim-view.h \
     src/uni-cache.h \
     src/uni-dragger.h \
@@ -57,7 +26,38 @@ HEADERS = \
     src/vnr-message-area.h \
     src/vnr-properties-dialog.h \
     src/vnr-tools.h \
-    src/window.h \
-    src/xfce-filename-input.h
+    src/xfce-filename-input.h \
+    config.h.in \
+    dialog.h \
+    file.h \
+    preferences.h \
+    window.h \
+
+SOURCES = \
+    src/uni-anim-view.c \
+    src/uni-cache.c \
+    src/uni-dragger.c \
+    src/uni-exiv2.cpp \
+    src/uni-image-view.c \
+    src/uni-nav.c \
+    src/uni-scroll-win.c \
+    src/uni-utils.c \
+    src/vnr-crop.c \
+    src/vnr-message-area.c \
+    src/vnr-properties-dialog.c \
+    src/vnr-tools.c \
+    src/xfce-filename-input.c \
+    dialog.c \
+    file.c \
+    main.c \
+    preferences.c \
+    window.c \
+
+DISTFILES = \
+    Notes.md \
+    Readme.md \
+    install.sh \
+    meson.build \
+    meson_post_install.py \
 
 

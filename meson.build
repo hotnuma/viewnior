@@ -41,7 +41,7 @@ config.set_quoted(
 )
 
 configure_file(
-    input: 'src/config.h.in',
+    input: 'config.h.in',
     output: 'config.h',
     configuration: config
 )
@@ -55,10 +55,6 @@ subdir('data')
 subdir('man')
 
 app_sources = [
-    'src/dialog.c',
-    'src/file.c',
-    'src/main.c',
-    'src/preferences.c',
     'src/uni-anim-view.c',
     'src/uni-cache.c',
     'src/uni-dragger.c',
@@ -71,8 +67,12 @@ app_sources = [
     'src/vnr-message-area.c',
     'src/vnr-properties-dialog.c',
     'src/vnr-tools.c',
-    'src/window.c',
     'src/xfce-filename-input.c',
+    'dialog.c',
+    'file.c',
+    'main.c',
+    'preferences.c',
+    'window.c',
 ]
 
 marshal = 'uni-marshal'
