@@ -17,9 +17,11 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-
+#include "vnr-window.h"
 #include "config.h"
+
+#include <libgen.h>
+#include <stdlib.h>
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -27,7 +29,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "vnr-window.h"
 #include "uni-scroll-win.h"
 #include "uni-anim-view.h"
 #include "vnr-tools.h"
@@ -36,6 +37,7 @@
 #include "vnr-crop.h"
 #include "uni-exiv2.hpp"
 #include "uni-utils.h"
+#include "dialog.h"
 
 // Timeout to hide the toolbar in fullscreen mode
 #define FULLSCREEN_TIMEOUT 1000
@@ -134,6 +136,7 @@ static void _action_toolbar(GtkAction *action, VnrWindow *window);
 static void _action_scrollbar(GtkAction *action, VnrWindow *window);
 static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
+static void _action_rename(GtkAction *action, VnrWindow *window);
 static void _action_delete(GtkAction *action, VnrWindow *window);
 static void _action_crop(GtkAction *action, VnrWindow *window);
 
@@ -172,6 +175,7 @@ const gchar* _ui_definition =
             "<menuitem action=\"FileProperties\"/>"
             "<separator/>"
             "<menu action=\"Edit\">"
+                "<menuitem action=\"FileRename\"/>"
                 "<menuitem action=\"FileDelete\"/>"
                 "<separator/>"
             "</menu>"
@@ -357,6 +361,11 @@ static const GtkActionEntry _action_entries_image[] =
      N_("_Reload"), NULL,
      N_("Reload the current file"),
      G_CALLBACK(_action_reload)},
+
+    {"FileRename", NULL,
+     N_("Rename"), "F2",
+     N_("Rename the current file"),
+     G_CALLBACK(_action_rename)},
 
     {"Delete", NULL, N_("_Delete"), "Delete",
      N_("Delete the current file"),
@@ -2121,6 +2130,20 @@ static void _action_slideshow(GtkAction *action, VnrWindow *window)
         _window_unfullscreen(window);
         _window_slideshow_stop(window);
     }
+}
+
+static void _action_rename(GtkAction*, VnrWindow *window)
+{
+    //g_return_val_if_fail(window != NULL, NULL);
+
+    VnrFile *file = window_list_get_current(window);
+
+    //printf("_action_rename: %s\n", filename);
+
+    gchar *result = dialog_file_rename(GTK_WINDOW(window), file);
+
+    if (result)
+        printf("_action_rename: new path %s\n", result);
 }
 
 static void _action_delete(GtkAction *action, VnrWindow *window)

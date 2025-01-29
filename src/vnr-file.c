@@ -28,8 +28,7 @@ G_DEFINE_TYPE(VnrFile, vnr_file, G_TYPE_OBJECT)
 
 GList *supported_mime_types;
 
-static gint
-compare_files(VnrFile *file, char *uri)
+static gint compare_files(VnrFile *file, char *uri)
 {
     if (g_strcmp0(uri, file->path) == 0)
         return 0;
@@ -37,10 +36,10 @@ compare_files(VnrFile *file, char *uri)
         return 1;
 }
 
-/* Modified version of eog's eog_image_get_supported_mime_types */
-static GList *
-vnr_file_get_supported_mime_types(void)
+static GList* vnr_file_get_supported_mime_types()
 {
+    // Modified version of eog's eog_image_get_supported_mime_types
+
     GSList *format_list, *it;
 
     if (!supported_mime_types)
@@ -74,8 +73,7 @@ vnr_file_get_supported_mime_types(void)
     return supported_mime_types;
 }
 
-static gboolean
-vnr_file_is_supported_mime_type(const char *mime_type)
+static gboolean vnr_file_is_supported_mime_type(const char *mime_type)
 {
     GList *result;
     GQuark quark;
@@ -96,39 +94,36 @@ vnr_file_is_supported_mime_type(const char *mime_type)
     return (result != NULL);
 }
 
-static void
-vnr_file_class_init(VnrFileClass *klass)
+static void vnr_file_class_init(VnrFileClass *klass)
 {
 }
 
-static void
-vnr_file_init(VnrFile *file)
+static void vnr_file_init(VnrFile *file)
 {
     file->display_name = NULL;
 }
 
-VnrFile *
-vnr_file_new()
+VnrFile* vnr_file_new()
 {
     return VNR_FILE(g_object_new(VNR_TYPE_FILE, NULL));
 }
 
-static void
-vnr_file_set_display_name(VnrFile *vnr_file, char *display_name)
+static void vnr_file_set_display_name(VnrFile *vnr_file, char *display_name)
 {
     vnr_file->display_name = g_strdup(display_name);
-    vnr_file->display_name_collate = g_utf8_collate_key_for_filename(display_name, -1);
+    vnr_file->display_name_collate =
+            g_utf8_collate_key_for_filename(display_name, -1);
 }
 
-static gint
-vnr_file_list_compare(gconstpointer a, gconstpointer b, gpointer user_data)
+static gint vnr_file_list_compare(gconstpointer a, gconstpointer b, gpointer user_data)
 {
     return g_strcmp0(VNR_FILE(a)->display_name_collate,
                      VNR_FILE(b)->display_name_collate);
 }
 
-static GList *
-vnr_file_dir_content_to_list(gchar *path, gboolean sort, gboolean include_hidden)
+static GList* vnr_file_dir_content_to_list(gchar *path,
+                                           gboolean sort,
+                                           gboolean include_hidden)
 {
     GFile *file;
     file = g_file_new_for_path(path);
@@ -181,20 +176,23 @@ vnr_file_dir_content_to_list(gchar *path, gboolean sort, gboolean include_hidden
     return file_list;
 }
 
-void vnr_file_load_single_uri(char *p_path, GList **file_list, gboolean include_hidden, GError **error)
+void vnr_file_load_single_uri(char *p_path,
+                              GList **file_list,
+                              gboolean include_hidden,
+                              GError **error)
 {
     GFile *file;
     file = g_file_new_for_path(p_path);
 
-    GFileInfo *fileinfo;
-    fileinfo = g_file_query_info(file, G_FILE_ATTRIBUTE_STANDARD_TYPE "," G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
-                                 0, NULL, error);
+    GFileInfo *fileinfo = g_file_query_info(
+        file,
+        G_FILE_ATTRIBUTE_STANDARD_TYPE "," G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+        0, NULL, error);
 
     if (fileinfo == NULL)
         return;
 
-    GFileType filetype;
-    filetype = g_file_info_get_file_type(fileinfo);
+    GFileType filetype = g_file_info_get_file_type(fileinfo);
 
     if (filetype == G_FILE_TYPE_DIRECTORY)
     {
@@ -210,13 +208,18 @@ void vnr_file_load_single_uri(char *p_path, GList **file_list, gboolean include_
 
         g_object_unref(parent);
 
-        current_position = g_list_find_custom(*file_list, p_path,
-                                              (GCompareFunc)compare_files);
+        current_position = g_list_find_custom(*file_list,
+                                              p_path,
+                                              (GCompareFunc) compare_files);
 
         if (current_position != NULL)
+        {
             *file_list = current_position;
+        }
         else if (*file_list == NULL)
+        {
             return;
+        }
         else
         {
             *error = g_error_new(1, 0,
@@ -288,3 +291,21 @@ void vnr_file_load_uri_list(GSList *uri_list, GList **file_list, gboolean includ
 
     *file_list = g_list_sort_with_data(*file_list, vnr_file_list_compare, NULL);
 }
+
+gboolean vnr_file_rename(VnrFile *file, const char *newname)
+{
+    const char *filepath = file->path;
+    gchar *dir = g_path_get_dirname(filepath);
+    gchar *fullpath = g_build_filename(dir, newname, NULL);
+
+    printf("rename %s to %s\n", filepath, fullpath);
+
+    gboolean ret = (g_rename(filepath, fullpath) == 0);
+
+    g_free(fullpath);
+    g_free(dir);
+
+    return ret;
+}
+
+

@@ -119,7 +119,7 @@ struct _VnrWindowClass
 GType window_get_type() G_GNUC_CONST;
 
 // Constructor
-GtkWindow *window_new();
+GtkWindow* window_new();
 
 // Actions
 gboolean window_open(VnrWindow *window, gboolean fit_to_screen);

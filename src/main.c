@@ -43,6 +43,8 @@ static GOptionEntry opt_entries[] = {
 
 int main(int argc, char **argv)
 {
+    setbuf(stdout, NULL);
+
     GError *error = NULL;
     GOptionContext *opt_context;
     GtkWindow *window;
