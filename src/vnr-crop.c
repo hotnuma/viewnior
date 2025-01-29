@@ -40,6 +40,7 @@ static gboolean drawable_button_release_cb(GtkWidget *widget,
 static gboolean drawable_motion_cb(GtkWidget *widget,
                                    GdkEventMotion *event, VnrCrop *crop);
 
+
 /*************************************************************/
 /***** Private actions ***************************************/
 /*************************************************************/
@@ -49,7 +50,10 @@ vnr_crop_draw_rectangle(VnrCrop *crop)
     cairo_t *cr;
     if (crop->do_redraw)
     {
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         cr = gdk_cairo_create(gtk_widget_get_window(crop->image));
+        G_GNUC_END_IGNORE_DEPRECATIONS
+
         cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
         cairo_set_line_width(cr, 3);
         cairo_rectangle(cr, (int)crop->sub_x + 0.5, (int)crop->sub_y + 0.5, (int)crop->sub_width, (int)crop->sub_height);
@@ -126,11 +130,14 @@ vnr_crop_build_dialog(VnrCrop *crop)
     {
         GdkScreen *screen;
         GdkRectangle monitor;
+
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         screen = gtk_window_get_screen(GTK_WINDOW(crop->vnr_win));
         gdk_screen_get_monitor_geometry(screen,
                                         gdk_screen_get_monitor_at_window(screen,
                                                                          gtk_widget_get_window(GTK_WIDGET(crop->vnr_win))),
                                         &monitor);
+        G_GNUC_END_IGNORE_DEPRECATIONS
 
         max_width = monitor.width * 0.9 - 100;
         max_height = monitor.height * 0.9 - 200;
@@ -470,3 +477,5 @@ vnr_crop_run(VnrCrop *crop)
         return (crop_dialog_response == GTK_RESPONSE_ACCEPT);
     }
 }
+
+

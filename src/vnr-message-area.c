@@ -22,6 +22,7 @@
 
 G_DEFINE_TYPE(VnrMessageArea, vnr_message_area, GTK_TYPE_EVENT_BOX)
 
+
 static void
 vnr_message_area_class_init(VnrMessageAreaClass *klass) {}
 
@@ -36,6 +37,8 @@ cancel_button_cb(GtkWidget *widget, VnrMessageArea *msg_area)
 {
     vnr_message_area_hide(msg_area);
 }
+
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 static void
 vnr_message_area_initialize(VnrMessageArea *msg_area)
@@ -158,6 +161,8 @@ void vnr_message_area_show_with_button(VnrMessageArea *msg_area,
     gtk_widget_show_all(GTK_WIDGET(msg_area));
 }
 
+G_GNUC_END_IGNORE_DEPRECATIONS
+
 void vnr_message_area_hide(VnrMessageArea *msg_area)
 {
     gtk_widget_hide(GTK_WIDGET(msg_area));
@@ -188,3 +193,5 @@ vnr_message_area_is_critical(VnrMessageArea *msg_area)
     else
         return FALSE;
 }
+
+

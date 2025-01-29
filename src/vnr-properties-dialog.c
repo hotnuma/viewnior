@@ -28,6 +28,7 @@ G_DEFINE_TYPE(VnrPropertiesDialog, vnr_properties_dialog, GTK_TYPE_DIALOG)
 
 static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog);
 
+
 static gboolean
 key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
@@ -62,6 +63,7 @@ get_file_info(gchar *filename, goffset *size, const gchar **type)
     g_object_unref(fileinfo);
 }
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 static void
 set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
 {
@@ -337,6 +339,8 @@ vnr_cb_add_metadata(const char *label, const char *value, void *user_data)
     gtk_widget_show(temp_label);
 }
 
+G_GNUC_END_IGNORE_DEPRECATIONS
+
 static void
 vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
 {
@@ -395,3 +399,5 @@ void vnr_properties_dialog_show(VnrPropertiesDialog *dialog)
     vnr_properties_dialog_update(dialog);
     gtk_window_present(GTK_WINDOW(dialog));
 }
+
+

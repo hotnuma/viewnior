@@ -58,7 +58,10 @@ uni_anim_view_updator(gpointer data)
         // uni_anim_view_updator() is run.
         delay_us = 200;
     }
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     g_time_val_add(&aview->time, delay_us);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     gboolean next = gdk_pixbuf_animation_iter_advance(aview->iter,
                                                       &aview->time);
@@ -256,7 +259,10 @@ uni_anim_view_set_anim(UniAnimView *aview, GdkPixbufAnimation *anim)
     if (aview->iter)
         g_object_unref(aview->iter);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     g_get_current_time(&aview->time);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     aview->iter = gdk_pixbuf_animation_get_iter(aview->anim, &aview->time);
 
     GdkPixbuf *pixbuf;

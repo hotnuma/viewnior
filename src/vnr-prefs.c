@@ -44,6 +44,7 @@ G_DEFINE_TYPE(VnrPrefs, vnr_prefs, G_TYPE_OBJECT)
 /***** Private signal handlers *******************************/
 /*************************************************************/
 
+
 static void
 toggle_show_hidden_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
@@ -318,7 +319,9 @@ build_dialog(VnrPrefs *prefs)
     g_signal_connect(G_OBJECT(desktop_env), "changed", G_CALLBACK(change_desktop_env_cb), prefs);
 
     /* Behavior combo boxes */
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     behavior_table = GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     action_wheel = (GtkComboBoxText *)gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(action_wheel, _("Navigate images"));
@@ -326,7 +329,10 @@ build_dialog(VnrPrefs *prefs)
     gtk_combo_box_text_append_text(action_wheel, _("Scroll image up/down"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_wheel), prefs->behavior_wheel);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_table_attach(behavior_table, GTK_WIDGET(action_wheel), 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gtk_widget_show(GTK_WIDGET(action_wheel));
     g_signal_connect(G_OBJECT(action_wheel), "changed", G_CALLBACK(change_action_wheel_cb), prefs);
 
@@ -336,7 +342,10 @@ build_dialog(VnrPrefs *prefs)
     gtk_combo_box_text_append_text(action_click, _("Navigate images"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_click), prefs->behavior_click);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_table_attach(behavior_table, GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gtk_widget_show(GTK_WIDGET(action_click));
     g_signal_connect(G_OBJECT(action_click), "changed", G_CALLBACK(change_action_click_cb), prefs);
 
@@ -346,7 +355,10 @@ build_dialog(VnrPrefs *prefs)
     gtk_combo_box_text_append_text(action_modify, _("Ignore changes"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_modify), prefs->behavior_modify);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_table_attach(behavior_table, GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gtk_widget_show(GTK_WIDGET(action_modify));
     g_signal_connect(G_OBJECT(action_modify), "changed", G_CALLBACK(change_action_modify_cb), prefs);
 

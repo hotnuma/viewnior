@@ -46,6 +46,7 @@
                                       0, 0, NULL, NULL, (data))
 // clang-format on
 
+
 /*************************************************************/
 /***** Private data ******************************************/
 /*************************************************************/
@@ -158,8 +159,12 @@ uni_image_view_update_adjustments(UniImageView *view)
 
     g_signal_handlers_block_by_data(G_OBJECT(view->priv->hadjustment), view);
     g_signal_handlers_block_by_data(G_OBJECT(view->priv->vadjustment), view);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_adjustment_changed(view->priv->hadjustment);
     gtk_adjustment_changed(view->priv->vadjustment);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->hadjustment), view);
     g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->vadjustment), view);
 }
@@ -248,7 +253,11 @@ uni_image_view_draw_background(UniImageView *view,
     cairo_save(cr);
     GtkStyleContext *context = gtk_widget_get_style_context(widget);
     GtkStateFlags state = gtk_widget_get_state_flags(widget);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_style_context_get_background_color(context, state, &rgba);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gdk_cairo_set_source_rgba(cr, &rgba);
 
     GdkRectangle borders[4];
@@ -359,7 +368,11 @@ uni_image_view_fast_scroll(UniImageView *view, int delta_x, int delta_y)
 
     Size alloc = uni_image_view_get_allocated_size(view);
     GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(view));
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     cairo_t *cr = gdk_cairo_create(window);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     GdkPixbuf *win = gdk_pixbuf_get_from_window(window, src_x, src_y, alloc.width - abs(delta_x), alloc.height - abs(delta_y));
     gdk_cairo_set_source_pixbuf(cr, win, dest_x, dest_y);
     cairo_paint(cr);
@@ -508,16 +521,22 @@ uni_image_view_realize(GtkWidget *widget)
     gdk_window_set_user_data(window, view);
 
     GtkStyleContext *context = gtk_widget_get_style_context(widget);
-    gtk_style_context_set_background(context, window);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    gtk_style_context_set_background(context, window);
     view->void_cursor = gdk_cursor_new(GDK_ARROW);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void
 uni_image_view_unrealize(GtkWidget *widget)
 {
     UniImageView *view = UNI_IMAGE_VIEW(widget);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_cursor_unref(view->void_cursor);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     GTK_WIDGET_CLASS(uni_image_view_parent_class)->unrealize(widget);
 }
 
@@ -600,9 +619,11 @@ uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
     }
     else if (ev->type == GDK_BUTTON_PRESS && ev->button == 3)
     {
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         gtk_menu_popup(GTK_MENU(VNR_WINDOW(gtk_widget_get_toplevel(widget))->popup_menu),
                        NULL, NULL, NULL, NULL, ev->button,
                        gtk_get_current_event_time());
+        G_GNUC_END_IGNORE_DEPRECATIONS
     }
     else if (ev->type == GDK_BUTTON_PRESS && ev->button == 8)
     {
@@ -612,6 +633,7 @@ uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
     {
         window_next(vnr_win, TRUE);
     }
+
     return 0;
 }
 
@@ -1099,7 +1121,9 @@ uni_image_view_class_init(UniImageViewClass *klass)
                                  GTK_SCROLL_NONE,
                                  GTK_TYPE_SCROLL_TYPE, GTK_SCROLL_PAGE_DOWN);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     g_type_class_add_private(object_class, sizeof(UniImageViewPrivate));
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 /**
@@ -1391,3 +1415,5 @@ void uni_image_view_zoom_out(UniImageView *view)
     zoom = CLAMP(view->zoom / UNI_ZOOM_STEP, UNI_ZOOM_MIN, UNI_ZOOM_MAX);
     uni_image_view_set_zoom(view, zoom);
 }
+
+

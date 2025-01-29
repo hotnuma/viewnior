@@ -41,7 +41,10 @@ uni_dragger_grab_pointer(UniDragger *tool,
                          GdkWindow *window, guint32 time)
 {
     int mask = (GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_RELEASE_MASK);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_pointer_grab(window, FALSE, mask, NULL, tool->grab_cursor, time);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void
@@ -73,7 +76,11 @@ uni_dragger_button_release(UniDragger *tool, GdkEventButton *ev)
 {
     if (ev->button != 1)
         return FALSE;
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_pointer_ungrab(ev->time);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     tool->pressed = FALSE;
     tool->dragging = FALSE;
     return TRUE;
@@ -105,11 +112,15 @@ uni_dragger_motion_notify(UniDragger *tool, GdkEventMotion *ev)
         gtk_adjustment_get_upper(hadj) <= gtk_adjustment_get_page_size(hadj))
     {
         uni_dragger_button_release(tool, (GdkEventButton *)ev);
+
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         gtk_drag_begin(GTK_WIDGET(tool->view),
                        gtk_target_list_new(target_table, G_N_ELEMENTS(target_table)),
                        GDK_ACTION_COPY,
                        1,
                        (GdkEvent *)ev);
+        G_GNUC_END_IGNORE_DEPRECATIONS
+
         return TRUE;
     }
 
@@ -199,7 +210,10 @@ uni_dragger_init(UniDragger *tool)
     tool->drag_base_y = 0;
     tool->drag_ofs_x = 0;
     tool->drag_ofs_y = 0;
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     tool->grab_cursor = gdk_cursor_new(GDK_FLEUR);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 /**
@@ -219,3 +233,5 @@ uni_dragger_new(GtkWidget *view)
 
     return data;
 }
+
+

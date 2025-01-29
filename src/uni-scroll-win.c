@@ -24,6 +24,7 @@
 #include "uni-image-view.h"
 #include "uni-nav.h"
 
+
 /*************************************************************/
 /***** PRIVATE DATA ******************************************/
 /*************************************************************/
@@ -49,7 +50,9 @@ static const char *nav_button[] =
         ".....    .....",
         "......  ......"};
 
-G_DEFINE_TYPE(UniScrollWin, uni_scroll_win, GTK_TYPE_TABLE);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+G_DEFINE_TYPE(UniScrollWin, uni_scroll_win, GTK_TYPE_TABLE)
+G_GNUC_END_IGNORE_DEPRECATIONS
 
 /*************************************************************/
 /***** Static stuff ******************************************/
@@ -94,8 +97,10 @@ uni_scroll_win_set_view(UniScrollWin *window, UniImageView *view)
     GtkAdjustment *vadj;
     vadj = (GtkAdjustment *)g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     window->hscroll = gtk_hscrollbar_new(hadj);
     window->vscroll = gtk_vscrollbar_new(vadj);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     // We want to be notified when the adjustments change.
     g_signal_connect(hadj, "changed",
@@ -108,6 +113,7 @@ uni_scroll_win_set_view(UniScrollWin *window, UniImageView *view)
     gtk_scrollable_set_vadjustment(GTK_SCROLLABLE(view), vadj);
 
     // Add the widgets to the table.
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_widget_push_composite_child();
     gtk_table_attach(GTK_TABLE(window), GTK_WIDGET(view), 0, 1, 0, 1,
                      GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
@@ -118,6 +124,7 @@ uni_scroll_win_set_view(UniScrollWin *window, UniImageView *view)
     gtk_table_attach(GTK_TABLE(window), window->nav_box, 1, 2, 1, 2,
                      GTK_SHRINK, GTK_SHRINK, 0, 0);
     gtk_widget_pop_composite_child();
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     // Create the UniNav popup.
     window->nav = uni_nav_new(view);
@@ -195,7 +202,10 @@ uni_scroll_win_init(UniScrollWin *window)
 
     gtk_widget_set_tooltip_text(window->nav_box,
                                 _("Open the navigator window"));
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_container_set_resize_mode(GTK_CONTAINER(window), GTK_RESIZE_IMMEDIATE);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void
@@ -317,3 +327,5 @@ void uni_scroll_win_set_show_scrollbar(UniScrollWin *window, gboolean show)
     uni_scroll_win_show_scrollbar(window,
                                   window->show_scrollbar && !uni_scroll_win_image_fits(window));
 }
+
+

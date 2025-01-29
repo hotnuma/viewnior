@@ -6,7 +6,7 @@ project(
 )
 
 add_global_arguments(
-    '-Wno-deprecated-declarations',
+    #'-Wno-deprecated-declarations',
     language: 'c')
 
 datadir = get_option('datadir')

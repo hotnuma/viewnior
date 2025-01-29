@@ -285,6 +285,8 @@ const gchar* _ui_definition_wallpaper =
     "</ui>";
 // clang-format on
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
 static const GtkActionEntry _action_entries_window[] =
 {
     {"File", NULL, N_("_File")},
@@ -2825,6 +2827,8 @@ void window_preferences_apply(VnrWindow *window)
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->sl_timeout_widget), (gdouble)window->prefs->slideshow_timeout);
     }
 }
+
+G_GNUC_END_IGNORE_DEPRECATIONS
 
 void window_fullscreen_toggle(VnrWindow *window)
 {

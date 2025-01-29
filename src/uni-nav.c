@@ -137,8 +137,12 @@ uni_nav_update_position(UniNav *nav)
     y = nav->center_y - off_y;
 
     /* Popup shoudn't be out of the screen */
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     x = CLAMP(x, 0, gdk_screen_width() - pw.width);
     y = CLAMP(y, 0, gdk_screen_height() - pw.height);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gtk_window_move(GTK_WINDOW(nav), x, y);
 }
 
@@ -203,7 +207,11 @@ uni_nav_key_press(GtkWidget *widget, GdkEventKey *ev)
     int retval = gtk_bindings_activate(G_OBJECT(nav->view),
                                        ev->keyval,
                                        ev->state);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     uni_nav_draw_rectangle(nav, cr, TRUE);
     cairo_destroy(cr);
     return retval;
@@ -214,7 +222,10 @@ uni_nav_motion_notify(GtkWidget *widget, GdkEventMotion *ev)
 {
     UniNav *nav = UNI_NAV(widget);
     int mx, my;
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_get_pointer(gtk_widget_get_window(widget), &mx, &my, NULL);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     /* Make coordinates relative to window. */
     mx -= 4;
@@ -238,7 +249,11 @@ uni_nav_motion_notify(GtkWidget *widget, GdkEventMotion *ev)
     int zoom_y_ofs = my * zoom2nav_factor;
 
     uni_image_view_set_offset(nav->view, zoom_x_ofs, zoom_y_ofs, TRUE);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     uni_nav_draw_rectangle(nav, cr, TRUE);
     cairo_destroy(cr);
 
@@ -277,7 +292,10 @@ uni_nav_pixbuf_changed(UniNav *nav)
 static void
 uni_nav_zoom_changed(UniNav *nav)
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     uni_nav_draw_rectangle(nav, cr, TRUE);
     cairo_destroy(cr);
 }
@@ -304,8 +322,9 @@ static void
 uni_nav_init(UniNav *nav)
 {
     nav->view = NULL;
-    nav->last_rect = (GdkRectangle){
-        -1, -1, -1, -1};
+
+    nav->last_rect = (GdkRectangle) {-1, -1, -1, -1};
+
     nav->update_when_shown = FALSE;
 
     GtkWidget *out_frame = gtk_frame_new(NULL);
@@ -410,6 +429,7 @@ void uni_nav_grab(UniNav *nav)
 
     gtk_grab_add(preview);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     GdkCursor *cursor = gdk_cursor_new(GDK_FLEUR);
     int mask = (GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_RELEASE_MASK);
     window = gtk_widget_get_window(preview);
@@ -419,15 +439,20 @@ void uni_nav_grab(UniNav *nav)
 
     /* Capture keyboard events. */
     gdk_keyboard_grab(window, TRUE, GDK_CURRENT_TIME);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gtk_widget_grab_focus(preview);
 }
 
 void uni_nav_release(UniNav *nav)
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
 
     /* Release keyboard focus. */
     gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     gtk_grab_remove(nav->preview);
 }
 
@@ -463,3 +488,5 @@ void uni_nav_show_and_grab(UniNav *nav, int center_x, int center_y)
     g_signal_connect_swapped(G_OBJECT(nav->view), "zoom_changed",
                              G_CALLBACK(uni_nav_zoom_changed), nav);
 }
+
+
