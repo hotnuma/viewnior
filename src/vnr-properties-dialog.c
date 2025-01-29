@@ -20,7 +20,7 @@
 #include <time.h>
 #include <locale.h>
 #include "vnr-properties-dialog.h"
-#include "vnr-file.h"
+#include "file.h"
 #include "vnr-tools.h"
 #include "uni-exiv2.hpp"
 

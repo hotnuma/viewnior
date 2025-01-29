@@ -20,8 +20,8 @@
 #ifndef __VNR_WINDOW_H__
 #define __VNR_WINDOW_H__
 
-#include "vnr-prefs.h"
-#include "vnr-file.h"
+#include "preferences.h"
+#include "file.h"
 
 G_BEGIN_DECLS
 

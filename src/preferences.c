@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "vnr-prefs.h"
-#include "vnr-window.h"
+#include "preferences.h"
+#include "window.h"
 
 #define UI_PATH PACKAGE_DATA_DIR "/viewnior/vnr-preferences-dialog.ui"
 

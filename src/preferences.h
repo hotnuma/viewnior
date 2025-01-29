@@ -17,8 +17,8 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VNR_PREFS_H__
-#define __VNR_PREFS_H__
+#ifndef __VNR_PREFERENCES_H__
+#define __VNR_PREFERENCES_H__
 
 #include "config.h"
 
@@ -132,6 +132,7 @@ void vnr_prefs_set_show_statusbar(VnrPrefs *prefs, gboolean show_statusbar);
 gboolean vnr_prefs_save(VnrPrefs *prefs);
 
 G_END_DECLS
-#endif /* __VNR_PREFS_H__ */
+
+#endif // __VNR_PREFERENCES_H__
 
 

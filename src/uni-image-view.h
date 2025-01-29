@@ -26,7 +26,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "vnr-prefs.h"
+#include "preferences.h"
 
 G_BEGIN_DECLS
 #define UNI_TYPE_IMAGE_VIEW (uni_image_view_get_type())

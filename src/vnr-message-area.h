@@ -23,7 +23,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
-#include "vnr-window.h"
+#include "window.h"
 
 G_BEGIN_DECLS
 

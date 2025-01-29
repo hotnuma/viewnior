@@ -56,7 +56,9 @@ subdir('man')
 
 app_sources = [
     'src/dialog.c',
+    'src/file.c',
     'src/main.c',
+    'src/preferences.c',
     'src/uni-anim-view.c',
     'src/uni-cache.c',
     'src/uni-dragger.c',
@@ -66,12 +68,10 @@ app_sources = [
     'src/uni-scroll-win.c',
     'src/uni-utils.c',
     'src/vnr-crop.c',
-    'src/vnr-file.c',
     'src/vnr-message-area.c',
-    'src/vnr-prefs.c',
     'src/vnr-properties-dialog.c',
     'src/vnr-tools.c',
-    'src/vnr-window.c',
+    'src/window.c',
     'src/xfce-filename-input.c',
 ]
 

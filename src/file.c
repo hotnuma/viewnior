@@ -17,11 +17,12 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "file.h"
 #include "config.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
+#include <glib/gstdio.h>
 #include <gdk/gdk.h>
-#include "vnr-file.h"
 #include "vnr-tools.h"
 
 G_DEFINE_TYPE(VnrFile, vnr_file, G_TYPE_OBJECT)

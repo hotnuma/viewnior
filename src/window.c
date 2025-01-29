@@ -17,7 +17,7 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "vnr-window.h"
+#include "window.h"
 #include "config.h"
 
 #include <libgen.h>

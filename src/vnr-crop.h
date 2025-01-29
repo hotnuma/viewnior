@@ -21,7 +21,7 @@
 #define __VNR_CROP_H_
 
 #include <gtk/gtk.h>
-#include "vnr-window.h"
+#include "window.h"
 
 G_BEGIN_DECLS
 

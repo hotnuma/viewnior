@@ -32,7 +32,7 @@
 #include "uni-marshal.h"
 #include "uni-zoom.h"
 #include "uni-utils.h"
-#include "vnr-window.h"
+#include "window.h"
 
 // clang-format off
 #define g_signal_handlers_disconnect_by_data(instance, data) \

@@ -20,9 +20,9 @@
 #include <config.h>
 #include <gtk/gtk.h>
 #include "config.h"
-#include "vnr-window.h"
+#include "window.h"
 #include "vnr-message-area.h"
-#include "vnr-file.h"
+#include "file.h"
 #include "vnr-tools.h"
 
 #define PIXMAP_DIR PACKAGE_DATA_DIR "/viewnior/pixmaps/"

@@ -14,7 +14,9 @@ PKGCONFIG += shared-mime-info
 
 SOURCES = \
     src/dialog.c \
+    src/file.c \
     src/main.c \
+    src/preferences.c \
     src/uni-anim-view.c \
     src/uni-cache.c \
     src/uni-dragger.c \
@@ -24,12 +26,10 @@ SOURCES = \
     src/uni-scroll-win.c \
     src/uni-utils.c \
     src/vnr-crop.c \
-    src/vnr-file.c \
     src/vnr-message-area.c \
-    src/vnr-prefs.c \
     src/vnr-properties-dialog.c \
     src/vnr-tools.c \
-    src/vnr-window.c \
+    src/window.c \
     src/xfce-filename-input.c
 
 DISTFILES = \
@@ -42,6 +42,8 @@ DISTFILES = \
 HEADERS = \
     src/config.h.in \
     src/dialog.h \
+    src/file.h \
+    src/preferences.h \
     src/uni-anim-view.h \
     src/uni-cache.h \
     src/uni-dragger.h \
@@ -52,12 +54,10 @@ HEADERS = \
     src/uni-utils.h \
     src/uni-zoom.h \
     src/vnr-crop.h \
-    src/vnr-file.h \
     src/vnr-message-area.h \
-    src/vnr-prefs.h \
     src/vnr-properties-dialog.h \
     src/vnr-tools.h \
-    src/vnr-window.h \
+    src/window.h \
     src/xfce-filename-input.h
 
 

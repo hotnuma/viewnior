@@ -26,7 +26,7 @@
 #include <gio/gio.h>
 #include <gdk/gdkkeysyms.h>
 #include "uni-image-view.h"
-#include "vnr-window.h"
+#include "window.h"
 
 G_BEGIN_DECLS
 

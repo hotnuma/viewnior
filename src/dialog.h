@@ -2,7 +2,7 @@
 #define DIALOG_H
 
 //#include <gtk/gtk.h>
-#include "vnr-file.h"
+#include "file.h"
 
 gchar* dialog_file_rename(GtkWindow *window, VnrFile *file);
 
