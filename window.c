@@ -1301,12 +1301,12 @@ static void _window_rotate_pixbuf(VnrWindow *window,
                                   GdkPixbufRotation angle)
 {
     GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
+    GdkWindow *gdkwindow = gtk_widget_get_window(GTK_WIDGET(window));
 
     if (!window->cursor_is_hidden)
     {
         GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_WATCH);
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              cursor);
+        gdk_window_set_cursor(gdkwindow, cursor);
     }
 
     gdk_display_flush(display);
@@ -1331,8 +1331,7 @@ static void _window_rotate_pixbuf(VnrWindow *window,
     if (!window->cursor_is_hidden)
     {
         GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_LEFT_PTR);
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              cursor);
+        gdk_window_set_cursor(gdkwindow, cursor);
     }
 
     g_object_unref(result);
