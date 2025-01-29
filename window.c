@@ -536,7 +536,6 @@ static void window_init(VnrWindow *window)
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-    // Build MENUBAR and TOOLBAR
     window->ui_manager = gtk_ui_manager_new();
 
     window->actions_window = gtk_action_group_new("MenuActionsWindow");
@@ -785,8 +784,6 @@ static void window_init(VnrWindow *window)
             GTK_WINDOW(window),
             gtk_ui_manager_get_accel_group(window->ui_manager));
 
-    G_GNUC_END_IGNORE_DEPRECATIONS
-
     _window_load_accel_map();
 }
 
@@ -816,8 +813,6 @@ static void _window_update_openwith_menu(VnrWindow *window)
         return;
     else
         mime_type = g_file_info_get_content_type(file_info);
-
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
     if (window->open_with_menu_id != 0)
     {
@@ -907,8 +902,6 @@ static void _window_update_openwith_menu(VnrWindow *window)
                               FALSE);
     }
 
-    G_GNUC_END_IGNORE_DEPRECATIONS
-
     g_list_free(apps);
 }
 
@@ -932,21 +925,17 @@ static void _window_load_accel_map()
 
 static void _window_hide_cursor(VnrWindow *window)
 {
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_BLANK_CURSOR));
     window->cursor_is_hidden = TRUE;
     gdk_flush();
-    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void _window_show_cursor(VnrWindow *window)
 {
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
                           gdk_cursor_new(GDK_LEFT_PTR));
     window->cursor_is_hidden = FALSE;
     gdk_flush();
-    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void _window_update_fs_filename_label(VnrWindow *window)
@@ -1023,7 +1012,10 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_container_add(GTK_CONTAINER(item), box);
 
+
     widget = gtk_button_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN);
+
+
     g_signal_connect(widget, "clicked", G_CALLBACK(_on_fullscreen_leave), window);
     gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);
 
@@ -1081,12 +1073,12 @@ static void _window_fullscreen(VnrWindow *window)
 
     window->mode = WINDOW_MODE_FULLSCREEN;
 
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
     GtkAction *action = gtk_action_group_get_action(
                                     window->actions_image,
                                     "ViewFullscreen");
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-    G_GNUC_END_IGNORE_DEPRECATIONS
+
 
     //GdkColor color;
     //gdk_color_parse("black", &color);
@@ -1096,10 +1088,8 @@ static void _window_fullscreen(VnrWindow *window)
     GdkRGBA color;
     gdk_rgba_parse(&color, "black");
 
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_widget_override_background_color(window->view,
                                          GTK_STATE_NORMAL, &color);
-    G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
@@ -1148,12 +1138,11 @@ static void _window_unfullscreen(VnrWindow *window)
 
     gtk_window_unfullscreen(GTK_WINDOW(window));
 
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     GtkAction *action = gtk_action_group_get_action(
         window->actions_image,
         "ViewFullscreen");
+
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
-    G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->dark_background)
     {
@@ -1209,10 +1198,9 @@ static void _window_slideshow_stop(VnrWindow *window)
     if (window->mode != WINDOW_MODE_SLIDESHOW)
         return;
 
-    GtkAction *action;
-
-    action = gtk_action_group_get_action(window->actions_collection,
-                                         "ViewSlideshow");
+    GtkAction *action = gtk_action_group_get_action(
+                                window->actions_collection,
+                                "ViewSlideshow");
 
     window->slideshow = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn), FALSE);
@@ -1238,10 +1226,9 @@ static void _window_slideshow_start(VnrWindow *window)
                                                   (GSourceFunc)_window_next_image_src,
                                                   window);
 
-    GtkAction *action;
-
-    action = gtk_action_group_get_action(window->actions_collection,
-                                         "ViewSlideshow");
+    GtkAction *action = gtk_action_group_get_action(
+                                window->actions_collection,
+                                "ViewSlideshow");
 
     window->slideshow = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn), TRUE);
@@ -1366,22 +1353,24 @@ static void _window_rotate_pixbuf(VnrWindow *window,
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, GTK_STOCK_SAVE,
+                                          FALSE, "gtk-save",
                                           G_CALLBACK(_action_save_image));
 }
 
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 {
-    GdkPixbuf *result;
-
     if (!window->cursor_is_hidden)
+    {
         gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
                               gdk_cursor_new(GDK_WATCH));
-    /* This makes the cursor show NOW */
+    }
+
+    // This makes the cursor show NOW
     gdk_flush();
 
-    result = gdk_pixbuf_flip(UNI_IMAGE_VIEW(window->view)->pixbuf,
-                             horizontal);
+    GdkPixbuf *result = gdk_pixbuf_flip(
+                                UNI_IMAGE_VIEW(window->view)->pixbuf,
+                                horizontal);
 
     if (result == NULL)
     {
@@ -1404,7 +1393,8 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
     /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
     window->modifications ^= (window->modifications & 4) ? 1 + horizontal : 2 - horizontal;
 
-    gtk_action_group_set_sensitive(window->action_save, window->modifications);
+    gtk_action_group_set_sensitive(window->action_save,
+                                   window->modifications);
 
     if (window->modifications == 0)
     {
@@ -1423,11 +1413,11 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, GTK_STOCK_SAVE,
+                                          FALSE, "gtk-save",
                                           G_CALLBACK(_action_save_image));
 }
 
-// Private signal handlers ===================================================
+// Private signal handlers ---------------------------------------------------
 
 static void _on_open_with_launch_application(GtkAction *action,
                                              VnrWindow *window)
@@ -1517,12 +1507,13 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
         _window_slideshow_stop(window);
 }
 
-static void _action_save_image(GtkWidget *widget, VnrWindow *window)
+static void _action_save_image(GtkWidget *, VnrWindow *window)
 {
-    GError *error = NULL;
     if (!window->cursor_is_hidden)
+    {
         gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
                               gdk_cursor_new(GDK_WATCH));
+    }
 
     /* This makes the cursor show NOW */
     gdk_flush();
@@ -1534,6 +1525,8 @@ static void _action_save_image(GtkWidget *widget, VnrWindow *window)
 
     /* Store exiv2 metadata to cache, so we can restore it afterwards */
     uni_read_exiv2_to_cache(current->path);
+
+    GError *error = NULL;
 
     if (g_strcmp0(window->writable_format_name, "jpeg") == 0)
     {
@@ -1626,17 +1619,20 @@ static void _menu_position_func(GtkMenu *menu,
 static void _action_open_menu(GtkToggleAction *action, VnrWindow *window)
 {
     if (!gtk_toggle_action_get_active(action))
-    {
         return;
-    }
+
     gtk_menu_popup(GTK_MENU(window->button_menu),
-                   NULL, NULL, _menu_position_func,
-                   window, 0, gtk_get_current_event_time());
+                   NULL,
+                   NULL,
+                   _menu_position_func,
+                   window,
+                   0,
+                   gtk_get_current_event_time());
+
     return;
 }
 
-static void _window_on_main_menu_hidden(GtkWidget *widget,
-                                        gpointer user_data)
+static void _window_on_main_menu_hidden(GtkWidget *widget, gpointer user_data)
 {
     gtk_toggle_tool_button_set_active(
         GTK_TOGGLE_TOOL_BUTTON(VNR_WINDOW(user_data)->properties_button),
@@ -1934,8 +1930,8 @@ static void _action_open(GtkAction *action, VnrWindow *window)
     dialog = gtk_file_chooser_dialog_new(_("Open Image"),
                                          GTK_WINDOW(window),
                                          GTK_FILE_CHOOSER_ACTION_OPEN,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                         "gtk-cancel", GTK_RESPONSE_CANCEL,
+                                         "gtk-open", GTK_RESPONSE_ACCEPT,
                                          NULL);
 
     img_filter = gtk_file_filter_new();
@@ -1979,15 +1975,15 @@ static void _action_open(GtkAction *action, VnrWindow *window)
     gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(dialog), window->prefs->show_hidden);
 }
 
-static void _action_open_dir(GtkAction *action, VnrWindow *window)
+static void _action_open_dir(GtkAction*, VnrWindow *window)
 {
-    GtkWidget *dialog;
-    dialog = gtk_file_chooser_dialog_new(_("Open Folder"),
-                                         GTK_WINDOW(window),
-                                         GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                                         NULL);
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(
+                                _("Open Folder"),
+                                GTK_WINDOW(window),
+                                GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                "gtk-cancel", GTK_RESPONSE_CANCEL,
+                                "gtk-open", GTK_RESPONSE_ACCEPT,
+                                NULL);
 
     gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -2012,11 +2008,13 @@ static void _action_open_dir(GtkAction *action, VnrWindow *window)
 
 static void _action_about(GtkAction *action, VnrWindow *window)
 {
-    static const char *authors[] = {
+    static const char *authors[] =
+    {
         "Programming &amp; icon design",
         "\tSiyan Panayotov",
         "\nRefer to source code from GtkImageView",
-        NULL};
+        NULL
+    };
 
     char *license =
         ("Viewnior is free software: you can redistribute it and/or modify "
@@ -2030,25 +2028,24 @@ static void _action_about(GtkAction *action, VnrWindow *window)
          "You should have received a copy of the GNU General Public License "
          "along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.\n");
 
-    gtk_show_about_dialog(GTK_WINDOW(window),
-                          "program-name", "Viewnior",
-                          "version", VERSION,
-                          "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov",
-                          "comments", _("Elegant Image Viewer"),
-                          "authors", authors,
-                          "logo-icon-name", "viewnior",
-                          "wrap-license", TRUE,
-                          "license", license,
-                          "website", "https://github.com/hotnuma/viewnior",
-                          "translator-credits", _("translator-credits"),
-                          NULL);
+    gtk_show_about_dialog(
+                GTK_WINDOW(window),
+                "program-name", "Viewnior",
+                "version", VERSION,
+                "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov",
+                "comments", _("Elegant Image Viewer"),
+                "authors", authors,
+                "logo-icon-name", "viewnior",
+                "wrap-license", TRUE,
+                "license", license,
+                "website", "https://github.com/hotnuma/viewnior",
+                "translator-credits", _("translator-credits"),
+                NULL);
 }
 
 static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
 {
-    pid_t pid;
-
-    pid = fork();
+    pid_t pid = fork();
 
     if (pid == 0)
     {
@@ -2065,6 +2062,7 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
 
         switch (desktop_environment)
         {
+
         case VNR_PREFS_DESKTOP_GNOME2:
             execlp("gconftool-2", "gconftool-2",
                    "--set", "/desktop/gnome/background/picture_filename",
@@ -2072,12 +2070,14 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
                    current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_MATE:
             execlp("gsettings", "gsettings",
                    "set", "org.mate.background",
                    "picture-filename", current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_GNOME3:
             tmp = g_strdup_printf("file://%s", current->path);
             execlp("gsettings", "gsettings",
@@ -2085,9 +2085,12 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
                    "picture-uri", tmp,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_XFCE:
-            tmp = g_strdup_printf("/backdrop/screen%d/monitor0/workspace0/last-image",
-                                  gdk_screen_get_number(gtk_widget_get_screen(GTK_WIDGET(win))));
+            tmp = g_strdup_printf(
+                "/backdrop/screen%d/monitor0/workspace0/last-image",
+                gdk_screen_get_number(
+                    gtk_widget_get_screen(GTK_WIDGET(win))));
             execlp("xfconf-query", "xfconf-query",
                    "-c", "xfce4-desktop",
                    "-p", tmp,
@@ -2096,28 +2099,33 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
                    current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_LXDE:
             execlp("pcmanfm", "pcmanfm",
                    "--set-wallpaper",
                    current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_PUPPY:
             execlp("set_bg", "set_bg",
                    current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_FLUXBOX:
             execlp("fbsetbg", "fbsetbg",
                    "-f", current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_NITROGEN:
             execlp("nitrogen", "nitrogen",
                    "--set-zoom-fill", "--save",
                    current->path,
                    NULL);
             break;
+
         case VNR_PREFS_DESKTOP_CINNAMON:
             tmp = g_strdup_printf("file://%s",
                                   current->path);
@@ -2126,6 +2134,7 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
                    "picture-uri", tmp,
                    NULL);
             break;
+
         default:
             _exit(0);
         }
@@ -2138,7 +2147,8 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
 
 static void _action_fullscreen(GtkAction *action, VnrWindow *window)
 {
-    gboolean fullscreen = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
+    gboolean fullscreen = gtk_toggle_action_get_active(
+                GTK_TOGGLE_ACTION(action));
 
     if (fullscreen)
         _window_fullscreen(window);
@@ -2272,15 +2282,15 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
                                       markup);
 
         gtk_dialog_add_buttons(GTK_DIALOG(dlg),
-                               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                               GTK_STOCK_DELETE, GTK_RESPONSE_YES,
+                               "gtk-cancel", GTK_RESPONSE_CANCEL,
+                               "gtk-delete", GTK_RESPONSE_YES,
                                NULL);
     }
 
-    if (!window->prefs->confirm_delete || gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_YES)
+    if (!window->prefs->confirm_delete
+        || gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_YES)
     {
-        GFile *file;
-        file = g_file_new_for_path(file_path);
+        GFile *file = g_file_new_for_path(file_path);
 
         GError *error = NULL;
         g_file_trash(file, NULL, &error);
@@ -2405,7 +2415,7 @@ static void _action_crop(GtkAction *action, VnrWindow *window)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, GTK_STOCK_SAVE,
+                                          FALSE, "gtk-save",
                                           G_CALLBACK(_action_save_image));
 
     g_object_unref(crop);
@@ -2434,6 +2444,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
             result = TRUE;
             break;
         } /* else fall-trough is intended */
+
     case GDK_KEY_Up:
         if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
         {
@@ -2446,6 +2457,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         _action_prev(NULL, window);
         result = TRUE;
         break;
+
     case GDK_KEY_Right:
         if (event->state & GDK_MOD1_MASK)
         {
@@ -2453,6 +2465,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
             result = TRUE;
             break;
         } /* else fall-trough is intended */
+
     case GDK_KEY_Down:
         if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
         {
@@ -2465,14 +2478,17 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         _action_next(NULL, window);
         result = TRUE;
         break;
+
     case GDK_KEY_Page_Up:
         _action_prev(NULL, window);
         result = TRUE;
         break;
+
     case GDK_KEY_Page_Down:
         _action_next(NULL, window);
         result = TRUE;
         break;
+
     case GDK_KEY_Escape:
     case 'q':
         if (window->mode != WINDOW_MODE_NORMAL)
@@ -2480,30 +2496,37 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         else
             gtk_main_quit();
         break;
+
     case GDK_KEY_space:
         if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
             break;
         window_next(window, TRUE);
         result = TRUE;
         break;
+
     case GDK_KEY_BackSpace:
         window_prev(window);
         result = TRUE;
         break;
+
     case GDK_KEY_Home:
         window_first(window);
         result = TRUE;
         break;
+
     case GDK_KEY_End:
         window_last(window);
         result = TRUE;
         break;
+
     case 'h':
         _action_flip_horizontal(NULL, window);
         break;
+
     case 'v':
         _action_flip_vertical(NULL, window);
         break;
+
     case 'c':
         _action_crop(NULL, window);
         break;
