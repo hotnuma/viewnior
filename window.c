@@ -162,6 +162,20 @@ void window_fullscreen_toggle(VnrWindow *window);
 // clang-format off
 const gchar* _ui_definition =
     "<ui>"
+        "<toolbar name=\"Toolbar\">"
+            "<toolitem action=\"GoPrevious\"/>"
+            "<toolitem action=\"GoNext\"/>"
+            "<separator/>"
+            "<toolitem action=\"ViewZoomIn\"/>"
+            "<toolitem action=\"ViewZoomOut\"/>"
+            "<toolitem action=\"ViewZoomNormal\"/>"
+            "<toolitem action=\"ViewZoomFit\"/>"
+            "<separator/>"
+            "<toolitem action=\"ImageRotateCCW\"/>"
+            "<toolitem action=\"ImageRotateCW\"/>"
+            "<separator expand=\"true\"/>"
+            "<toolitem action=\"Properties\"/>"
+        "</toolbar>"
 
         "<popup name=\"ButtonMenu\">"
             "<menuitem action=\"FileOpen\"/>"
@@ -210,21 +224,6 @@ const gchar* _ui_definition =
             "<menuitem action=\"FileClose\"/>"
         "</popup>"
 
-        "<toolbar name=\"Toolbar\">"
-            "<toolitem action=\"GoPrevious\"/>"
-            "<toolitem action=\"GoNext\"/>"
-            "<separator/>"
-            "<toolitem action=\"ViewZoomIn\"/>"
-            "<toolitem action=\"ViewZoomOut\"/>"
-            "<toolitem action=\"ViewZoomNormal\"/>"
-            "<toolitem action=\"ViewZoomFit\"/>"
-            "<separator/>"
-            "<toolitem action=\"ImageRotateCCW\"/>"
-            "<toolitem action=\"ImageRotateCW\"/>"
-            "<separator expand=\"true\"/>"
-            "<toolitem action=\"Properties\"/>"
-        "</toolbar>"
-
         "<popup name=\"PopupMenu\">"
             "<menuitem name=\"GoPrevious\" action=\"GoPrevious\"/>"
             "<menuitem name=\"GoNext\" action=\"GoNext\"/>"
@@ -251,21 +250,10 @@ const gchar* _ui_definition =
         "<accelerator name=\"ControlKPAddAccel\" action=\"ControlKpAdd\"/>"
         "<accelerator name=\"ControlKPSubAccel\" action=\"ControlKpSub\"/>"
         "<accelerator name=\"DeleteAccel\" action=\"Delete\"/>"
-
     "</ui>";
 
 const gchar* _ui_definition_wallpaper =
     "<ui>"
-
-        "<menubar name=\"MainMenu\">"
-            "<menu action=\"Image\">"
-                "<placeholder name=\"WallpaperEntry\">"
-                "<separator/>"
-                "<menuitem name=\"Wallpaper\" action=\"SetAsWallpaper\"/>"
-                "</placeholder>"
-            "</menu>"
-        "</menubar>"
-
         "<popup name=\"ButtonMenu\">"
             "<menu action=\"Image\">"
                 "<placeholder name=\"WallpaperEntry\">"
@@ -281,18 +269,25 @@ const gchar* _ui_definition_wallpaper =
                 "<menuitem action=\"SetAsWallpaper\"/>"
             "</placeholder>"
         "</popup>"
-
     "</ui>";
 // clang-format on
 
 static const GtkActionEntry _action_entries_window[] =
 {
-    {"File", NULL, N_("_File")},
-    {"Edit", NULL, N_("_Edit")},
-    {"View", NULL, N_("_View")},
-    {"Image", NULL, N_("_Image")},
-    {"Go", NULL, N_("_Go")},
-    {"Help", NULL, N_("_Help")},
+    {"Edit", NULL,
+     N_("_Edit"), NULL,
+     NULL,
+     NULL},
+
+    {"View", NULL,
+     N_("_View"), NULL,
+     NULL,
+     NULL},
+
+    {"Image", NULL,
+     N_("_Image"), NULL,
+     NULL,
+     NULL},
 
     {"FileOpen", "gtk-file",
      N_("Open _Image..."), "<control>O",
@@ -321,21 +316,24 @@ static const GtkActionEntry _action_entries_window[] =
 
 static const GtkActionEntry _action_entry_save[] =
 {
-    {"FileSave", "gtk-save", N_("_Save"), "<control>S",
+    {"FileSave", "gtk-save",
+     N_("_Save"), "<control>S",
      N_("Save changes"),
      G_CALLBACK(_action_save_image)},
 };
 
 static const GtkToggleActionEntry _toggle_entry_properties[] =
 {
-    {"Properties", "gtk-properties", N_("_Properties"), NULL,
+    {"Properties", "gtk-properties",
+     N_("_Properties"), NULL,
      N_("Properties"),
      G_CALLBACK(_action_open_menu)},
 };
 
 static const GtkActionEntry _action_entry_wallpaper[] =
 {
-    {"SetAsWallpaper", NULL, N_("Set as _Wallpaper"), "<control>F8",
+    {"SetAsWallpaper", NULL,
+     N_("Set as _Wallpaper"), "<control>F8",
      N_("Set the selected image as the desktop background"),
      G_CALLBACK(_action_set_wallpaper)},
 };
@@ -371,98 +369,128 @@ static const GtkActionEntry _action_entries_image[] =
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
 
-    {"ViewZoomIn", "gtk-zoom-in", N_("_Zoom In"), "<control>plus",
+    {"ViewZoomIn", "gtk-zoom-in",
+     N_("_Zoom In"), "<control>plus",
      N_("Enlarge the image"),
      G_CALLBACK(_action_zoom_in)},
 
-    {"ViewZoomOut", "gtk-zoom-out", N_("Zoom _Out"), "<control>minus",
+    {"ViewZoomOut", "gtk-zoom-out",
+     N_("Zoom _Out"), "<control>minus",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
 
-    {"ViewZoomNormal", "gtk-zoom-100", N_("_Normal Size"), "<control>0",
+    {"ViewZoomNormal", "gtk-zoom-100",
+     N_("_Normal Size"), "<control>0",
      N_("Show the image at its normal size"),
      G_CALLBACK(_action_normal_size)},
 
-    {"ViewZoomFit", "gtk-zoom-fit", N_("Best _Fit"), NULL,
+    {"ViewZoomFit", "gtk-zoom-fit",
+     N_("Best _Fit"), NULL,
      N_("Fit the image to the window"),
      G_CALLBACK(_action_fit)},
 
-    {"ControlEqual", "gtk-zoom-in", N_("_Zoom In"), "<control>equal",
+    {"ControlEqual", "gtk-zoom-in",
+     N_("_Zoom In"), "<control>equal",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_in)},
 
-    {"ControlKpAdd", "gtk-zoom-in", N_("_Zoom In"), "<control>KP_Add",
+    {"ControlKpAdd", "gtk-zoom-in",
+     N_("_Zoom In"), "<control>KP_Add",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_in)},
 
-    {"ControlKpSub", "gtk-zoom-out", N_("Zoom _Out"), "<control>KP_Subtract",
+    {"ControlKpSub", "gtk-zoom-out",
+     N_("Zoom _Out"), "<control>KP_Subtract",
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
 };
 
 static const GtkActionEntry _action_entries_static_image[] =
 {
-    {"ImageRotateCW", "object-rotate-right", N_("Rotate _Clockwise"), "<control>R",
+    {"ImageRotateCW", "object-rotate-right",
+     N_("Rotate _Clockwise"), "<control>R",
      N_("Rotate image clockwise"),
      G_CALLBACK(_action_rotate_cw)},
-    {"ImageRotateCCW", "object-rotate-left", N_("Rotate _Anti-clockwise"), "<control><shift>R",
+
+    {"ImageRotateCCW", "object-rotate-left",
+     N_("Rotate _Anti-clockwise"), "<control><shift>R",
      N_("Rotate image anti-clockwise"),
      G_CALLBACK(_action_rotate_ccw)},
-    {"ImageFlipVertical", "object-flip-vertical", N_("Flip _Vertical"), NULL,
+
+    {"ImageFlipVertical", "object-flip-vertical",
+     N_("Flip _Vertical"), NULL,
      N_("Flip image vertically"),
      G_CALLBACK(_action_flip_vertical)},
-    {"ImageFlipHorizontal", "object-flip-horizontal", N_("Flip _Horizontal"), NULL,
+
+    {"ImageFlipHorizontal", "object-flip-horizontal",
+     N_("Flip _Horizontal"), NULL,
      N_("Flip image horizontally"),
      G_CALLBACK(_action_flip_horizontal)},
-    {"ImageCrop", NULL, N_("Crop..."), NULL,
+
+    {"ImageCrop", NULL,
+     N_("Crop..."), NULL,
      N_("Crop"),
      G_CALLBACK(_action_crop)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_image[] =
 {
-    {"ViewFullscreen", "gtk-fullscreen", N_("Full _Screen"), "F11",
+    {"ViewFullscreen", "gtk-fullscreen",
+     N_("Full _Screen"), "F11",
      N_("Show in fullscreen mode"),
      G_CALLBACK(_action_fullscreen)},
-    {"ViewResizeWindow", NULL, N_("_Adjust window size"), NULL,
+
+    {"ViewResizeWindow", NULL,
+     N_("_Adjust window size"), NULL,
      N_("Adjust window size to fit the image"),
      G_CALLBACK(_action_resize)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_window[] =
 {
-    {"ViewToolbar", NULL, N_("Toolbar"), NULL,
+    {"ViewToolbar", NULL,
+     N_("Toolbar"), NULL,
      N_("Show Toolbar"),
      G_CALLBACK(_action_toolbar)},
 
-    {"ViewScrollbar", NULL, N_("Scrollbar"), NULL,
+    {"ViewScrollbar", NULL,
+     N_("Scrollbar"), NULL,
      N_("Show Scrollbar"),
      G_CALLBACK(_action_scrollbar)},
 
-    {"ViewStatusbar", NULL, N_("Statusbar"), NULL,
+    {"ViewStatusbar", NULL,
+     N_("Statusbar"), NULL,
      N_("Show Statusbar"),
      G_CALLBACK(_action_statusbar)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_collection[] =
 {
-    {"ViewSlideshow", "gtk-network", N_("Sli_deshow"), "F6",
+    {"ViewSlideshow", "gtk-network",
+     N_("Sli_deshow"), "F6",
      N_("Show in slideshow mode"),
      G_CALLBACK(_action_slideshow)},
 };
 
 static const GtkActionEntry _action_entries_collection[] =
 {
-    {"GoPrevious", "gtk-go-back", N_("_Previous Image"), "<Alt>Left",
+    {"GoPrevious", "gtk-go-back",
+     N_("_Previous Image"), "<Alt>Left",
      N_("Go to the previous image of the collection"),
      G_CALLBACK(_action_prev)},
-    {"GoNext", "gtk-go-forward", N_("_Next Image"), "<Alt>Right",
+
+    {"GoNext", "gtk-go-forward",
+     N_("_Next Image"), "<Alt>Right",
      N_("Go to the next image of the collection"),
      G_CALLBACK(_action_next)},
-    {"GoFirst", "gtk-go-first", N_("_First Image"), "<Alt>Home",
+
+    {"GoFirst", "gtk-go-first",
+     N_("_First Image"), "<Alt>Home",
      N_("Go to the first image of the collection"),
      G_CALLBACK(_action_first)},
-    {"GoLast", "gtk-goto-last", N_("_Last Image"), "<Alt>End",
+
+    {"GoLast", "gtk-goto-last",
+     N_("_Last Image"), "<Alt>End",
      N_("Go to the last image of the collection"),
      G_CALLBACK(_action_last)},
 };
@@ -482,8 +510,6 @@ static void window_class_init(VnrWindowClass *klass)
     widget_class->key_press_event = _window_on_key_press;
     widget_class->drag_data_received = _window_drag_data_received;
 }
-
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
 static void window_init(VnrWindow *window)
 {
@@ -507,6 +533,8 @@ static void window_init(VnrWindow *window)
 
     gtk_window_set_title((GtkWindow *)window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
     // Build MENUBAR and TOOLBAR
     window->ui_manager = gtk_ui_manager_new();
@@ -628,7 +656,8 @@ static void window_init(VnrWindow *window)
 
     // Continue with layout
 
-    window->layout = gtk_vbox_new(FALSE, 0);
+    window->layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
     gtk_container_add(GTK_CONTAINER(window), window->layout);
     gtk_widget_show(window->layout);
 
@@ -685,7 +714,8 @@ static void window_init(VnrWindow *window)
 
     window->msg_area = vnr_message_area_new();
     VNR_MESSAGE_AREA(window->msg_area)->vnr_win = window;
-    gtk_box_pack_start(GTK_BOX(window->layout), window->msg_area, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window->layout),
+                       window->msg_area, FALSE, FALSE, 0);
     gtk_widget_show(GTK_WIDGET(window->msg_area));
 
     window->view = uni_anim_view_new();
@@ -693,7 +723,8 @@ static void window_init(VnrWindow *window)
     window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
 
     window->statusbar = gtk_statusbar_new();
-    gtk_box_pack_end(GTK_BOX(window->layout), window->statusbar, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(window->layout),
+                     window->statusbar, FALSE, FALSE, 0);
 
     // Apply statusbar preference
     action = gtk_action_group_get_action(window->actions_bars,
@@ -706,10 +737,13 @@ static void window_init(VnrWindow *window)
     // Apply scrollbar preference
     action = gtk_action_group_get_action(window->actions_bars,
                                          "ViewScrollbar");
-    uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), window->prefs->show_scrollbar);
-    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), window->prefs->show_scrollbar);
+    uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view),
+                                      window->prefs->show_scrollbar);
+    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action),
+                                 window->prefs->show_scrollbar);
 
-    gtk_box_pack_end(GTK_BOX(window->layout), window->scroll_view, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(window->layout),
+                     window->scroll_view, TRUE, TRUE, 0);
     gtk_widget_show_all(GTK_WIDGET(window->scroll_view));
 
     gtk_widget_grab_focus(window->view);
@@ -751,6 +785,8 @@ static void window_init(VnrWindow *window)
             GTK_WINDOW(window),
             gtk_ui_manager_get_accel_group(window->ui_manager));
 
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
     _window_load_accel_map();
 }
 
@@ -780,6 +816,8 @@ static void _window_update_openwith_menu(VnrWindow *window)
         return;
     else
         mime_type = g_file_info_get_content_type(file_info);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
     if (window->open_with_menu_id != 0)
     {
@@ -868,6 +906,8 @@ static void _window_update_openwith_menu(VnrWindow *window)
                               GTK_UI_MANAGER_MENUITEM,
                               FALSE);
     }
+
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     g_list_free(apps);
 }
@@ -2827,8 +2867,6 @@ void window_preferences_apply(VnrWindow *window)
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->sl_timeout_widget), (gdouble)window->prefs->slideshow_timeout);
     }
 }
-
-G_GNUC_END_IGNORE_DEPRECATIONS
 
 void window_fullscreen_toggle(VnrWindow *window)
 {

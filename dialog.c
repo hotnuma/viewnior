@@ -4,7 +4,6 @@
 
 #include "dialog.h"
 #include "config.h"
-
 #include "xfce-filename-input.h"
 
 static void _dialog_select_filename(GtkWidget *entry, const gchar *filename);
@@ -66,10 +65,6 @@ gchar* dialog_file_rename(GtkWindow *window, VnrFile *file)
 
     gtk_grid_attach(GTK_GRID(grid), GTK_WIDGET(filename_input), 1, 1, 1, 1);
 
-    // etk_label_set_a11y_relation(
-    //                 GTK_LABEL(label),
-    //                 GTK_WIDGET(xfce_filename_input_get_entry(filename_input)));
-
     gtk_widget_show_all(GTK_WIDGET(filename_input));
 
     // ensure that the sensitivity of the Create button is set correctly
@@ -86,7 +81,8 @@ gchar* dialog_file_rename(GtkWindow *window, VnrFile *file)
     pango_layout_get_pixel_size(layout, &layout_width, NULL);
     gint layout_offset;
     gtk_entry_get_layout_offsets(entry, &layout_offset, NULL);
-    layout_width += (layout_offset * 2) + (12 * 4) + 48; // 12px free space in entry
+    // 12px free space in entry
+    layout_width += (layout_offset * 2) + (12 * 4) + 48;
 
     gint parent_width = 500;
 
@@ -247,7 +243,6 @@ static inline gchar* _util_strrchr_offset(const gchar *str, const gchar *offset,
 
 static void _dialog_select_filename(GtkWidget *entry, const gchar *filename)
 {
-
 #if 0
     const gchar *filename;
     check if we have a directory here
