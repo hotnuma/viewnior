@@ -932,16 +932,21 @@ static void _window_load_accel_map()
 
 static void _window_hide_cursor(VnrWindow *window)
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_BLANK_CURSOR));
     window->cursor_is_hidden = TRUE;
     gdk_flush();
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void _window_show_cursor(VnrWindow *window)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_LEFT_PTR));
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+                          gdk_cursor_new(GDK_LEFT_PTR));
     window->cursor_is_hidden = FALSE;
     gdk_flush();
+    G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void _window_update_fs_filename_label(VnrWindow *window)
@@ -1015,7 +1020,7 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
     item = gtk_tool_item_new();
     gtk_tool_item_set_expand(item, TRUE);
 
-    box = gtk_hbox_new(FALSE, 0);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_container_add(GTK_CONTAINER(item), box);
 
     widget = gtk_button_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN);
@@ -1029,7 +1034,7 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
     window->fs_filename_label = widget;
     gtk_box_pack_end(GTK_BOX(box), widget, TRUE, TRUE, 10);
 
-    widget = gtk_vseparator_new();
+    widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
     gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
 
     widget = gtk_check_button_new_with_label(_("Show next image after: "));
@@ -1040,7 +1045,9 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
 
     /* Create spin button to adjust slideshow's timeout */
     // spinner_adj =(GtkAdjustment *) gtk_adjustment_new(5, 1.0, 30.0, 1.0, 1.0, 0);
-    spinner_adj = (GtkAdjustment *)gtk_adjustment_new(window->prefs->slideshow_timeout, 1.0, 30.0, 1.0, 1.0, 0);
+    spinner_adj =
+        (GtkAdjustment*) gtk_adjustment_new(window->prefs->slideshow_timeout,
+                                            1.0, 30.0, 1.0, 1.0, 0);
     widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
     gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
     gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget),
@@ -1070,19 +1077,29 @@ static void _window_set_drag(VnrWindow *window)
 
 static void _window_fullscreen(VnrWindow *window)
 {
-    GdkColor color;
-    GtkAction *action;
-
-    gdk_color_parse("black", &color);
-
     gtk_window_fullscreen(GTK_WINDOW(window));
 
     window->mode = WINDOW_MODE_FULLSCREEN;
-    action = gtk_action_group_get_action(window->actions_image,
-                                         "ViewFullscreen");
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    GtkAction *action = gtk_action_group_get_action(
+                                    window->actions_image,
+                                    "ViewFullscreen");
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-    gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
+    //GdkColor color;
+    //gdk_color_parse("black", &color);
+    //gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
+
+    // https://stackoverflow.com/questions/36520637/
+    GdkRGBA color;
+    gdk_rgba_parse(&color, "black");
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    gtk_widget_override_background_color(window->view,
+                                         GTK_STATE_NORMAL, &color);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
@@ -1126,26 +1143,30 @@ static void _window_unfullscreen(VnrWindow *window)
     if (window->mode == WINDOW_MODE_NORMAL)
         return;
 
-    GtkAction *action;
-
     _window_slideshow_stop(window);
     window->mode = WINDOW_MODE_NORMAL;
 
     gtk_window_unfullscreen(GTK_WINDOW(window));
-    action = gtk_action_group_get_action(window->actions_image,
-                                         "ViewFullscreen");
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    GtkAction *action = gtk_action_group_get_action(
+        window->actions_image,
+        "ViewFullscreen");
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->dark_background)
     {
-        GdkColor color;
-        gdk_color_parse(DARK_BACKGROUND_COLOR, &color);
-        gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
+        GdkRGBA color;
+        gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
+        gtk_widget_override_background_color(window->view,
+                                             GTK_STATE_NORMAL, &color);
+
     }
     else
     {
-        gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, NULL);
+        gtk_widget_override_background_color(window->view,
+                                             GTK_STATE_NORMAL, NULL);
     }
 
     if (window->prefs->fit_on_fullscreen)
@@ -1237,9 +1258,11 @@ static void _window_slideshow_restart(VnrWindow *window)
         return;
 
     g_source_remove(window->sl_source_tag);
-    window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
-                                                  (GSourceFunc)_window_next_image_src,
-                                                  window);
+    window->sl_source_tag =
+        g_timeout_add_seconds(
+                        window->sl_timeout,
+                        (GSourceFunc) _window_next_image_src,
+                        window);
 }
 
 static void _window_slideshow_allow(VnrWindow *window)
@@ -1277,20 +1300,23 @@ void window_slideshow_deny(VnrWindow *window)
 static void _window_rotate_pixbuf(VnrWindow *window,
                                   GdkPixbufRotation angle)
 {
-    GdkPixbuf *result;
+    GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
 
     if (!window->cursor_is_hidden)
+    {
+        GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_WATCH);
         gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+                              cursor);
+    }
 
-    /* This makes the cursor show NOW */
-    gdk_flush();
+    gdk_display_flush(display);
 
-    /* Stop slideshow while editing the image */
+    // Stop slideshow while editing the image
     _window_slideshow_stop(window);
 
-    result = gdk_pixbuf_rotate_simple(UNI_IMAGE_VIEW(window->view)->pixbuf,
-                                      angle);
+    GdkPixbuf *result = gdk_pixbuf_rotate_simple(
+                            UNI_IMAGE_VIEW(window->view)->pixbuf,
+                            angle);
 
     if (result == NULL)
     {
@@ -1303,8 +1329,12 @@ static void _window_rotate_pixbuf(VnrWindow *window,
     uni_anim_view_set_static(UNI_ANIM_VIEW(window->view), result);
 
     if (!window->cursor_is_hidden)
+    {
+        GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_LEFT_PTR);
         gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+                              cursor);
+    }
+
     g_object_unref(result);
 
     window->current_image_width = gdk_pixbuf_get_width(result);
