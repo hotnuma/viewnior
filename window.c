@@ -792,7 +792,6 @@ static void window_init(VnrWindow *window)
 static void window_dispose(GObject *object)
 {
     // do something
-
     G_OBJECT_CLASS(window_parent_class)->dispose(object);
 }
 
@@ -801,6 +800,8 @@ static void window_finalize(GObject *object)
     VnrWindow *window = VNR_WINDOW(object);
     if (window->movedir)
         g_free(window->movedir);
+
+    window->filelist = vnr_list_free(window->filelist);
 
     G_OBJECT_CLASS(window_parent_class)->finalize(object);
 }
@@ -2419,7 +2420,9 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
 
             if (g_list_length(g_list_first(window->filelist)) == 1)
             {
-                g_list_free(window->filelist);
+                //g_list_free(window->filelist);
+
+                window->filelist = vnr_list_free(window->filelist);
                 next = NULL;
             }
             else
@@ -2857,7 +2860,10 @@ void window_close(VnrWindow *window)
 void window_list_set(VnrWindow *window, GList *list, gboolean free_current)
 {
     if (free_current == TRUE && window->filelist != NULL)
-        g_list_free(window->filelist);
+    {
+        #warning Possible Memory Leak
+        g_list_free(window->filelist); // memleak ????
+    }
 
     if (g_list_length(g_list_first(list)) > 1)
     {
