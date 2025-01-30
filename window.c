@@ -518,6 +518,7 @@ static void window_init(VnrWindow *window)
     GtkAction *action;
 
     window->writable_format_name = NULL;
+    window->movedir = NULL;
     window->filelist = NULL;
     window->fs_controls = NULL;
     window->fs_source = NULL;
@@ -2251,28 +2252,57 @@ static void _action_slideshow(GtkAction *action, VnrWindow *window)
     }
 }
 
-static void _action_move(GtkAction*, VnrWindow *window)
+static gboolean _window_select_directory(VnrWindow *window)
 {
-    g_return_if_fail(window != NULL);
+    g_return_val_if_fail(window != NULL, false);
 
     GSList *list = _window_file_chooser(window,
                                         "bla",
                                         GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                         false);
     if (!list)
-        return;
+        return false;
 
-    const gchar *dirname = (const gchar*) list->data;
+    if (window->movedir)
+    {
+        g_free(window->movedir);
+        window->movedir = NULL;
+    }
+
+    window->movedir = g_strdup((const char*) list->data);
+    g_slist_free_full(list, g_free);
+
+    return true;
+}
+
+static void _action_move(GtkAction*, VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
+
+    //GSList *list = _window_file_chooser(window,
+    //                                    "bla",
+    //                                    GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+    //                                    false);
+    //if (!list)
+    //    return;
+
+    gboolean ret = false;
+
+    if (window->movedir == NULL)
+        _window_select_directory(window);
+
+    if (window->movedir == NULL)
+        goto cleanup;
 
     VnrFile *file = VNR_FILE(window->filelist->data);
     const gchar *display_name = file->display_name;
-    gchar *newpath = g_build_filename(dirname, display_name, NULL);
+    gchar *newpath = g_build_filename(window->movedir, display_name, NULL);
 
     if (g_strcmp0(file->path, newpath) == 0)
         goto cleanup;
 
     printf("move %s to %s\n", file->path, newpath);
-    gboolean ret = vnr_file_rename(file, newpath);
+    ret = vnr_file_rename(file, newpath);
 
     if (ret)
     {
@@ -2283,7 +2313,6 @@ static void _action_move(GtkAction*, VnrWindow *window)
 cleanup:
 
     g_free(newpath);
-    g_slist_free_full(list, g_free);
 }
 
 static void _action_rename(GtkAction*, VnrWindow *window)

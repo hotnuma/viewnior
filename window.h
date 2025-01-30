@@ -26,20 +26,9 @@
 G_BEGIN_DECLS
 
 typedef struct _VnrWindow VnrWindow;
-typedef struct _VnrWindowClass VnrWindowClass;
 
-#define VNR_TYPE_WINDOW \
-    (window_get_type())
-#define VNR_WINDOW(obj) \
-    (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_WINDOW, VnrWindow))
-#define VNR_WINDOW_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_WINDOW, VnrWindowClass))
-#define VNR_IS_WINDOW(obj) \
-    (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_WINDOW))
-#define VNR_IS_WINDOW_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_WINDOW))
-#define VNR_WINDOW_GET_CLASS(obj) \
-    (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_WINDOW, VnrWindowClass))
+#define VNR_TYPE_WINDOW (window_get_type())
+G_DECLARE_FINAL_TYPE(VnrWindow, window, VNR, WINDOW, GtkWindow)
 
 typedef enum
 {
@@ -52,18 +41,8 @@ struct _VnrWindow
 {
     GtkWindow __parent__;
 
+    // Interface
     GtkUIManager *ui_manager;
-
-    GtkActionGroup *actions_window;
-    GtkActionGroup *actions_image;
-    GtkActionGroup *actions_static_image;
-    GtkActionGroup *actions_collection;
-    GtkActionGroup *action_save;
-    GtkActionGroup *action_properties;
-    GtkActionGroup *actions_bars;
-    GtkActionGroup *actions_open_with;
-
-    guint open_with_menu_id;
 
     GtkWidget *layout;
     GtkWidget *button_menu;
@@ -78,6 +57,7 @@ struct _VnrWindow
     GtkWidget *view;
     GtkWidget *scroll_view;
 
+    // Parameters
     VnrPrefs *prefs;
 
     gint max_width;
@@ -91,7 +71,20 @@ struct _VnrWindow
     guint8 modifications;
     gboolean cursor_is_hidden;
 
-    // List
+    GtkActionGroup *actions_window;
+    GtkActionGroup *actions_image;
+    GtkActionGroup *actions_static_image;
+    GtkActionGroup *actions_collection;
+    GtkActionGroup *action_save;
+    GtkActionGroup *action_properties;
+    GtkActionGroup *actions_bars;
+    GtkActionGroup *actions_open_with;
+    GtkActionGroup *action_wallpaper;
+
+    guint open_with_menu_id;
+
+    // Data
+    gchar *movedir;
     GList *filelist;
 
     // Fullscreen (fs) variables
@@ -107,14 +100,12 @@ struct _VnrWindow
     guint sl_source_tag;
     gint sl_timeout;
     GtkWidget *sl_timeout_widget;
-
-    GtkActionGroup *action_wallpaper;
 };
 
-struct _VnrWindowClass
-{
-    GtkWindowClass parent_class;
-};
+//struct _VnrWindowClass
+//{
+//    GtkWindowClass parent_class;
+//};
 
 GType window_get_type() G_GNUC_CONST;
 
@@ -136,7 +127,6 @@ gboolean window_last(VnrWindow *window);
 void window_preferences_apply(VnrWindow *window);
 void window_fullscreen_toggle(VnrWindow *window);
 void window_slideshow_deny(VnrWindow *window);
-
 
 G_END_DECLS
 
