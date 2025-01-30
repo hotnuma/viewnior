@@ -98,7 +98,7 @@ static gboolean _window_on_change_state(GtkWidget *widget,
                                         GdkEventWindowState *event,
                                         gpointer user_data);
 static void _window_on_destroy(GtkWidget *widget, gpointer user_data);
-static void _on_zoom_changed(UniImageView *view, VnrWindow *window);
+static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 static void _window_on_drag_begin(GtkWidget *widget,
                                   GdkDragContext *drag_context,
                                   GtkSelectionData *data,
@@ -531,7 +531,7 @@ static void window_init(VnrWindow *window)
 
     window->mode = WINDOW_MODE_NORMAL;
 
-    gtk_window_set_title((GtkWindow *)window, "Viewnior");
+    gtk_window_set_title((GtkWindow*) window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
@@ -772,7 +772,7 @@ static void window_init(VnrWindow *window)
                      G_CALLBACK(_window_on_change_state), NULL);
 
     g_signal_connect(G_OBJECT(window->view), "zoom_changed",
-                     G_CALLBACK(_on_zoom_changed), window);
+                     G_CALLBACK(_view_on_zoom_changed), window);
 
     g_signal_connect(G_OBJECT(window->view), "drag-data-get",
                      G_CALLBACK(_window_on_drag_begin), window);
@@ -1579,7 +1579,7 @@ static void _action_save_image(GtkWidget *, VnrWindow *window)
     gtk_action_group_set_sensitive(window->action_save, FALSE);
 
     if (window->prefs->behavior_modify != VNR_PREFS_MODIFY_ASK)
-        _on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
 
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
@@ -1713,13 +1713,13 @@ static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
     gtk_main_quit();
 }
 
-static void _on_zoom_changed(UniImageView *view, VnrWindow *window)
+static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 {
     gint position, total;
     char *buf = NULL;
 
     /* Change the info, only if there is an image
-     *(vnr_window_close isn't called on the current image) */
+     * (vnr_window_close isn't called on the current image) */
     if (gtk_action_group_get_sensitive(window->actions_image))
     {
         get_position_of_element_in_list(window->filelist, &position, &total);
@@ -2223,10 +2223,7 @@ static void _action_rename(GtkAction*, VnrWindow *window)
 
     if (result)
     {
-        //_window_update_fs_filename_label(window);
-
-        //printf("_action_rename: new path %s\n", result);
-
+        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
     }
 }
 
@@ -2656,7 +2653,7 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
     else if (window->prefs->zoom == VNR_PREFS_ZOOM_LAST_USED)
     {
         uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view), last_fit_mode);
-        _on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
     }
     else
     {
@@ -2723,11 +2720,13 @@ void window_open_from_list(VnrWindow *window, GSList *uri_list)
         if (!window->cursor_is_hidden)
             gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
                                   gdk_cursor_new(GDK_WATCH));
+
         /* This makes the cursor show NOW */
         gdk_flush();
 
         window_close(window);
         window_open(window, FALSE);
+
         if (!window->cursor_is_hidden)
             gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
                                   gdk_cursor_new(GDK_LEFT_PTR));
