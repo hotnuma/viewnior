@@ -20,14 +20,7 @@
 #include "window.h"
 #include "config.h"
 
-#include <libgen.h>
-#include <stdlib.h>
-#include <glib/gstdio.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#include <errno.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include "uni-scroll-win.h"
 #include "uni-anim-view.h"
@@ -38,6 +31,7 @@
 #include "uni-exiv2.hpp"
 #include "uni-utils.h"
 #include "dialog.h"
+#include "list.h"
 
 // Timeout to hide the toolbar in fullscreen mode
 #define FULLSCREEN_TIMEOUT 1000
@@ -967,16 +961,15 @@ static void _window_update_fs_filename_label(VnrWindow *window)
     if (window->mode == WINDOW_MODE_NORMAL)
         return;
 
-    gint position, total;
-    char *buf;
+    gint total = 0;
+    gint position = vnr_list_get_position(window->filelist, &total);
 
-    vnr_list_get_position(window->filelist, &position, &total);
     VnrFile *current = window_list_get_current(window);
 
-    buf = g_strdup_printf("%s - %i/%i",
-                          current->display_name,
-                          position,
-                          total);
+    char *buf = g_strdup_printf("%s - %i/%i",
+                                current->display_name,
+                                position,
+                                total);
 
     gtk_label_set_text(GTK_LABEL(window->fs_filename_label), buf);
 
@@ -1739,34 +1732,32 @@ static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
 
 static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 {
-    gint position, total;
-    char *buf = NULL;
-
     /* Change the info, only if there is an image
      * (vnr_window_close isn't called on the current image) */
-    if (gtk_action_group_get_sensitive(window->actions_image))
-    {
-        vnr_list_get_position(window->filelist, &position, &total);
+    if (!gtk_action_group_get_sensitive(window->actions_image))
+        return;
 
-        VnrFile *current = window_list_get_current(window);
 
-        buf = g_strdup_printf("%s%s - %i/%i - %ix%i - %i%%",
-                              (window->modifications) ? "*" : "",
-                              current->display_name,
-                              position,
-                              total,
-                              window->current_image_width,
-                              window->current_image_height,
-                              (int)(view->zoom * 100.));
+    gint total = 0;
+    gint position = vnr_list_get_position(window->filelist, &total);
 
-        gtk_window_set_title(GTK_WINDOW(window), buf);
+    VnrFile *current = window_list_get_current(window);
+    char *buf = g_strdup_printf("%s%s - %i/%i - %ix%i - %i%%",
+                                (window->modifications) ? "*" : "",
+                                current->display_name,
+                                position,
+                                total,
+                                window->current_image_width,
+                                window->current_image_height,
+                                (int) (view->zoom * 100.));
 
-        gint context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(window->statusbar), "statusbar");
-        gtk_statusbar_pop(GTK_STATUSBAR(window->statusbar), GPOINTER_TO_INT(context_id));
-        gtk_statusbar_push(GTK_STATUSBAR(window->statusbar), GPOINTER_TO_INT(context_id), buf);
+    gtk_window_set_title(GTK_WINDOW(window), buf);
 
-        g_free(buf);
-    }
+    gint context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(window->statusbar), "statusbar");
+    gtk_statusbar_pop(GTK_STATUSBAR(window->statusbar), GPOINTER_TO_INT(context_id));
+    gtk_statusbar_push(GTK_STATUSBAR(window->statusbar), GPOINTER_TO_INT(context_id), buf);
+
+    g_free(buf);
 }
 
 static void _window_on_drag_begin(GtkWidget *widget,

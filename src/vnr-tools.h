@@ -26,6 +26,7 @@ void vnr_tools_fit_to_size_double(gdouble *w, gdouble *h, gint mw, gint mh);
 GSList *vnr_tools_get_list_from_array(gchar **files);
 GSList *vnr_tools_parse_uri_string_list_to_file_list(const gchar *uri_list);
 void vnr_tools_apply_embedded_orientation(GdkPixbufAnimation **anim);
-gint compare_quarks(gconstpointer a, gconstpointer b);
 
-#endif /* __VNR_TOOLS_H__ */
+#endif // __VNR_TOOLS_H__
+
+

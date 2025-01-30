@@ -44,16 +44,8 @@ struct _VnrFile
 GType vnr_file_get_type() G_GNUC_CONST;
 
 VnrFile* vnr_file_new();
+void vnr_file_set_display_name(VnrFile *vnr_file, const gchar *display_name);
 gboolean vnr_file_rename(VnrFile *file, const gchar *fullpath);
-
-// File List -----------------------------------------------------------------
-
-GList* vnr_list_new(gchar *filepath, gboolean include_hidden, GError **error);
-GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden, GError **error);
-GList* vnr_list_new_multiple(GSList *uri_list, gboolean include_hidden, GError **error);
-GList* vnr_list_sort(GList *list);
-void vnr_list_get_position(GList *list, gint *current, gint *total);
-
 G_END_DECLS
 
 #endif // __VNR_FILE_H__

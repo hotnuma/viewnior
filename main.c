@@ -23,6 +23,7 @@
 #include "window.h"
 #include "vnr-message-area.h"
 #include "file.h"
+#include "list.h"
 #include "vnr-tools.h"
 
 #define PIXMAP_DIR PACKAGE_DATA_DIR "/viewnior/pixmaps/"

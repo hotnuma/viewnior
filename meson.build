@@ -17,12 +17,12 @@ i18n = import('i18n')
 glib_ver = '>= 2.32'
 
 app_deps = [
-  dependency('gtk+-3.0'),
-  dependency('glib-2.0', version: glib_ver),
-  dependency('gio-2.0', version: glib_ver),
-  dependency('shared-mime-info', version: '>= 0.20'),
-  dependency('gdk-pixbuf-2.0', version: '>= 0.21'),
-  dependency('exiv2', version: '>= 0.21'),
+    dependency('gtk+-3.0'),
+    dependency('glib-2.0', version: glib_ver),
+    dependency('gio-2.0', version: glib_ver),
+    dependency('shared-mime-info', version: '>= 0.20'),
+    dependency('gdk-pixbuf-2.0', version: '>= 0.21'),
+    dependency('exiv2', version: '>= 0.21'),
 ]
 
 config = configuration_data()
@@ -70,6 +70,7 @@ app_sources = [
     'src/xfce-filename-input.c',
     'dialog.c',
     'file.c',
+    'list.c',
     'main.c',
     'preferences.c',
     'window.c',

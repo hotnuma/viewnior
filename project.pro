@@ -13,6 +13,7 @@ PKGCONFIG += exiv2
 PKGCONFIG += shared-mime-info
 
 HEADERS = \
+    list.h \
     src/uni-anim-view.h \
     src/uni-cache.h \
     src/uni-dragger.h \
@@ -34,6 +35,7 @@ HEADERS = \
     window.h \
 
 SOURCES = \
+    list.c \
     src/uni-anim-view.c \
     src/uni-cache.c \
     src/uni-dragger.c \
