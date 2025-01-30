@@ -2215,16 +2215,19 @@ static void _action_slideshow(GtkAction *action, VnrWindow *window)
 
 static void _action_rename(GtkAction*, VnrWindow *window)
 {
-    //g_return_val_if_fail(window != NULL, NULL);
+    g_return_if_fail((window != NULL));
 
     VnrFile *file = window_list_get_current(window);
 
-    //printf("_action_rename: %s\n", filename);
-
-    gchar *result = dialog_file_rename(GTK_WINDOW(window), file);
+    gboolean result = dialog_file_rename(GTK_WINDOW(window), file);
 
     if (result)
-        printf("_action_rename: new path %s\n", result);
+    {
+        //_window_update_fs_filename_label(window);
+
+        //printf("_action_rename: new path %s\n", result);
+
+    }
 }
 
 static void _action_delete(GtkAction *action, VnrWindow *window)
@@ -2681,11 +2684,11 @@ void window_open_from_list(VnrWindow *window, GSList *uri_list)
 
     if (g_slist_length(uri_list) == 1)
     {
-        vnr_file_load_single_uri(uri_list->data, &file_list, window->prefs->show_hidden, &error);
+        vnr_load_single_uri(&file_list, uri_list->data, window->prefs->show_hidden, &error);
     }
     else
     {
-        vnr_file_load_uri_list(uri_list, &file_list, window->prefs->show_hidden, &error);
+        vnr_load_uri_list(&file_list, uri_list, window->prefs->show_hidden, &error);
     }
 
     if (error != NULL && file_list != NULL)

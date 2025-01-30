@@ -87,11 +87,11 @@ int main(int argc, char **argv)
     {
         if (g_slist_length(uri_list) == 1)
         {
-            vnr_file_load_single_uri(uri_list->data, &file_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
+            vnr_load_single_uri(&file_list, uri_list->data, VNR_WINDOW(window)->prefs->show_hidden, &error);
         }
         else
         {
-            vnr_file_load_uri_list(uri_list, &file_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
+            vnr_load_uri_list(&file_list, uri_list, VNR_WINDOW(window)->prefs->show_hidden, &error);
         }
 
         if (error != NULL && file_list != NULL)

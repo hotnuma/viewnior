@@ -10,7 +10,7 @@ static void _dialog_select_filename(GtkWidget *entry, const gchar *filename);
 static inline gchar *_util_strrchr_offset(const gchar *str,
                                           const gchar *offset, gchar c);
 
-gchar* dialog_file_rename(GtkWindow *window, VnrFile *file)
+gboolean dialog_file_rename(GtkWindow *window, VnrFile *file)
 {
     gchar *filename = g_path_get_basename(file->path);
 
@@ -105,6 +105,7 @@ gchar* dialog_file_rename(GtkWindow *window, VnrFile *file)
 
     // run the dialog
     gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    gboolean ret = false;
 
     if (response == GTK_RESPONSE_OK)
     {
@@ -118,20 +119,17 @@ gchar* dialog_file_rename(GtkWindow *window, VnrFile *file)
         if (g_strcmp0(filename, text) != 0
             && g_utf8_validate(text, -1, NULL))
         {
-            gboolean ret = vnr_file_rename(file, text);
-            (void) ret;
+            ret = vnr_file_rename(file, text);
         }
     }
 
     // cleanup
     g_free(filename);
 
-    if (response == GTK_RESPONSE_NONE)
-        return NULL;
+    if (response != GTK_RESPONSE_NONE)
+        gtk_widget_destroy(dialog);
 
-    gtk_widget_destroy(dialog);
-
-    return NULL;
+    return ret;
 }
 
 

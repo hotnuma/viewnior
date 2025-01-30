@@ -19,80 +19,32 @@
 
 #include "file.h"
 #include "config.h"
-#include <gtk/gtk.h>
-#include <gio/gio.h>
-#include <glib/gstdio.h>
-#include <gdk/gdk.h>
 #include "vnr-tools.h"
+#include <glib/gstdio.h>
 
 G_DEFINE_TYPE(VnrFile, vnr_file, G_TYPE_OBJECT)
 
-GList *supported_mime_types;
+GList *_supported_mime_types;
 
-static gint compare_files(VnrFile *file, char *uri)
+static gboolean _vnr_file_set_path(VnrFile *file, const gchar *filepath);
+static GList* _vnr_file_dir_content_to_list(gchar *path,
+                                            gboolean sort,
+                                            gboolean include_hidden);
+static gint _vnr_file_list_compare(gconstpointer a,
+                                   gconstpointer b,
+                                   gpointer);
+static gint _compare_files(VnrFile *file, char *uri);
+static void _vnr_file_set_display_name(VnrFile *vnr_file,
+                                       const gchar *display_name);
+static gboolean _mime_type_is_supported(const char *mime_type);
+static GList* _mime_types_get_supported();
+
+
+// VnrFile -------------------------------------------------------------------
+
+VnrFile* vnr_file_new()
 {
-    if (g_strcmp0(uri, file->path) == 0)
-        return 0;
-    else
-        return 1;
-}
-
-static GList* vnr_file_get_supported_mime_types()
-{
-    // Modified version of eog's eog_image_get_supported_mime_types
-
-    GSList *format_list, *it;
-
-    if (!supported_mime_types)
-    {
-        format_list = gdk_pixbuf_get_formats();
-
-        for (it = format_list; it != NULL; it = it->next)
-        {
-            gchar **mime_types = gdk_pixbuf_format_get_mime_types((GdkPixbufFormat *)it->data);
-
-            int i;
-            for (i = 0; mime_types[i] != NULL; i++)
-            {
-                supported_mime_types =
-                    g_list_prepend(supported_mime_types,
-                                   g_strdup(mime_types[i]));
-            }
-
-            g_strfreev(mime_types);
-        }
-
-        supported_mime_types = g_list_prepend(supported_mime_types,
-                                              "image/vnd.microsoft.icon");
-
-        supported_mime_types = g_list_sort(supported_mime_types,
-                                           (GCompareFunc)compare_quarks);
-
-        g_slist_free(format_list);
-    }
-
-    return supported_mime_types;
-}
-
-static gboolean vnr_file_is_supported_mime_type(const char *mime_type)
-{
-    GList *result;
-    GQuark quark;
-
-    if (mime_type == NULL)
-    {
-        return FALSE;
-    }
-
-    supported_mime_types = vnr_file_get_supported_mime_types();
-
-    quark = g_quark_from_string(mime_type);
-
-    result = g_list_find_custom(supported_mime_types,
-                                GINT_TO_POINTER(quark),
-                                (GCompareFunc)compare_quarks);
-
-    return (result != NULL);
+    return VNR_FILE(g_object_new(VNR_TYPE_FILE, NULL));
 }
 
 static void vnr_file_class_init(VnrFileClass *klass)
@@ -104,90 +56,75 @@ static void vnr_file_init(VnrFile *file)
     file->display_name = NULL;
 }
 
-VnrFile* vnr_file_new()
+gboolean vnr_file_rename(VnrFile *file, const char *newname)
 {
-    return VNR_FILE(g_object_new(VNR_TYPE_FILE, NULL));
+    if (!file || !newname)
+        return false;
+
+    gchar *dir = g_path_get_dirname(file->path);
+    gchar *fullpath = g_build_filename(dir, newname, NULL);
+    g_free(dir);
+
+    //printf("rename %s to %s\n", file->path, fullpath);
+
+    gboolean ret = (g_rename(file->path, fullpath) == 0);
+
+    if (ret)
+        _vnr_file_set_path(file, fullpath);
+
+    g_free(fullpath);
+
+    return ret;
 }
 
-static void vnr_file_set_display_name(VnrFile *vnr_file, char *display_name)
+static gboolean _vnr_file_set_path(VnrFile *file, const gchar *filepath)
 {
-    vnr_file->display_name = g_strdup(display_name);
-    vnr_file->display_name_collate =
-            g_utf8_collate_key_for_filename(display_name, -1);
-}
+    GFile *gfile = g_file_new_for_path(filepath);
 
-static gint vnr_file_list_compare(gconstpointer a, gconstpointer b, gpointer user_data)
-{
-    return g_strcmp0(VNR_FILE(a)->display_name_collate,
-                     VNR_FILE(b)->display_name_collate);
-}
+    GFileInfo *fileinfo = g_file_query_info(
+        gfile,
+        G_FILE_ATTRIBUTE_STANDARD_TYPE ","
+        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+        0, NULL, NULL);
 
-static GList* vnr_file_dir_content_to_list(gchar *path,
-                                           gboolean sort,
-                                           gboolean include_hidden)
-{
-    GFile *file;
-    file = g_file_new_for_path(path);
-
-    GFileEnumerator *f_enum;
-    f_enum = g_file_enumerate_children(file,
-                                       G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME "," G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE "," G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE "," G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN "," G_FILE_ATTRIBUTE_TIME_MODIFIED,
-                                       G_FILE_QUERY_INFO_NONE,
-                                       NULL, NULL);
-
-    GFileInfo *file_info;
-    file_info = g_file_enumerator_next_file(f_enum, NULL, NULL);
-
-    GList *file_list = NULL;
-
-    while (file_info != NULL)
+    if (fileinfo == NULL)
     {
-        VnrFile *vnr_file = vnr_file_new();
-
-        const char *mimetype = g_file_info_get_content_type(file_info);
-        if (mimetype == NULL)
-        {
-            mimetype = g_file_info_get_attribute_string(file_info, G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE);
-        }
-
-        if (vnr_file_is_supported_mime_type(mimetype) && (include_hidden || !g_file_info_get_is_hidden(file_info)))
-        {
-            vnr_file_set_display_name(vnr_file, (char *)g_file_info_get_display_name(file_info));
-
-            vnr_file->mtime = g_file_info_get_attribute_uint64(file_info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-
-            vnr_file->path = g_strjoin(G_DIR_SEPARATOR_S, path,
-                                       vnr_file->display_name, NULL);
-
-            file_list = g_list_prepend(file_list, vnr_file);
-        }
-
-        g_object_unref(file_info);
-        file_info = g_file_enumerator_next_file(f_enum, NULL, NULL);
+        g_object_unref(gfile);
+        return false;
     }
 
-    g_object_unref(file);
-    g_file_enumerator_close(f_enum, NULL, NULL);
-    g_object_unref(f_enum);
+    if (file->path)
+        g_free(file->path);
+    file->path = g_strdup(filepath);
 
-    if (sort)
-        file_list = g_list_sort_with_data(file_list,
-                                          vnr_file_list_compare, NULL);
+    if (file->display_name)
+        g_free(file->display_name);
+    file->display_name = g_strdup(g_file_info_get_display_name(fileinfo));
 
-    return file_list;
+    if (file->display_name_collate)
+        g_free(file->display_name_collate);
+    file->display_name_collate =
+            g_utf8_collate_key_for_filename(file->display_name, -1);
+
+    file->mtime = g_file_info_get_attribute_uint64(
+                                    fileinfo,
+                                    G_FILE_ATTRIBUTE_TIME_MODIFIED);
+
+    g_object_unref(gfile);
+    g_object_unref(fileinfo);
+
+    return true;
 }
 
-void vnr_file_load_single_uri(char *p_path,
-                              GList **file_list,
-                              gboolean include_hidden,
-                              GError **error)
+void vnr_load_single_uri(GList **file_list, gchar *filepath, gboolean include_hidden,
+                         GError **error)
 {
-    GFile *file;
-    file = g_file_new_for_path(p_path);
+    GFile *file = g_file_new_for_path(filepath);
 
     GFileInfo *fileinfo = g_file_query_info(
         file,
-        G_FILE_ATTRIBUTE_STANDARD_TYPE "," G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+        G_FILE_ATTRIBUTE_STANDARD_TYPE ","
+        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
         0, NULL, error);
 
     if (fileinfo == NULL)
@@ -197,7 +134,7 @@ void vnr_file_load_single_uri(char *p_path,
 
     if (filetype == G_FILE_TYPE_DIRECTORY)
     {
-        *file_list = vnr_file_dir_content_to_list(p_path, TRUE, include_hidden);
+        *file_list = _vnr_file_dir_content_to_list(filepath, TRUE, include_hidden);
     }
     else
     {
@@ -205,13 +142,13 @@ void vnr_file_load_single_uri(char *p_path,
         GList *current_position;
 
         parent = g_file_get_parent(file);
-        *file_list = vnr_file_dir_content_to_list(g_file_get_path(parent), TRUE, include_hidden);
+        *file_list = _vnr_file_dir_content_to_list(g_file_get_path(parent), TRUE, include_hidden);
 
         g_object_unref(parent);
 
         current_position = g_list_find_custom(*file_list,
-                                              p_path,
-                                              (GCompareFunc) compare_files);
+                                              filepath,
+                                              (GCompareFunc) _compare_files);
 
         if (current_position != NULL)
         {
@@ -233,7 +170,15 @@ void vnr_file_load_single_uri(char *p_path,
     g_object_unref(fileinfo);
 }
 
-void vnr_file_load_uri_list(GSList *uri_list, GList **file_list, gboolean include_hidden, GError **error)
+static gint _compare_files(VnrFile *file, char *uri)
+{
+    if (g_strcmp0(uri, file->path) == 0)
+        return 0;
+    else
+        return 1;
+}
+
+void vnr_load_uri_list(GList **file_list, GSList *uri_list, gboolean include_hidden, GError **error)
 {
     GFileType filetype;
     gchar *p_path;
@@ -258,55 +203,192 @@ void vnr_file_load_uri_list(GSList *uri_list, GList **file_list, gboolean includ
 
         if (filetype == G_FILE_TYPE_DIRECTORY)
         {
-            *file_list = g_list_concat(*file_list, vnr_file_dir_content_to_list(p_path, FALSE, include_hidden));
+            *file_list = g_list_concat(*file_list, _vnr_file_dir_content_to_list(p_path, FALSE, include_hidden));
         }
         else
         {
-            VnrFile *new_vnrfile;
-            const char *mimetype;
+            VnrFile *new_vnrfile = vnr_file_new();
+            const char *mimetype = g_file_info_get_content_type(fileinfo);
 
-            new_vnrfile = vnr_file_new();
-
-            mimetype = g_file_info_get_content_type(fileinfo);
             if (mimetype == NULL)
             {
-                mimetype = g_file_info_get_attribute_string(fileinfo, G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE);
+                mimetype = g_file_info_get_attribute_string(
+                            fileinfo,
+                            G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE);
             }
 
-            if (vnr_file_is_supported_mime_type(mimetype) && (include_hidden || !g_file_info_get_is_hidden(fileinfo)))
+            if (_mime_type_is_supported(mimetype)
+                && (include_hidden || !g_file_info_get_is_hidden(fileinfo)))
             {
-                vnr_file_set_display_name(new_vnrfile, (char *)g_file_info_get_display_name(fileinfo));
+                _vnr_file_set_display_name(
+                                    new_vnrfile,
+                                    (char*) g_file_info_get_display_name(fileinfo));
 
-                new_vnrfile->mtime = g_file_info_get_attribute_uint64(fileinfo, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+                new_vnrfile->mtime = g_file_info_get_attribute_uint64(
+                                    fileinfo,
+                                    G_FILE_ATTRIBUTE_TIME_MODIFIED);
 
                 new_vnrfile->path = g_strdup(p_path);
 
                 *file_list = g_list_prepend(*file_list, new_vnrfile);
             }
         }
+
         g_object_unref(file);
         g_object_unref(fileinfo);
 
         uri_list = g_slist_next(uri_list);
     }
 
-    *file_list = g_list_sort_with_data(*file_list, vnr_file_list_compare, NULL);
+    *file_list = g_list_sort_with_data(*file_list, _vnr_file_list_compare, NULL);
 }
 
-gboolean vnr_file_rename(VnrFile *file, const char *newname)
+static void _vnr_file_set_display_name(VnrFile *vnr_file,
+                                      const gchar *display_name)
 {
-    const char *filepath = file->path;
-    gchar *dir = g_path_get_dirname(filepath);
-    gchar *fullpath = g_build_filename(dir, newname, NULL);
+    if (vnr_file->display_name)
+        g_free(vnr_file->display_name);
 
-    printf("rename %s to %s\n", filepath, fullpath);
+    vnr_file->display_name = g_strdup(display_name);
 
-    gboolean ret = (g_rename(filepath, fullpath) == 0);
+    if (vnr_file->display_name_collate)
+        g_free(vnr_file->display_name_collate);
 
-    g_free(fullpath);
-    g_free(dir);
+    vnr_file->display_name_collate =
+            g_utf8_collate_key_for_filename(display_name, -1);
+}
 
-    return ret;
+static GList* _vnr_file_dir_content_to_list(gchar *path,
+                                            gboolean sort,
+                                            gboolean include_hidden)
+{
+    GFile *gfile = g_file_new_for_path(path);
+
+    GFileEnumerator *_file_enum = g_file_enumerate_children(
+        gfile,
+        G_FILE_ATTRIBUTE_STANDARD_NAME ","
+        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+        G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
+        G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
+        G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
+        G_FILE_ATTRIBUTE_TIME_MODIFIED,
+        G_FILE_QUERY_INFO_NONE,
+        NULL, NULL);
+
+    GFileInfo *fileinfo = g_file_enumerator_next_file(_file_enum, NULL, NULL);
+
+    GList *filelist = NULL;
+
+    while (fileinfo != NULL)
+    {
+        VnrFile *vnrfile = vnr_file_new();
+
+        const char *mimetype = g_file_info_get_content_type(fileinfo);
+        if (mimetype == NULL)
+        {
+            mimetype = g_file_info_get_attribute_string(
+                                fileinfo,
+                                G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE);
+        }
+
+        if (_mime_type_is_supported(mimetype)
+            && (include_hidden || !g_file_info_get_is_hidden(fileinfo)))
+        {
+            _vnr_file_set_display_name(
+                vnrfile,
+                (char*) g_file_info_get_display_name(fileinfo));
+
+            vnrfile->mtime = g_file_info_get_attribute_uint64(
+                                        fileinfo,
+                                        G_FILE_ATTRIBUTE_TIME_MODIFIED);
+
+            vnrfile->path = g_strjoin(G_DIR_SEPARATOR_S, path,
+                                       vnrfile->display_name, NULL);
+
+            filelist = g_list_prepend(filelist, vnrfile);
+        }
+
+        g_object_unref(fileinfo);
+        fileinfo = g_file_enumerator_next_file(_file_enum, NULL, NULL);
+    }
+
+    g_object_unref(gfile);
+    g_file_enumerator_close(_file_enum, NULL, NULL);
+    g_object_unref(_file_enum);
+
+    if (sort)
+        filelist = g_list_sort_with_data(filelist,
+                                         _vnr_file_list_compare, NULL);
+
+    return filelist;
+}
+
+static gint _vnr_file_list_compare(gconstpointer a, gconstpointer b, gpointer)
+{
+    return g_strcmp0(VNR_FILE((void *) a)->display_name_collate,
+                     VNR_FILE((void *) b)->display_name_collate);
+}
+
+static gboolean _mime_type_is_supported(const char *mime_type)
+{
+    GList *result;
+    GQuark quark;
+
+    if (mime_type == NULL)
+    {
+        return FALSE;
+    }
+
+    _supported_mime_types = _mime_types_get_supported();
+
+    quark = g_quark_from_string(mime_type);
+
+    result = g_list_find_custom(_supported_mime_types,
+                                GINT_TO_POINTER(quark),
+                                (GCompareFunc)compare_quarks);
+
+    return (result != NULL);
+}
+
+
+// Private functions ---------------------------------------------------------
+
+static GList* _mime_types_get_supported()
+{
+    // Modified version of eog's eog_image_get_supported_mime_types
+
+    GSList *format_list;
+    GSList *it;
+
+    if (!_supported_mime_types)
+    {
+        format_list = gdk_pixbuf_get_formats();
+
+        for (it = format_list; it != NULL; it = it->next)
+        {
+            gchar **mime_types =
+                gdk_pixbuf_format_get_mime_types((GdkPixbufFormat *)it->data);
+
+            for (int i = 0; mime_types[i] != NULL; ++i)
+            {
+                _supported_mime_types =
+                    g_list_prepend(_supported_mime_types,
+                                   g_strdup(mime_types[i]));
+            }
+
+            g_strfreev(mime_types);
+        }
+
+        _supported_mime_types = g_list_prepend(_supported_mime_types,
+                                              "image/vnd.microsoft.icon");
+
+        _supported_mime_types = g_list_sort(_supported_mime_types,
+                                           (GCompareFunc)compare_quarks);
+
+        g_slist_free(format_list);
+    }
+
+    return _supported_mime_types;
 }
 
 

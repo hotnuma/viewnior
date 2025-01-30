@@ -4,6 +4,7 @@
 // clang-format off
 #define _(String) gettext (String)
 // clang-format on
+#include <stdbool.h>
 
 #mesondefine VERSION
 #mesondefine PACKAGE

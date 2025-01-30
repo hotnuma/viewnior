@@ -25,50 +25,29 @@
 G_BEGIN_DECLS
 
 #define VNR_TYPE_FILE (vnr_file_get_type())
-#define VNR_FILE(obj) \
-    (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_FILE, VnrFile))
-#define VNR_FILE_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_FILE, VnrFileClass))
-#define VNR_IS_FILE(obj) \
-    (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_FILE))
-#define VNR_IS_FILE_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_FILE))
-#define VNR_FILE_GET_CLASS(obj) \
-    (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_FILE, VnrFileClass))
+G_DECLARE_FINAL_TYPE(VnrFile, vnr_file, VNR, FILE, GObject)
 
 typedef struct _VnrFile VnrFile;
-typedef struct _VnrFileClass VnrFileClass;
 
 struct _VnrFile
 {
-    GObject parent;
+    GObject __parent__;
 
-    const gchar *display_name;
-    const gchar *display_name_collate;
-    const gchar *path;
+    gchar *display_name;
+    gchar *display_name_collate;
+    gchar *path;
     time_t mtime;
 };
 
-struct _VnrFileClass
-{
-    GObjectClass parent;
-};
+GType vnr_file_get_type() G_GNUC_CONST;
 
-GType vnr_file_get_type(void) G_GNUC_CONST;
-
-// Constructors
 VnrFile* vnr_file_new();
+gboolean vnr_file_rename(VnrFile *file, const gchar *newname);
 
-/* Actions */
-void vnr_file_load_uri_list(GSList *uri_list,
-                            GList **file_list,
-                            gboolean include_hidden,
-                            GError **error);
-void vnr_file_load_single_uri(char *p_uri,
-                              GList **file_list,
-                              gboolean include_hidden,
-                              GError **error);
-gboolean vnr_file_rename(VnrFile *file, const char *newname);
+void vnr_load_single_uri(GList **file_list, gchar *filepath, gboolean include_hidden,
+                         GError **error);
+void vnr_load_uri_list(GList **file_list, GSList *uri_list, gboolean include_hidden,
+                       GError **error);
 
 G_END_DECLS
 
