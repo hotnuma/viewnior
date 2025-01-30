@@ -75,22 +75,21 @@ int main(int argc, char **argv)
     gtk_window_set_position(window, GTK_WIN_POS_CENTER);
 
     GSList *uri_list = vnr_tools_get_list_from_array(files);
-    GList *file_list = NULL;
     VnrWindow *vnrwindow = VNR_WINDOW(window);
+
+    GList *file_list = NULL;
 
     if (uri_list != NULL)
     {
         if (g_slist_length(uri_list) == 1)
         {
-            vnr_load_single_uri(&file_list,
-                                uri_list->data,
+            file_list = vnr_list_new_for_path(uri_list->data,
                                 vnrwindow->prefs->show_hidden,
                                 &error);
         }
         else
         {
-            vnr_load_uri_list(&file_list,
-                              uri_list,
+            file_list = vnr_list_new_multiple(uri_list,
                               vnrwindow->prefs->show_hidden,
                               &error);
         }

@@ -24,6 +24,8 @@
 
 G_BEGIN_DECLS
 
+// VnrFile -------------------------------------------------------------------
+
 #define VNR_TYPE_FILE (vnr_file_get_type())
 G_DECLARE_FINAL_TYPE(VnrFile, vnr_file, VNR, FILE, GObject)
 
@@ -44,10 +46,10 @@ GType vnr_file_get_type() G_GNUC_CONST;
 VnrFile* vnr_file_new();
 gboolean vnr_file_rename(VnrFile *file, const gchar *newname);
 
-void vnr_load_single_uri(GList **file_list, gchar *filepath, gboolean include_hidden,
-                         GError **error);
-void vnr_load_uri_list(GList **file_list, GSList *uri_list, gboolean include_hidden,
-                       GError **error);
+// File List -----------------------------------------------------------------
+
+GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden, GError **error);
+GList* vnr_list_new_multiple(GSList *uri_list, gboolean include_hidden, GError **error);
 
 G_END_DECLS
 

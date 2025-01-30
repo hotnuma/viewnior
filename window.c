@@ -2224,6 +2224,9 @@ static void _action_rename(GtkAction*, VnrWindow *window)
     if (result)
     {
         _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+
+
+        //_vnr_list_parse_parent(&file_list, filepath, include_hidden, error);
     }
 }
 
@@ -2681,11 +2684,11 @@ void window_open_from_list(VnrWindow *window, GSList *uri_list)
 
     if (g_slist_length(uri_list) == 1)
     {
-        vnr_load_single_uri(&file_list, uri_list->data, window->prefs->show_hidden, &error);
+        file_list = vnr_list_new_for_path(uri_list->data, window->prefs->show_hidden, &error);
     }
     else
     {
-        vnr_load_uri_list(&file_list, uri_list, window->prefs->show_hidden, &error);
+        file_list = vnr_list_new_multiple(uri_list, window->prefs->show_hidden, &error);
     }
 
     if (error != NULL && file_list != NULL)
