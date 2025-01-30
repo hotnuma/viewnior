@@ -41,8 +41,6 @@ static GList* _parse_directory(gchar *path, gboolean sort,
 static gint _list_compare_func(gconstpointer a,
                                    gconstpointer b,
                                    gpointer);
-static GList* _parse_parent(gchar *filepath,
-                              gboolean include_hidden, GError **error);
 static gint _file_compare_func(VnrFile *file, char *uri);
 static gboolean _mime_type_is_supported(const char *mime_type);
 static GList* _mime_types_get_supported();
@@ -127,6 +125,30 @@ static gboolean _vnr_file_set_path(VnrFile *file, const gchar *filepath)
 
 // File List -----------------------------------------------------------------
 
+GList* vnr_list_new(gchar *filepath, gboolean include_hidden,
+                            GError **error)
+{
+    gchar *dir = g_path_get_dirname(filepath);
+    GList *result = _parse_directory(dir, TRUE, include_hidden);
+    g_free(dir);
+
+    if (!result)
+        return NULL;
+
+    result = g_list_find_custom(result, filepath,
+                                (GCompareFunc) _file_compare_func);
+
+    if (!result)
+    {
+        *error = g_error_new(1, 0,
+                             _("Couldn't recognise the image file\n"
+                               "format for file '%s'"),
+                             filepath);
+    }
+
+    return result;
+}
+
 GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden, GError **error)
 {
     GFile *file = g_file_new_for_path(filepath);
@@ -150,7 +172,7 @@ GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden, GError **
     }
     else
     {
-        filelist = _parse_parent(filepath, include_hidden, error);
+        filelist = vnr_list_new(filepath, include_hidden, error);
     }
 
     g_object_unref(fileinfo);
@@ -226,30 +248,6 @@ static gint _list_compare_func(gconstpointer a, gconstpointer b, gpointer)
 {
     return g_strcmp0(VNR_FILE((void *) a)->display_name_collate,
                      VNR_FILE((void *) b)->display_name_collate);
-}
-
-static GList* _parse_parent(gchar *filepath, gboolean include_hidden,
-                            GError **error)
-{
-    gchar *dir = g_path_get_dirname(filepath);
-    GList *result = _parse_directory(dir, TRUE, include_hidden);
-    g_free(dir);
-
-    if (!result)
-        return NULL;
-
-    result = g_list_find_custom(result, filepath,
-                                (GCompareFunc) _file_compare_func);
-
-    if (!result)
-    {
-        *error = g_error_new(1, 0,
-                             _("Couldn't recognise the image file\n"
-                               "format for file '%s'"),
-                             filepath);
-    }
-
-    return result;
 }
 
 static gint _file_compare_func(VnrFile *file, char *uri)
