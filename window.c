@@ -2223,10 +2223,8 @@ static void _action_rename(GtkAction*, VnrWindow *window)
 
     if (result)
     {
+        vnr_list_sort(window->filelist);
         _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
-
-
-        //_vnr_list_parse_parent(&file_list, filepath, include_hidden, error);
     }
 }
 

@@ -238,10 +238,17 @@ static GList* _parse_directory(gchar *path, gboolean sort, gboolean include_hidd
     g_object_unref(_file_enum);
 
     if (sort)
-        filelist = g_list_sort_with_data(filelist,
-                                         _list_compare_func, NULL);
+        filelist = vnr_list_sort(filelist);
+
+        //filelist = g_list_sort_with_data(filelist,
+        //                                 _list_compare_func, NULL);
 
     return filelist;
+}
+
+GList* vnr_list_sort(GList *list)
+{
+    return g_list_sort_with_data(list, _list_compare_func, NULL);
 }
 
 static gint _list_compare_func(gconstpointer a, gconstpointer b, gpointer)
@@ -289,13 +296,7 @@ GList* vnr_list_new_multiple(GSList *uri_list, gboolean include_hidden, GError *
 
         filetype = g_file_info_get_file_type(fileinfo);
 
-        if (filetype == G_FILE_TYPE_DIRECTORY)
-        {
-            file_list = g_list_concat(
-                        file_list,
-                        _parse_directory(p_path, FALSE, include_hidden));
-        }
-        else
+        if (filetype != G_FILE_TYPE_DIRECTORY)
         {
             VnrFile *new_vnrfile = vnr_file_new();
             const char *mimetype = g_file_info_get_content_type(fileinfo);
@@ -330,7 +331,8 @@ GList* vnr_list_new_multiple(GSList *uri_list, gboolean include_hidden, GError *
         uri_list = g_slist_next(uri_list);
     }
 
-    file_list = g_list_sort_with_data(file_list, _list_compare_func, NULL);
+    //file_list = g_list_sort_with_data(file_list, _list_compare_func, NULL);
+    file_list = vnr_list_sort(file_list);
 
     return file_list;
 }
