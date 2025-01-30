@@ -2417,12 +2417,15 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
             if (next == NULL)
                 next = g_list_first(window->filelist);
 
-            if (g_list_length(g_list_first(window->filelist)) != 1)
-                window->filelist = g_list_delete_link(window->filelist, window->filelist);
-            else
+            if (g_list_length(g_list_first(window->filelist)) == 1)
             {
                 g_list_free(window->filelist);
                 next = NULL;
+            }
+            else
+            {
+                window->filelist = g_list_delete_link(window->filelist,
+                                                      window->filelist);
             }
 
             if (next == NULL)

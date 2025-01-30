@@ -314,4 +314,12 @@ static gint compare_quarks(gconstpointer a, gconstpointer b)
     return quark - GPOINTER_TO_INT(b);
 }
 
+void vnr_list_free(GList *list)
+{
+    if (list == NULL)
+        return;
+    GList *first = g_list_first(list);
+    g_list_free_full(first, g_object_unref);
+}
+
 
