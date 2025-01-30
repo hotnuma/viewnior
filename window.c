@@ -1280,6 +1280,16 @@ static void _window_slideshow_allow(VnrWindow *window)
     gtk_widget_set_sensitive(window->toggle_btn, TRUE);
 }
 
+void window_slideshow_deny(VnrWindow *window)
+{
+    if (!window->slideshow)
+        return;
+
+    window->slideshow = FALSE;
+
+    gtk_widget_set_sensitive(window->toggle_btn, FALSE);
+}
+
 static gint _window_get_top_widgets_height(VnrWindow *window)
 {
     GtkAllocation allocation;
@@ -1290,16 +1300,6 @@ static gint _window_get_top_widgets_height(VnrWindow *window)
     gtk_widget_get_allocation(window->toolbar, &allocation);
 
     return allocation.height;
-}
-
-void window_slideshow_deny(VnrWindow *window)
-{
-    if (!window->slideshow)
-        return;
-
-    window->slideshow = FALSE;
-
-    gtk_widget_set_sensitive(window->toggle_btn, FALSE);
 }
 
 static void _window_rotate_pixbuf(VnrWindow *window,
@@ -2427,6 +2427,8 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
             }
             else
             {
+                #warning *** mem leak
+
                 window->filelist = g_list_delete_link(window->filelist,
                                                       window->filelist);
             }
@@ -2436,7 +2438,10 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
                 window_close(window);
                 gtk_action_group_set_sensitive(window->actions_collection, FALSE);
                 window_slideshow_deny(window);
-                window_list_set(window, NULL, FALSE);
+
+                window->filelist = NULL; // added
+                window_list_set(window, NULL); // FALSE);
+
                 vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
                                       _("The given locations contain no images."),
                                       TRUE);
@@ -2447,7 +2452,9 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
             }
             else
             {
-                window_list_set(window, next, FALSE);
+                window->filelist = NULL; // added
+                window_list_set(window, next); // FALSE);
+
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
                                           gdk_cursor_new(GDK_WATCH));
@@ -2811,7 +2818,7 @@ void window_open_from_list(VnrWindow *window, GSList *uri_list)
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                               TRUE, error->message, TRUE);
 
-        window_list_set(window, file_list, TRUE);
+        window_list_set(window, file_list); // TRUE);
     }
     else if (error != NULL)
     {
@@ -2831,7 +2838,8 @@ void window_open_from_list(VnrWindow *window, GSList *uri_list)
     }
     else
     {
-        window_list_set(window, file_list, TRUE);
+        window_list_set(window, file_list); // TRUE);
+
         if (!window->cursor_is_hidden)
             gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
                                   gdk_cursor_new(GDK_WATCH));
@@ -2857,22 +2865,18 @@ void window_close(VnrWindow *window)
     gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
 }
 
-void window_list_set(VnrWindow *window, GList *list, gboolean free_current)
+void window_list_set(VnrWindow *window, GList *list)
 {
-    if (free_current == TRUE && window->filelist != NULL)
-    {
-        #warning Possible Memory Leak
-        g_list_free(window->filelist); // memleak ????
-    }
+    window->filelist = vnr_list_free(window->filelist);
 
     if (g_list_length(g_list_first(list)) > 1)
     {
-        gtk_action_group_set_sensitive(window->actions_collection, TRUE);
+        gtk_action_group_set_sensitive(window->actions_collection, true);
         _window_slideshow_allow(window);
     }
     else
     {
-        gtk_action_group_set_sensitive(window->actions_collection, FALSE);
+        gtk_action_group_set_sensitive(window->actions_collection, false);
         window_slideshow_deny(window);
     }
 

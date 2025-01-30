@@ -117,7 +117,7 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen);
 void window_open_from_list(VnrWindow *window, GSList *uri_list);
 void window_close(VnrWindow *window);
 
-void window_list_set(VnrWindow *window, GList *list, gboolean free_current);
+void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);
 gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_prev(VnrWindow *window);

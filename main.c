@@ -100,7 +100,8 @@ int main(int argc, char **argv)
             window_slideshow_deny(vnrwindow);
             vnr_message_area_show(VNR_MESSAGE_AREA(vnrwindow->msg_area),
                                   TRUE, error->message, TRUE);
-            window_list_set(vnrwindow, file_list, TRUE);
+
+            window_list_set(vnrwindow, file_list); // TRUE);
         }
         else if (error != NULL)
         {
@@ -117,7 +118,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            window_list_set(vnrwindow, file_list, TRUE);
+            window_list_set(vnrwindow, file_list); // TRUE);
         }
     }
 
@@ -130,6 +131,7 @@ int main(int argc, char **argv)
     }
 
     gtk_widget_show(GTK_WIDGET(window));
+
     gtk_main();
 
     return 0;
