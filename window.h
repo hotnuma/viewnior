@@ -133,9 +133,10 @@ gboolean window_prev(VnrWindow *window);
 gboolean window_first(VnrWindow *window);
 gboolean window_last(VnrWindow *window);
 
+void window_preferences_apply(VnrWindow *window);
 void window_fullscreen_toggle(VnrWindow *window);
 void window_slideshow_deny(VnrWindow *window);
-void window_preferences_apply(VnrWindow *window);
+
 
 G_END_DECLS
 

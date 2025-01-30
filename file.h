@@ -44,7 +44,7 @@ struct _VnrFile
 GType vnr_file_get_type() G_GNUC_CONST;
 
 VnrFile* vnr_file_new();
-gboolean vnr_file_rename(VnrFile *file, const gchar *newname);
+gboolean vnr_file_rename(VnrFile *file, const gchar *fullpath);
 
 // File List -----------------------------------------------------------------
 

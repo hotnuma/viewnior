@@ -26,13 +26,11 @@ G_DEFINE_TYPE(VnrFile, vnr_file, G_TYPE_OBJECT)
 
 GList *_supported_mime_types;
 
-
 // VnrFile -------------------------------------------------------------------
 
 static gboolean _vnr_file_set_path(VnrFile *file, const gchar *filepath);
 static void _vnr_file_set_display_name(VnrFile *vnr_file,
                                        const gchar *display_name);
-
 
 // File List -----------------------------------------------------------------
 
@@ -62,14 +60,10 @@ static void vnr_file_init(VnrFile *file)
     file->display_name = NULL;
 }
 
-gboolean vnr_file_rename(VnrFile *file, const char *newname)
+gboolean vnr_file_rename(VnrFile *file, const gchar *fullpath)
 {
-    if (!file || !newname)
+    if (!file || !fullpath)
         return false;
-
-    gchar *dir = g_path_get_dirname(file->path);
-    gchar *fullpath = g_build_filename(dir, newname, NULL);
-    g_free(dir);
 
     //printf("rename %s to %s\n", file->path, fullpath);
 
@@ -77,8 +71,6 @@ gboolean vnr_file_rename(VnrFile *file, const char *newname)
 
     if (ret)
         _vnr_file_set_path(file, fullpath);
-
-    g_free(fullpath);
 
     return ret;
 }

@@ -113,13 +113,19 @@ gboolean dialog_file_rename(GtkWindow *window, VnrFile *file)
         gtk_widget_hide(dialog);
 
         // determine the new filename
-        const gchar *text = xfce_filename_input_get_text(filename_input);
+        const gchar *newname = xfce_filename_input_get_text(filename_input);
 
         // check if we have a new name here
-        if (g_strcmp0(filename, text) != 0
-            && g_utf8_validate(text, -1, NULL))
+        if (newname != NULL
+            && g_strcmp0(filename, newname) != 0
+            && g_utf8_validate(newname, -1, NULL))
         {
-            ret = vnr_file_rename(file, text);
+            gchar *dir = g_path_get_dirname(file->path);
+            gchar *fullpath = g_build_filename(dir, newname, NULL);
+            g_free(dir);
+
+            ret = vnr_file_rename(file, fullpath);
+            g_free(fullpath);
         }
     }
 

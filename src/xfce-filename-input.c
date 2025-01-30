@@ -289,13 +289,13 @@ xfce_filename_input_finalize(GObject *object)
  * Since: 4.16
  *
  **/
-const gchar *
+const gchar*
 xfce_filename_input_get_text(XfceFilenameInput *filename_input)
 {
     g_return_val_if_fail(XFCE_IS_FILENAME_INPUT(filename_input), NULL);
 
-    /* NB the returned string must not be modified or freed,
-       as it belongs to the GtkEntry */
+    // the returned string must not be modified or freed
+
     return gtk_entry_get_text(filename_input->entry);
 }
 
