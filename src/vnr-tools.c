@@ -153,28 +153,6 @@ gint compare_quarks(gconstpointer a, gconstpointer b)
     return quark - GPOINTER_TO_INT(b);
 }
 
-void get_position_of_element_in_list(GList *list, gint *current, gint *total)
-{
-    GList *it;
-    gint after, before;
-
-    after = before = 0;
-    it = list;
-
-    for (it = list; it != NULL; it = it->next)
-    {
-        after++;
-    }
-
-    for (it = list; it != NULL; it = it->prev)
-    {
-        before++;
-    }
-
-    *current = before;
-    *total = before + after - 1;
-}
-
 void vnr_tools_apply_embedded_orientation(GdkPixbufAnimation **anim)
 {
     GdkPixbuf *pixbuf;

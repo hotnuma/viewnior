@@ -45,9 +45,11 @@
 
 G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 
-static void window_class_init(VnrWindowClass *klass);
 GtkWindow* window_new();
+static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
+static void window_dispose(GObject *object);
+static void window_finalize(GObject *object);
 
 static void _window_update_openwith_menu(VnrWindow *window);
 static void _window_save_accel_map();
@@ -506,10 +508,13 @@ GtkWindow* window_new()
 
 static void window_class_init(VnrWindowClass *klass)
 {
-    GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+    gobject_class->dispose = window_dispose;
+    gobject_class->finalize = window_finalize;
 
-    widget_class->key_press_event = _window_on_key_press;
-    widget_class->drag_data_received = _window_drag_data_received;
+    GtkWidgetClass *gtkwidget_class = GTK_WIDGET_CLASS(klass);
+    gtkwidget_class->key_press_event = _window_on_key_press;
+    gtkwidget_class->drag_data_received = _window_drag_data_received;
 }
 
 static void window_init(VnrWindow *window)
@@ -517,9 +522,10 @@ static void window_init(VnrWindow *window)
     GError *error = NULL;
     GtkAction *action;
 
-    window->writable_format_name = NULL;
     window->movedir = NULL;
     window->filelist = NULL;
+
+    window->writable_format_name = NULL;
     window->fs_controls = NULL;
     window->fs_source = NULL;
     window->sl_timeout = 5;
@@ -789,6 +795,22 @@ static void window_init(VnrWindow *window)
     _window_load_accel_map();
 }
 
+static void window_dispose(GObject *object)
+{
+    // do something
+
+    G_OBJECT_CLASS(window_parent_class)->dispose(object);
+}
+
+static void window_finalize(GObject *object)
+{
+    VnrWindow *window = VNR_WINDOW(object);
+    if (window->movedir)
+        g_free(window->movedir);
+
+    G_OBJECT_CLASS(window_parent_class)->finalize(object);
+}
+
 
 // Private actions -----------------------------------------------------------
 
@@ -948,7 +970,7 @@ static void _window_update_fs_filename_label(VnrWindow *window)
     gint position, total;
     char *buf;
 
-    get_position_of_element_in_list(window->filelist, &position, &total);
+    vnr_list_get_position(window->filelist, &position, &total);
     VnrFile *current = window_list_get_current(window);
 
     buf = g_strdup_printf("%s - %i/%i",
@@ -1724,7 +1746,7 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
      * (vnr_window_close isn't called on the current image) */
     if (gtk_action_group_get_sensitive(window->actions_image))
     {
-        get_position_of_element_in_list(window->filelist, &position, &total);
+        vnr_list_get_position(window->filelist, &position, &total);
 
         VnrFile *current = window_list_get_current(window);
 
@@ -2279,20 +2301,13 @@ static void _action_move(GtkAction*, VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
 
-    //GSList *list = _window_file_chooser(window,
-    //                                    "bla",
-    //                                    GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-    //                                    false);
-    //if (!list)
-    //    return;
-
     gboolean ret = false;
 
     if (window->movedir == NULL)
         _window_select_directory(window);
 
     if (window->movedir == NULL)
-        goto cleanup;
+        return;
 
     VnrFile *file = VNR_FILE(window->filelist->data);
     const gchar *display_name = file->display_name;

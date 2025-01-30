@@ -365,6 +365,21 @@ static gboolean _mime_type_is_supported(const char *mime_type)
     return (result != NULL);
 }
 
+void vnr_list_get_position(GList *list, gint *current, gint *total)
+{
+    gint after = 0;
+    gint before = 0;
+
+    for (GList *it = list; it != NULL; it = it->next)
+        ++after;
+
+    for (GList *it = list; it != NULL; it = it->prev)
+        ++before;
+
+    *current = before;
+    *total = before + after - 1;
+}
+
 
 // Private functions ---------------------------------------------------------
 
