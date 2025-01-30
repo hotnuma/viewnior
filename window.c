@@ -2413,25 +2413,29 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
         }
         else
         {
-            GList *next = g_list_next(window->filelist);
+            //GList *next = g_list_next(window->filelist);
 
-            if (next == NULL)
-                next = g_list_first(window->filelist);
+            //if (next == NULL)
+            //    next = g_list_first(window->filelist);
 
-            if (g_list_length(g_list_first(window->filelist)) == 1)
-            {
-                //g_list_free(window->filelist);
+            //if (g_list_length(g_list_first(window->filelist)) == 1)
+            //{
+            //    //g_list_free(window->filelist);
 
-                window->filelist = vnr_list_free(window->filelist);
-                next = NULL;
-            }
-            else
-            {
-                #warning *** mem leak
+            //    window->filelist = vnr_list_free(window->filelist);
+            //    next = NULL;
+            //}
+            //else
+            //{
+            //    //#warning *** mem leak
+            //    //window->filelist = g_list_delete_link(window->filelist,
+            //    //                                      window->filelist);
 
-                window->filelist = g_list_delete_link(window->filelist,
-                                                      window->filelist);
-            }
+            //    window->filelist = vnr_list_delete_item(window->filelist);
+            //}
+
+            GList *next = vnr_list_delete_item(window->filelist);
+            window->filelist = NULL; // ensure we won't free it
 
             if (next == NULL)
             {
@@ -2439,8 +2443,8 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
                 gtk_action_group_set_sensitive(window->actions_collection, FALSE);
                 window_slideshow_deny(window);
 
-                window->filelist = NULL; // added
-                window_list_set(window, NULL); // FALSE);
+                //window->filelist = NULL; // don't free the list
+                window_list_set(window, NULL);
 
                 vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
                                       _("The given locations contain no images."),
@@ -2452,8 +2456,8 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
             }
             else
             {
-                window->filelist = NULL; // added
-                window_list_set(window, next); // FALSE);
+                //window->filelist = NULL; // added
+                window_list_set(window, next);
 
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),

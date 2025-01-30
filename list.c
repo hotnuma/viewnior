@@ -14,6 +14,7 @@ static gint _file_compare_func(VnrFile *file, char *uri);
 static gboolean _mime_type_is_supported(const char *mime_type);
 static GList* _mime_types_get_supported();
 static gint compare_quarks(gconstpointer a, gconstpointer b);
+static GList* _vnr_list_delete_link(GList *list);
 
 
 GList* vnr_list_new(gchar *filepath, gboolean include_hidden, GError **error)
@@ -312,6 +313,43 @@ static gint compare_quarks(gconstpointer a, gconstpointer b)
     quark = g_quark_from_string((const gchar *)a);
 
     return quark - GPOINTER_TO_INT(b);
+}
+
+GList* vnr_list_delete_item(GList *list)
+{
+    GList *first = g_list_first(list);
+
+    // empty list
+    if (first == NULL)
+        return NULL;
+
+    // only one item in the list
+    if (g_list_length(first) == 1)
+        return vnr_list_free(first);
+
+    GList *next = g_list_next(list);
+    if (next == NULL)
+        next = first;
+
+    g_assert(next != list);
+
+    _vnr_list_delete_link(list);
+
+    return next;
+}
+
+static GList* _vnr_list_delete_link(GList *list)
+{
+    if (list == NULL)
+        return NULL;
+
+    VnrFile *file = VNR_FILE(list->data);
+    if (file)
+        g_object_unref(file);
+
+    // the doc says it must point to the top of the list
+
+    return g_list_delete_link(list, list);
 }
 
 GList* vnr_list_free(GList *list)
