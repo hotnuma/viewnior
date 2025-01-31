@@ -345,8 +345,8 @@ static const GtkActionEntry _action_entries_image[] =
      G_CALLBACK(_action_delete)},
 
     {"FileMove", NULL,
-     N_("Rename"), "F4",
-     N_("Rename the current file"),
+     N_("Move"), "F4",
+     N_("Move the current file"),
      G_CALLBACK(_action_move)},
 
     {"FileProperties", "gtk-properties",
@@ -2993,9 +2993,17 @@ void window_preferences_apply(VnrWindow *window)
 {
     if (window->prefs->dark_background)
     {
-        GdkColor color;
-        gdk_color_parse(DARK_BACKGROUND_COLOR, &color);
-        gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
+        //GdkColor color;
+        //gdk_color_parse(DARK_BACKGROUND_COLOR, &color);
+        //gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
+
+        // https://stackoverflow.com/questions/36520637/
+        GdkRGBA color;
+        gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
+
+        gtk_widget_override_background_color(window->view,
+                                             GTK_STATE_NORMAL, &color);
+
     }
 
     if (window->prefs->smooth_images && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_BILINEAR)
