@@ -64,18 +64,39 @@
 
 * uni-scroll-win
     
+    ```
     gtk_hscrollbar_new
     GTK_TABLE
     gtk_container_set_resize_mode
+    ```
 
 * preferences.c
     
+    ```
     GtkTable
+    ```
 
 * uni-anim-view
     
+    ```
     GTimeVal time;
     g_time_val_add(&aview->time, delay_us);  
     g_get_current_time(&aview->time);  
+    ```
     
+* parse color
+
+    ```
+    //GdkColor color;
+    //gdk_color_parse("black", &color);
+    //gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
+
+    // https://stackoverflow.com/questions/36520637/
+    GdkRGBA color;
+    gdk_rgba_parse(&color, "black");
+
+    gtk_widget_override_background_color(window->view,
+                                         GTK_STATE_NORMAL, &color);
+    ```
+
 

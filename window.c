@@ -139,14 +139,14 @@ static void _action_scrollbar(GtkAction *action, VnrWindow *window);
 static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
 
-static void _action_delete(GtkAction *action, VnrWindow *window);
+static gboolean _window_select_directory(VnrWindow *window);
 static void _action_select_directory(GtkAction *action, VnrWindow *window);
 static void _action_move(GtkAction *action, VnrWindow *window);
 static gboolean _window_delete_item(VnrWindow *window);
 static void _action_rename(GtkAction *action, VnrWindow *window);
+static void _action_delete(GtkAction *action, VnrWindow *window);
 
 static void _action_crop(GtkAction *action, VnrWindow *window);
-
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
 static void _window_drag_data_received(GtkWidget *widget,
                                        GdkDragContext *context,
@@ -1104,17 +1104,10 @@ static void _window_fullscreen(VnrWindow *window)
                                     "ViewFullscreen");
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
-
-    //GdkColor color;
-    //gdk_color_parse("black", &color);
-    //gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
-
     // https://stackoverflow.com/questions/36520637/
     GdkRGBA color;
     gdk_rgba_parse(&color, "black");
-
-    gtk_widget_override_background_color(window->view,
-                                         GTK_STATE_NORMAL, &color);
+    gtk_widget_override_background_color(window->view, GTK_STATE_NORMAL, &color);
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
@@ -2255,32 +2248,10 @@ static void _action_slideshow(GtkAction *action, VnrWindow *window)
     }
 }
 
-static gboolean _window_select_directory(VnrWindow *window)
-{
-    g_return_val_if_fail(window != NULL, false);
-
-    GSList *list = _window_file_chooser(window,
-                                        "bla",
-                                        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                        false);
-    if (!list)
-        return false;
-
-    if (window->movedir)
-    {
-        g_free(window->movedir);
-        window->movedir = NULL;
-    }
-
-    window->movedir = g_strdup((const char*) list->data);
-    g_slist_free_full(list, g_free);
-
-    return true;
-}
-
 static void _action_rename(GtkAction*, VnrWindow *window)
 {
     g_return_if_fail((window != NULL));
+    g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
 
     VnrFile *file = window_list_get_current(window);
 
@@ -2304,8 +2275,7 @@ static void _action_select_directory(GtkAction*, VnrWindow *window)
 static void _action_move(GtkAction*, VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
-
-    gboolean ret = false;
+    g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
 
     if (window->movedir == NULL)
         _window_select_directory(window);
@@ -2321,7 +2291,8 @@ static void _action_move(GtkAction*, VnrWindow *window)
         goto cleanup;
 
     printf("move %s to %s\n", file->path, newpath);
-    ret = vnr_file_rename(file, newpath);
+
+    gboolean ret = vnr_file_rename(file, newpath);
 
     if (ret)
     {
@@ -2334,6 +2305,29 @@ static void _action_move(GtkAction*, VnrWindow *window)
 cleanup:
 
     g_free(newpath);
+}
+
+static gboolean _window_select_directory(VnrWindow *window)
+{
+    g_return_val_if_fail(window != NULL, false);
+
+    GSList *list = _window_file_chooser(window,
+                                        "bla",
+                                        GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                        false);
+    if (!list)
+        return false;
+
+    if (window->movedir)
+    {
+        g_free(window->movedir);
+        window->movedir = NULL;
+    }
+
+    window->movedir = g_strdup((const char*) list->data);
+    g_slist_free_full(list, g_free);
+
+    return true;
 }
 
 static void _action_delete(GtkAction*, VnrWindow *window)
@@ -3009,25 +3003,20 @@ void window_preferences_apply(VnrWindow *window)
 {
     if (window->prefs->dark_background)
     {
-        //GdkColor color;
-        //gdk_color_parse(DARK_BACKGROUND_COLOR, &color);
-        //gtk_widget_modify_bg(window->view, GTK_STATE_NORMAL, &color);
-
         // https://stackoverflow.com/questions/36520637/
         GdkRGBA color;
         gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
-
-        gtk_widget_override_background_color(window->view,
-                                             GTK_STATE_NORMAL, &color);
-
+        gtk_widget_override_background_color(window->view, GTK_STATE_NORMAL, &color);
     }
 
-    if (window->prefs->smooth_images && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_BILINEAR)
+    if (window->prefs->smooth_images
+        && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_BILINEAR)
     {
         UNI_IMAGE_VIEW(window->view)->interp = GDK_INTERP_BILINEAR;
         gtk_widget_queue_draw(window->view);
     }
-    else if (!window->prefs->smooth_images && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_NEAREST)
+    else if (!window->prefs->smooth_images
+             && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_NEAREST)
     {
         UNI_IMAGE_VIEW(window->view)->interp = GDK_INTERP_NEAREST;
         gtk_widget_queue_draw(window->view);
@@ -3041,9 +3030,7 @@ void window_preferences_apply(VnrWindow *window)
 
 void window_fullscreen_toggle(VnrWindow *window)
 {
-    gboolean fullscreen;
-
-    fullscreen = (window->mode == WINDOW_MODE_NORMAL) ? TRUE : FALSE;
+    gboolean fullscreen = (window->mode == WINDOW_MODE_NORMAL) ? TRUE : FALSE;
 
     if (fullscreen)
         _window_fullscreen(window);
