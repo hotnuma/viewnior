@@ -2313,6 +2313,10 @@ static void _action_move(GtkAction*, VnrWindow *window)
 
     if (ret)
     {
+        #warning delete item
+
+        //GList *next = vnr_list_delete_item(window->filelist);
+
         //vnr_list_sort(window->filelist);
         //_view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
     }
@@ -2337,17 +2341,53 @@ static void _action_rename(GtkAction*, VnrWindow *window)
     }
 }
 
-static void _action_delete(GtkAction *action, VnrWindow *window)
-{
-    GtkWidget *dlg = NULL;
-    const gchar *file_path;
-    gchar *markup, *prompt, *warning;
-    gboolean restart_slideshow = FALSE;
-    gboolean restart_autohide_timeout = FALSE;
-    gboolean cursor_was_hidden = FALSE;
+static gboolean _window_delete_item(VnrWindow *window);
 
-    /* Used to get rid of the "may be used uninitialised" warning */
-    markup = prompt = warning = NULL;
+static gboolean _window_delete_item(VnrWindow *window)
+{
+    GList *next = vnr_list_delete_item(window->filelist);
+    window->filelist = NULL; // ensure we won't free it
+
+    if (next == NULL)
+    {
+        window_close(window);
+        gtk_action_group_set_sensitive(window->actions_collection, FALSE);
+        window_slideshow_deny(window);
+
+        window_list_set(window, NULL);
+
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
+                              _("The given locations contain no images."),
+                              TRUE);
+
+//        restart_slideshow = FALSE;
+
+        if (gtk_widget_get_visible(window->props_dlg))
+            vnr_properties_dialog_clear(VNR_PROPERTIES_DIALOG(window->props_dlg));
+
+        return false;
+    }
+
+    window_list_set(window, next);
+
+    //if (window->prefs->confirm_delete && !window->cursor_is_hidden)
+    //    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
+    //                          gdk_cursor_new(GDK_WATCH));
+
+    //gdk_flush();
+
+    //window_close(window);
+    //window_open(window, FALSE);
+    //if (window->prefs->confirm_delete && !window->cursor_is_hidden)
+    //    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
+    //                          gdk_cursor_new(GDK_LEFT_PTR));
+
+    return true;
+}
+
+static void _action_delete(GtkAction*, VnrWindow *window)
+{
+    gboolean restart_slideshow = FALSE;
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
     {
@@ -2355,12 +2395,15 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
         restart_slideshow = TRUE;
     }
 
+    gboolean cursor_was_hidden = FALSE;
     if (window->cursor_is_hidden)
     {
         cursor_was_hidden = TRUE;
         _window_show_cursor(window);
     }
+
     window->disable_autohide = TRUE;
+    gboolean restart_autohide_timeout = FALSE;
 
     if (window->fs_source != NULL)
         restart_autohide_timeout = TRUE;
@@ -2368,16 +2411,20 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
     g_return_if_fail(window->filelist != NULL);
 
     VnrFile *current = window_list_get_current(window);
+    const gchar *file_path = current->path;
 
-    file_path = current->path;
+    gchar *prompt = NULL;
+    gchar *markup = NULL;
+    GtkWidget *dlg = NULL;
 
     if (window->prefs->confirm_delete)
     {
+        gchar *warning = NULL;
         warning = _("If you delete an item, it will be permanently lost.");
 
         /* I18N: The '%s' is replaced with the name of the file to be deleted. */
         prompt = g_strdup_printf(_("Are you sure you want to\n"
-                                   "permanently delete \"%s\"?"),
+                                 "permanently delete \"%s\"?"),
                                  current->display_name);
         markup = g_markup_printf_escaped("<span weight=\"bold\" size=\"larger\">%s</span>\n\n%s",
                                          prompt, warning);
@@ -2413,27 +2460,6 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
         }
         else
         {
-            //GList *next = g_list_next(window->filelist);
-
-            //if (next == NULL)
-            //    next = g_list_first(window->filelist);
-
-            //if (g_list_length(g_list_first(window->filelist)) == 1)
-            //{
-            //    //g_list_free(window->filelist);
-
-            //    window->filelist = vnr_list_free(window->filelist);
-            //    next = NULL;
-            //}
-            //else
-            //{
-            //    //#warning *** mem leak
-            //    //window->filelist = g_list_delete_link(window->filelist,
-            //    //                                      window->filelist);
-
-            //    window->filelist = vnr_list_delete_item(window->filelist);
-            //}
-
             GList *next = vnr_list_delete_item(window->filelist);
             window->filelist = NULL; // ensure we won't free it
 
@@ -2443,7 +2469,6 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
                 gtk_action_group_set_sensitive(window->actions_collection, FALSE);
                 window_slideshow_deny(window);
 
-                //window->filelist = NULL; // don't free the list
                 window_list_set(window, NULL);
 
                 vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
@@ -2456,7 +2481,6 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
             }
             else
             {
-                //window->filelist = NULL; // added
                 window_list_set(window, next);
 
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
@@ -2478,8 +2502,10 @@ static void _action_delete(GtkAction *action, VnrWindow *window)
 
     if (restart_slideshow)
         _window_slideshow_start(window);
+
     if (cursor_was_hidden)
         _window_hide_cursor(window);
+
     if (restart_autohide_timeout)
         _window_fullscreen_set_timeout(window);
 
