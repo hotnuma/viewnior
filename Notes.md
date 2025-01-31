@@ -2,6 +2,35 @@
 
 #### Notes
 
+* Shortcuts
+
+    ```
+    FileOpen Ctrl+O
+    FileOpenDir Ctrl+F
+    FileClose Ctrl+W
+    FileSave Ctrl+S
+    SetAsWallpaper Ctrl+F8
+    FileRename F2
+    FileSelectDirectory F7
+    FileMove F8
+    FileProperties Alt+Return
+    Delete Delete
+    ViewZoomIn Ctrl+plus
+    ViewZoomOut Ctrl+minus
+    ViewZoomNormal Ctrl+0
+    ControlEqual Ctrl+equal
+    ControlKpAdd Ctrl+KP_Add
+    ControlKpSub Ctrl+KP_Substract
+    ImageRotateCW Ctrl+R
+    ImageRotateCCW Ctrl+Shift+F
+    ViewFullscreen F11
+    ViewSlideshow F6
+    GoPrevious Alt+Left
+    GoNext Alt+Right
+    GoFirst Alt+Home
+    GoLast Alt+End
+    ```
+
 * vnr_file_load_single_uri
     
     Open a single image.

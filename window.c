@@ -140,9 +140,11 @@ static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
 
 static void _action_delete(GtkAction *action, VnrWindow *window);
+static void _action_select_directory(GtkAction *action, VnrWindow *window);
 static void _action_move(GtkAction *action, VnrWindow *window);
 static gboolean _window_delete_item(VnrWindow *window);
 static void _action_rename(GtkAction *action, VnrWindow *window);
+
 static void _action_crop(GtkAction *action, VnrWindow *window);
 
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
@@ -244,6 +246,7 @@ const gchar* _ui_definition =
         "<accelerator name=\"ControlKPAddAccel\" action=\"ControlKpAdd\"/>"
         "<accelerator name=\"ControlKPSubAccel\" action=\"ControlKpSub\"/>"
         "<accelerator name=\"DeleteAccel\" action=\"Delete\"/>"
+        "<accelerator name=\"SelectDirAccel\" action=\"FileSelectDirectory\"/>"
     "</ui>";
 
 const gchar* _ui_definition_wallpaper =
@@ -339,15 +342,25 @@ static const GtkActionEntry _action_entries_image[] =
      N_("Open the selected image with a different application"),
      NULL},
 
+    {"FileRename", NULL,
+     N_("Rename"), "F2",
+     N_("Rename the current file"),
+     G_CALLBACK(_action_rename)},
+
+    {"FileSelectDirectory", NULL,
+     N_("Move"), "F7",
+     N_("Move the current file"),
+     G_CALLBACK(_action_select_directory)},
+
+    {"FileMove", NULL,
+     N_("Move"), "F8",
+     N_("Move the current file"),
+     G_CALLBACK(_action_move)},
+
     {"FileDelete", "gtk-delete",
      N_("_Delete"), NULL,
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
-
-    {"FileMove", NULL,
-     N_("Move"), "F4",
-     N_("Move the current file"),
-     G_CALLBACK(_action_move)},
 
     {"FileProperties", "gtk-properties",
      N_("_Properties..."), "<Alt>Return",
@@ -358,11 +371,6 @@ static const GtkActionEntry _action_entries_image[] =
      N_("_Reload"), NULL,
      N_("Reload the current file"),
      G_CALLBACK(_action_reload)},
-
-    {"FileRename", NULL,
-     N_("Rename"), "F2",
-     N_("Rename the current file"),
-     G_CALLBACK(_action_rename)},
 
     {"Delete", NULL, N_("_Delete"), "Delete",
      N_("Delete the current file"),
@@ -2283,6 +2291,14 @@ static void _action_rename(GtkAction*, VnrWindow *window)
         vnr_list_sort(window->filelist);
         _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
     }
+}
+
+static void _action_select_directory(GtkAction*, VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
+    g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
+
+    _window_select_directory(window);
 }
 
 static void _action_move(GtkAction*, VnrWindow *window)
