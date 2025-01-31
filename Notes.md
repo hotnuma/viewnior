@@ -1,5 +1,7 @@
 <link href="style.css" rel="stylesheet"></link>
 
+#### Notes
+
 * vnr_file_load_single_uri
     
     Open a single image.
@@ -27,4 +29,24 @@
     Goto
     Help
     ```
+
+
+#### Deprecations
+
+* uni-scroll-win
     
+    gtk_hscrollbar_new
+    GTK_TABLE
+    gtk_container_set_resize_mode
+
+* preferences.c
+    
+    GtkTable
+
+* uni-anim-view
+    
+    GTimeVal time;
+    g_time_val_add(&aview->time, delay_us);  
+    g_get_current_time(&aview->time);  
+    
+

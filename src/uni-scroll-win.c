@@ -87,15 +87,11 @@ uni_scroll_win_nav_btn_clicked(UniScrollWin *window, GdkEventButton *ev)
     uni_nav_show_and_grab(UNI_NAV(window->nav), ev->x_root, ev->y_root);
 }
 
-static void
-uni_scroll_win_set_view(UniScrollWin *window, UniImageView *view)
+static void uni_scroll_win_set_view(UniScrollWin *window, UniImageView *view)
 {
     // Setup the scrollbars
-    GtkAdjustment *hadj;
-    hadj = (GtkAdjustment *)g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
-
-    GtkAdjustment *vadj;
-    vadj = (GtkAdjustment *)g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
+    GtkAdjustment *hadj = (GtkAdjustment*) g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
+    GtkAdjustment *vadj = (GtkAdjustment*) g_object_new(GTK_TYPE_ADJUSTMENT, NULL);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     window->hscroll = gtk_hscrollbar_new(hadj);

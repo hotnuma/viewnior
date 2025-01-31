@@ -192,8 +192,7 @@ vnr_prefs_set_default(VnrPrefs *prefs)
     prefs->desktop = VNR_PREFS_DESKTOP_AUTO;
 }
 
-static GtkWidget *
-build_dialog(VnrPrefs *prefs)
+static GtkWidget* _prefs_build(VnrPrefs *prefs)
 {
     GtkBuilder *builder;
     GtkWidget *window;
@@ -209,7 +208,6 @@ build_dialog(VnrPrefs *prefs)
     GtkToggleButton *confirm_delete;
     GtkToggleButton *reload_on_save;
     GtkSpinButton *slideshow_timeout;
-    GtkTable *behavior_table;
     GtkComboBoxText *action_wheel;
     GtkComboBoxText *action_click;
     GtkComboBoxText *action_modify;
@@ -320,7 +318,8 @@ build_dialog(VnrPrefs *prefs)
 
     /* Behavior combo boxes */
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    behavior_table = GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
+    GtkTable *behavior_table =
+        GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     action_wheel = (GtkComboBoxText *)gtk_combo_box_text_new();
@@ -459,7 +458,7 @@ void vnr_prefs_show_dialog(VnrPrefs *prefs)
 {
     if (prefs->dialog == NULL)
     {
-        prefs->dialog = build_dialog(prefs);
+        prefs->dialog = _prefs_build(prefs);
         if (prefs->dialog == NULL)
             return;
     }

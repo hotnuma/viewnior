@@ -425,20 +425,23 @@ uni_nav_new(UniImageView *view)
 void uni_nav_grab(UniNav *nav)
 {
     GtkWidget *preview = nav->preview;
-    GdkWindow *window;
 
     gtk_grab_add(preview);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
     GdkCursor *cursor = gdk_cursor_new(GDK_FLEUR);
-    int mask = (GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_RELEASE_MASK);
-    window = gtk_widget_get_window(preview);
-    gdk_pointer_grab(window, TRUE, mask, window, cursor,
-                     0);
+    int mask = (GDK_POINTER_MOTION_MASK
+                | GDK_POINTER_MOTION_HINT_MASK
+                | GDK_BUTTON_RELEASE_MASK);
+
+    GdkWindow *window = gtk_widget_get_window(preview);
+    gdk_pointer_grab(window, TRUE, mask, window, cursor, 0);
     gdk_cursor_unref(cursor);
 
-    /* Capture keyboard events. */
+    // Capture keyboard events
     gdk_keyboard_grab(window, TRUE, GDK_CURRENT_TIME);
+
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     gtk_widget_grab_focus(preview);
@@ -447,10 +450,12 @@ void uni_nav_grab(UniNav *nav)
 void uni_nav_release(UniNav *nav)
 {
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
 
-    /* Release keyboard focus. */
+    // Release keyboard focus
     gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     gtk_grab_remove(nav->preview);

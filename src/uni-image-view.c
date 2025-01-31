@@ -579,10 +579,10 @@ uni_image_view_expose(GtkWidget *widget, cairo_t *cr)
     return uni_image_view_repaint_area(UNI_IMAGE_VIEW(widget), &allocation, cr);
 }
 
-static int
-uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
+static int uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
 {
     gtk_widget_grab_focus(widget);
+
     UniImageView *view = UNI_IMAGE_VIEW(widget);
     VnrWindow *vnr_win = VNR_WINDOW(gtk_widget_get_toplevel(widget));
     g_assert(gtk_widget_is_toplevel(GTK_WIDGET(vnr_win)));
@@ -620,9 +620,16 @@ uni_image_view_button_press(GtkWidget *widget, GdkEventButton *ev)
     else if (ev->type == GDK_BUTTON_PRESS && ev->button == 3)
     {
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-        gtk_menu_popup(GTK_MENU(VNR_WINDOW(gtk_widget_get_toplevel(widget))->popup_menu),
-                       NULL, NULL, NULL, NULL, ev->button,
-                       gtk_get_current_event_time());
+
+        gtk_menu_popup(
+            GTK_MENU(VNR_WINDOW(gtk_widget_get_toplevel(widget))->popup_menu),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            ev->button,
+            gtk_get_current_event_time());
+
         G_GNUC_END_IGNORE_DEPRECATIONS
     }
     else if (ev->type == GDK_BUTTON_PRESS && ev->button == 8)
@@ -1132,11 +1139,9 @@ uni_image_view_class_init(UniImageViewClass *klass)
  *
  * Creates a new image view with default values.
  **/
-GtkWidget *
-uni_image_view_new(void)
+GtkWidget* uni_image_view_new()
 {
-    GtkWidget *view = g_object_new(UNI_TYPE_IMAGE_VIEW, NULL);
-    return view;
+    return g_object_new(UNI_TYPE_IMAGE_VIEW, NULL);
 }
 
 /*************************************************************/

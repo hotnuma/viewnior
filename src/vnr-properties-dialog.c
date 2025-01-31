@@ -64,8 +64,8 @@ get_file_info(gchar *filename, goffset *size, const gchar **type)
 }
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-static void
-set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
+
+static void set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
 {
     if (dialog->thumbnail != NULL)
     {
@@ -90,11 +90,11 @@ set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
                                                 GDK_INTERP_NEAREST);
 }
 
-static void
-vnr_properties_dialog_class_init(VnrPropertiesDialogClass *klass) {}
+static void vnr_properties_dialog_class_init(VnrPropertiesDialogClass *klass) {}
 
-GtkWidget *
-vnr_properties_dialog_new(VnrWindow *vnr_win, GtkAction *next_action, GtkAction *prev_action)
+GtkWidget* vnr_properties_dialog_new(VnrWindow *vnr_win,
+                                     GtkAction *next_action,
+                                     GtkAction *prev_action)
 {
     VnrPropertiesDialog *dialog;
 

@@ -198,8 +198,7 @@ uni_dragger_class_init(UniDraggerClass *klass)
     g_object_class_install_property(object_class, PROP_IMAGE_VIEW, pspec);
 }
 
-static void
-uni_dragger_init(UniDragger *tool)
+static void uni_dragger_init(UniDragger *tool)
 {
     tool->view = NULL;
     tool->cache = uni_pixbuf_draw_cache_new();
