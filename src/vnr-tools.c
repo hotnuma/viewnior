@@ -19,10 +19,20 @@
 
 #include <glib.h>
 #include <gio/gio.h>
-#include <gtk/gtk.h>
 #include <stdio.h>
 #include <string.h>
 #include "vnr-tools.h"
+
+void vnr_tools_set_cursor(GtkWidget *widget, GdkCursorType type, gboolean flush)
+{
+    GdkDisplay *display = gtk_widget_get_display(widget);
+    GdkWindow *gdkwindow = gtk_widget_get_window(widget);
+    GdkCursor *cursor = gdk_cursor_new_for_display(display, type);
+    gdk_window_set_cursor(gdkwindow, cursor);
+
+    if (flush)
+        gdk_display_flush(display);
+}
 
 void vnr_tools_fit_to_size(gint *width, gint *height, gint max_width, gint max_height)
 {
