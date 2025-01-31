@@ -138,9 +138,11 @@ static void _action_toolbar(GtkAction *action, VnrWindow *window);
 static void _action_scrollbar(GtkAction *action, VnrWindow *window);
 static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
-static void _action_move(GtkAction *action, VnrWindow *window);
-static void _action_rename(GtkAction *action, VnrWindow *window);
+
 static void _action_delete(GtkAction *action, VnrWindow *window);
+static void _action_move(GtkAction *action, VnrWindow *window);
+static gboolean _window_delete_item(VnrWindow *window);
+static void _action_rename(GtkAction *action, VnrWindow *window);
 static void _action_crop(GtkAction *action, VnrWindow *window);
 
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
@@ -2289,6 +2291,21 @@ static gboolean _window_select_directory(VnrWindow *window)
     return true;
 }
 
+static void _action_rename(GtkAction*, VnrWindow *window)
+{
+    g_return_if_fail((window != NULL));
+
+    VnrFile *file = window_list_get_current(window);
+
+    gboolean result = dialog_file_rename(GTK_WINDOW(window), file);
+
+    if (result)
+    {
+        vnr_list_sort(window->filelist);
+        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+    }
+}
+
 static void _action_move(GtkAction*, VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
@@ -2313,76 +2330,15 @@ static void _action_move(GtkAction*, VnrWindow *window)
 
     if (ret)
     {
-        #warning delete item
+        _window_delete_item(window);
 
-        //GList *next = vnr_list_delete_item(window->filelist);
-
-        //vnr_list_sort(window->filelist);
-        //_view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+        window_close(window);
+        window_open(window, FALSE);
     }
 
 cleanup:
 
     g_free(newpath);
-}
-
-static void _action_rename(GtkAction*, VnrWindow *window)
-{
-    g_return_if_fail((window != NULL));
-
-    VnrFile *file = window_list_get_current(window);
-
-    gboolean result = dialog_file_rename(GTK_WINDOW(window), file);
-
-    if (result)
-    {
-        vnr_list_sort(window->filelist);
-        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
-    }
-}
-
-static gboolean _window_delete_item(VnrWindow *window);
-
-static gboolean _window_delete_item(VnrWindow *window)
-{
-    GList *next = vnr_list_delete_item(window->filelist);
-    window->filelist = NULL; // ensure we won't free it
-
-    if (next == NULL)
-    {
-        window_close(window);
-        gtk_action_group_set_sensitive(window->actions_collection, FALSE);
-        window_slideshow_deny(window);
-
-        window_list_set(window, NULL);
-
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
-                              _("The given locations contain no images."),
-                              TRUE);
-
-//        restart_slideshow = FALSE;
-
-        if (gtk_widget_get_visible(window->props_dlg))
-            vnr_properties_dialog_clear(VNR_PROPERTIES_DIALOG(window->props_dlg));
-
-        return false;
-    }
-
-    window_list_set(window, next);
-
-    //if (window->prefs->confirm_delete && !window->cursor_is_hidden)
-    //    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
-    //                          gdk_cursor_new(GDK_WATCH));
-
-    //gdk_flush();
-
-    //window_close(window);
-    //window_open(window, FALSE);
-    //if (window->prefs->confirm_delete && !window->cursor_is_hidden)
-    //    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
-    //                          gdk_cursor_new(GDK_LEFT_PTR));
-
-    return true;
 }
 
 static void _action_delete(GtkAction*, VnrWindow *window)
@@ -2460,29 +2416,14 @@ static void _action_delete(GtkAction*, VnrWindow *window)
         }
         else
         {
-            GList *next = vnr_list_delete_item(window->filelist);
-            window->filelist = NULL; // ensure we won't free it
+            gboolean ret = _window_delete_item(window);
 
-            if (next == NULL)
+            if (!ret)
             {
-                window_close(window);
-                gtk_action_group_set_sensitive(window->actions_collection, FALSE);
-                window_slideshow_deny(window);
-
-                window_list_set(window, NULL);
-
-                vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
-                                      _("The given locations contain no images."),
-                                      TRUE);
                 restart_slideshow = FALSE;
-
-                if (gtk_widget_get_visible(window->props_dlg))
-                    vnr_properties_dialog_clear(VNR_PROPERTIES_DIALOG(window->props_dlg));
             }
             else
             {
-                window_list_set(window, next);
-
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
                                           gdk_cursor_new(GDK_WATCH));
@@ -2491,6 +2432,7 @@ static void _action_delete(GtkAction*, VnrWindow *window)
 
                 window_close(window);
                 window_open(window, FALSE);
+
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
                                           gdk_cursor_new(GDK_LEFT_PTR));
@@ -2515,6 +2457,37 @@ static void _action_delete(GtkAction*, VnrWindow *window)
         g_free(markup);
         gtk_widget_destroy(dlg);
     }
+}
+
+static gboolean _window_delete_item(VnrWindow *window)
+{
+    GList *next = vnr_list_delete_item(window->filelist);
+    window->filelist = NULL; // ensure we won't free it
+
+    if (next == NULL)
+    {
+        window_close(window);
+
+        gtk_action_group_set_sensitive(window->actions_collection, FALSE);
+        window_slideshow_deny(window);
+
+        window_list_set(window, NULL);
+
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
+                              _("The given locations contain no images."),
+                              TRUE);
+
+//        restart_slideshow = FALSE;
+
+        if (gtk_widget_get_visible(window->props_dlg))
+            vnr_properties_dialog_clear(VNR_PROPERTIES_DIALOG(window->props_dlg));
+
+        return false;
+    }
+
+    window_list_set(window, next);
+
+    return true;
 }
 
 static void _action_crop(GtkAction *action, VnrWindow *window)
