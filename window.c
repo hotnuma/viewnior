@@ -946,17 +946,25 @@ static void _window_load_accel_map()
 
 static void _window_hide_cursor(VnrWindow *window)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_BLANK_CURSOR));
+    vnr_tools_set_cursor(GTK_WIDGET(window), GDK_BLANK_CURSOR, true);
     window->cursor_is_hidden = TRUE;
-    gdk_flush();
+
+    //gdk_window_set_cursor(
+    //            gtk_widget_get_window(GTK_WIDGET(window)),
+    //            gdk_cursor_new(GDK_BLANK_CURSOR));
+    //window->cursor_is_hidden = TRUE;
+    //gdk_flush();
 }
 
 static void _window_show_cursor(VnrWindow *window)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                          gdk_cursor_new(GDK_LEFT_PTR));
+    vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, true);
     window->cursor_is_hidden = FALSE;
-    gdk_flush();
+
+    //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+    //                      gdk_cursor_new(GDK_LEFT_PTR));
+    //window->cursor_is_hidden = FALSE;
+    //gdk_flush();
 }
 
 static void _window_update_fs_filename_label(VnrWindow *window)
@@ -1307,16 +1315,18 @@ static gint _window_get_top_widgets_height(VnrWindow *window)
 static void _window_rotate_pixbuf(VnrWindow *window,
                                   GdkPixbufRotation angle)
 {
-    GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-    GdkWindow *gdkwindow = gtk_widget_get_window(GTK_WIDGET(window));
+    //GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
+    //GdkWindow *gdkwindow = gtk_widget_get_window(GTK_WIDGET(window));
 
     if (!window->cursor_is_hidden)
     {
-        GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_WATCH);
-        gdk_window_set_cursor(gdkwindow, cursor);
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_WATCH);
+        //gdk_window_set_cursor(gdkwindow, cursor);
     }
 
-    gdk_display_flush(display);
+    //gdk_display_flush(display);
 
     // Stop slideshow while editing the image
     _window_slideshow_stop(window);
@@ -1337,8 +1347,10 @@ static void _window_rotate_pixbuf(VnrWindow *window,
 
     if (!window->cursor_is_hidden)
     {
-        GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_LEFT_PTR);
-        gdk_window_set_cursor(gdkwindow, cursor);
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_LEFT_PTR);
+        //gdk_window_set_cursor(gdkwindow, cursor);
     }
 
     g_object_unref(result);
@@ -1381,12 +1393,14 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 {
     if (!window->cursor_is_hidden)
     {
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_WATCH));
     }
 
     // This makes the cursor show NOW
-    gdk_flush();
+    //gdk_flush();
 
     GdkPixbuf *result = gdk_pixbuf_flip(
                                 UNI_IMAGE_VIEW(window->view)->pixbuf,
@@ -1406,8 +1420,13 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
         vnr_properties_dialog_update_image(VNR_PROPERTIES_DIALOG(window->props_dlg));
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_LEFT_PTR));
+    }
+
     g_object_unref(result);
 
     /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
@@ -1531,12 +1550,14 @@ static void _action_save_image(GtkWidget *, VnrWindow *window)
 {
     if (!window->cursor_is_hidden)
     {
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_WATCH));
     }
 
     /* This makes the cursor show NOW */
-    gdk_flush();
+    //gdk_flush();
 
     if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
@@ -1578,8 +1599,12 @@ static void _action_save_image(GtkWidget *, VnrWindow *window)
     uni_write_exiv2_from_cache(current->path);
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_LEFT_PTR));
+    }
 
     if (error != NULL)
     {
@@ -2425,17 +2450,25 @@ static void _action_delete(GtkAction*, VnrWindow *window)
             else
             {
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
-                    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
-                                          gdk_cursor_new(GDK_WATCH));
+                {
+                    vnr_tools_set_cursor(GTK_WIDGET(dlg), GDK_WATCH, true);
 
-                gdk_flush();
+                    //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
+                    //                      gdk_cursor_new(GDK_WATCH));
+                }
+
+                //gdk_flush();
 
                 window_close(window);
                 window_open(window, FALSE);
 
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
-                    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
-                                          gdk_cursor_new(GDK_LEFT_PTR));
+                {
+                    vnr_tools_set_cursor(GTK_WIDGET(dlg), GDK_LEFT_PTR, false);
+
+                    //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(dlg)),
+                    //                      gdk_cursor_new(GDK_LEFT_PTR));
+                }
             }
         }
     }
@@ -2844,18 +2877,26 @@ void window_open_from_list(VnrWindow *window, GSList *uri_list)
         window_list_set(window, file_list); // TRUE);
 
         if (!window->cursor_is_hidden)
-            gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                                  gdk_cursor_new(GDK_WATCH));
+        {
+            vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+            //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+            //                      gdk_cursor_new(GDK_WATCH));
+        }
 
         /* This makes the cursor show NOW */
-        gdk_flush();
+        //gdk_flush();
 
         window_close(window);
         window_open(window, FALSE);
 
         if (!window->cursor_is_hidden)
-            gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                                  gdk_cursor_new(GDK_LEFT_PTR));
+        {
+            vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+            //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+            //                      gdk_cursor_new(GDK_LEFT_PTR));
+        }
     }
 }
 
@@ -2912,15 +2953,25 @@ gboolean window_next(VnrWindow *window, gboolean rem_timeout)
     window->filelist = next;
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_WATCH));
+    }
+
     /* This makes the cursor show NOW */
-    gdk_flush();
+    //gdk_flush();
 
     window_open(window, FALSE);
+
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_LEFT_PTR));
+    }
 
     if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
         window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
@@ -2951,15 +3002,25 @@ gboolean window_prev(VnrWindow *window)
     window->filelist = prev;
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_WATCH));
+    }
+
     /* This makes the cursor show NOW */
-    gdk_flush();
+    //gdk_flush();
 
     window_open(window, FALSE);
+
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_LEFT_PTR));
+    }
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
         window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
@@ -2971,9 +3032,7 @@ gboolean window_prev(VnrWindow *window)
 
 gboolean window_first(VnrWindow *window)
 {
-    GList *prev;
-
-    prev = g_list_first(window->filelist);
+    GList *prev = g_list_first(window->filelist);
 
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
     {
@@ -2983,23 +3042,32 @@ gboolean window_first(VnrWindow *window)
     window->filelist = prev;
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_WATCH));
+    }
+
     /* This makes the cursor show NOW */
-    gdk_flush();
+    //gdk_flush();
 
     window_open(window, FALSE);
+
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_LEFT_PTR));
+    }
+
     return TRUE;
 }
 
 gboolean window_last(VnrWindow *window)
 {
-    GList *prev;
-
-    prev = g_list_last(window->filelist);
+    GList *prev = g_list_last(window->filelist);
 
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
     {
@@ -3009,15 +3077,26 @@ gboolean window_last(VnrWindow *window)
     window->filelist = prev;
 
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_WATCH));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_WATCH));
+    }
+
     /* This makes the cursor show NOW */
-    gdk_flush();
+    //gdk_flush();
 
     window_open(window, FALSE);
+
     if (!window->cursor_is_hidden)
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
-                              gdk_cursor_new(GDK_LEFT_PTR));
+    {
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+        //gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)),
+        //                      gdk_cursor_new(GDK_LEFT_PTR));
+    }
+
     return TRUE;
 }
 
