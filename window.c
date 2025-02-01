@@ -1037,9 +1037,7 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_container_add(GTK_CONTAINER(item), box);
 
-
-    widget = gtk_button_new_from_stock(GTK_STOCK_LEAVE_FULLSCREEN);
-
+    widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
 
     g_signal_connect(widget, "clicked", G_CALLBACK(_on_fullscreen_leave), window);
     gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);

@@ -66,7 +66,7 @@ vnr_message_area_initialize(VnrMessageArea *msg_area)
     gtk_container_add(GTK_CONTAINER(msg_area->button_box),
                       msg_area->user_button);
 
-    msg_area->cancel_button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+    msg_area->cancel_button = gtk_button_new_from_stock("gtk-cancel");
     g_signal_connect(msg_area->cancel_button, "clicked",
                      G_CALLBACK(cancel_button_cb), msg_area);
     gtk_container_add(GTK_CONTAINER(msg_area->button_box),
@@ -99,11 +99,11 @@ vnr_message_area_show_basic(VnrMessageArea *msg_area,
 
     if (critical)
         gtk_image_set_from_stock(GTK_IMAGE(msg_area->image),
-                                 GTK_STOCK_DIALOG_ERROR,
+                                 "gtk-dialog-error",
                                  GTK_ICON_SIZE_DIALOG);
     else
         gtk_image_set_from_stock(GTK_IMAGE(msg_area->image),
-                                 GTK_STOCK_DIALOG_INFO,
+                                 "gtk-dialog-info",
                                  GTK_ICON_SIZE_DIALOG);
 
     msg_area->is_critical = critical;
