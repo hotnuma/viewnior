@@ -2262,16 +2262,18 @@ static void _action_rename(GtkAction*, VnrWindow *window)
     }
 }
 
-static void _action_select_directory(GtkAction*, VnrWindow *window)
+static void _action_select_directory(GtkAction *action, VnrWindow *window)
 {
+    (void) action;
     g_return_if_fail(window != NULL);
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
 
     _window_select_directory(window);
 }
 
-static void _action_move(GtkAction*, VnrWindow *window)
+static void _action_move(GtkAction *action, VnrWindow *window)
 {
+    (void) action;
     g_return_if_fail(window != NULL);
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
 
@@ -2288,7 +2290,7 @@ static void _action_move(GtkAction*, VnrWindow *window)
     if (g_strcmp0(file->path, newpath) == 0)
         goto cleanup;
 
-    printf("move %s to %s\n", file->path, newpath);
+    //printf("move %s to %s\n", file->path, newpath);
 
     gboolean ret = vnr_file_rename(file, newpath);
 
@@ -2328,8 +2330,10 @@ static gboolean _window_select_directory(VnrWindow *window)
     return true;
 }
 
-static void _action_delete(GtkAction*, VnrWindow *window)
+static void _action_delete(GtkAction *action, VnrWindow *window)
 {
+    (void) action;
+
     gboolean restart_slideshow = FALSE;
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)

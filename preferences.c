@@ -17,8 +17,8 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "preferences.h"
+#include "config.h"
 #include "window.h"
 
 #define UI_PATH PACKAGE_DATA_DIR "/viewnior/vnr-preferences-dialog.ui"
@@ -40,134 +40,116 @@ G_DEFINE_TYPE(VnrPrefs, vnr_prefs, G_TYPE_OBJECT)
         g_clear_error(&read_error);                                  \
     }
 
-/*************************************************************/
-/***** Private signal handlers *******************************/
-/*************************************************************/
 
+// Private signal handlers ---------------------------------------------------
 
-static void
-toggle_show_hidden_cb(GtkToggleButton *togglebutton, gpointer user_data)
+static void toggle_show_hidden_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->show_hidden = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-toggle_dark_background_cb(GtkToggleButton *togglebutton, gpointer user_data)
+static void toggle_dark_background_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->dark_background = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
     window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
 }
 
-static void
-toggle_fit_on_fullscreen_cb(GtkToggleButton *togglebutton, gpointer user_data)
+static void toggle_fit_on_fullscreen_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->fit_on_fullscreen = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-toggle_smooth_images_cb(GtkToggleButton *togglebutton, gpointer user_data)
+static void toggle_smooth_images_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->smooth_images = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
     window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
 }
 
-static void
-toggle_confirm_delete_cb(GtkToggleButton *togglebutton, gpointer user_data)
+static void toggle_confirm_delete_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->confirm_delete = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-toggle_reload_on_save_cb(GtkToggleButton *togglebutton, gpointer user_data)
+static void toggle_reload_on_save_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     VNR_PREFS(user_data)->reload_on_save = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_zoom_mode_cb(GtkComboBox *widget, gpointer user_data)
+static void change_zoom_mode_cb(GtkComboBox *widget, gpointer user_data)
 {
     VNR_PREFS(user_data)->zoom = gtk_combo_box_get_active(widget);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_desktop_env_cb(GtkComboBox *widget, gpointer user_data)
+static void change_desktop_env_cb(GtkComboBox *widget, gpointer user_data)
 {
     VNR_PREFS(user_data)->desktop = gtk_combo_box_get_active(widget);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_jpeg_quality_cb(GtkRange *range, gpointer user_data)
+static void change_jpeg_quality_cb(GtkRange *range, gpointer user_data)
 {
     VNR_PREFS(user_data)->jpeg_quality = (int)gtk_range_get_value(range);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_png_compression_cb(GtkRange *range, gpointer user_data)
+static void change_png_compression_cb(GtkRange *range, gpointer user_data)
 {
     VNR_PREFS(user_data)->png_compression = (int)gtk_range_get_value(range);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_action_wheel_cb(GtkComboBox *widget, gpointer user_data)
+static void change_action_wheel_cb(GtkComboBox *widget, gpointer user_data)
 {
     VNR_PREFS(user_data)->behavior_wheel = gtk_combo_box_get_active(widget);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_action_click_cb(GtkComboBox *widget, gpointer user_data)
+static void change_action_click_cb(GtkComboBox *widget, gpointer user_data)
 {
     VNR_PREFS(user_data)->behavior_click = gtk_combo_box_get_active(widget);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_action_modify_cb(GtkComboBox *widget, gpointer user_data)
+static void change_action_modify_cb(GtkComboBox *widget, gpointer user_data)
 {
     VNR_PREFS(user_data)->behavior_modify = gtk_combo_box_get_active(widget);
     vnr_prefs_save(VNR_PREFS(user_data));
 }
 
-static void
-change_spin_value_cb(GtkSpinButton *spinbutton, gpointer user_data)
+static void change_spin_value_cb(GtkSpinButton *spinbutton, gpointer user_data)
 {
-    int new_value;
-
-    new_value = gtk_spin_button_get_value_as_int(spinbutton);
+    int new_value = gtk_spin_button_get_value_as_int(spinbutton);
 
     VNR_PREFS(user_data)->slideshow_timeout = new_value;
     vnr_prefs_save(VNR_PREFS(user_data));
     window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
 }
 
-static gboolean
-key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+static gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
     if (event->keyval == GDK_KEY_Escape)
     {
         gtk_widget_hide(widget);
+
         return TRUE;
     }
     else
+    {
         return FALSE;
+    }
 }
 
-/*************************************************************/
-/***** Private actions ***************************************/
-/*************************************************************/
 
-static void
-vnr_prefs_set_default(VnrPrefs *prefs)
+// Private actions -----------------------------------------------------------
+
+static void vnr_prefs_set_default(VnrPrefs *prefs)
 {
     prefs->zoom = VNR_PREFS_ZOOM_SMART;
     prefs->show_hidden = FALSE;
@@ -329,11 +311,13 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_wheel), prefs->behavior_wheel);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_table, GTK_WIDGET(action_wheel), 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
+    gtk_table_attach(behavior_table,
+                     GTK_WIDGET(action_wheel), 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     gtk_widget_show(GTK_WIDGET(action_wheel));
-    g_signal_connect(G_OBJECT(action_wheel), "changed", G_CALLBACK(change_action_wheel_cb), prefs);
+    g_signal_connect(G_OBJECT(action_wheel), "changed",
+                     G_CALLBACK(change_action_wheel_cb), prefs);
 
     action_click = (GtkComboBoxText *)gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(action_click, _("Switch zoom modes"));
@@ -342,7 +326,8 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_click), prefs->behavior_click);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_table, GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
+    gtk_table_attach(behavior_table,
+                     GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     gtk_widget_show(GTK_WIDGET(action_click));
@@ -355,7 +340,8 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_modify), prefs->behavior_modify);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_table, GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
+    gtk_table_attach(behavior_table,
+                     GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     gtk_widget_show(GTK_WIDGET(action_modify));
@@ -371,8 +357,7 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     return window;
 }
 
-static gboolean
-vnr_prefs_load(VnrPrefs *prefs, GError **error)
+static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error)
 {
     GKeyFile *conf = g_key_file_new();
     GError *read_error = NULL;
@@ -416,15 +401,10 @@ vnr_prefs_load(VnrPrefs *prefs, GError **error)
     return TRUE;
 }
 
-/*************************************************************/
-/***** Stuff that deals with the type ************************/
-/*************************************************************/
 
-static void
-vnr_prefs_class_init(VnrPrefsClass *klass) {}
+// Constructor ---------------------------------------------------------------
 
-GObject *
-vnr_prefs_new(GtkWidget *vnr_win)
+GObject* vnr_prefs_new(GtkWidget *vnr_win)
 {
     VnrPrefs *prefs;
 
@@ -435,14 +415,19 @@ vnr_prefs_new(GtkWidget *vnr_win)
     return (GObject *)prefs;
 }
 
-static void
-vnr_prefs_init(VnrPrefs *prefs)
+static void vnr_prefs_class_init(VnrPrefsClass *klass)
+{
+}
+
+static void vnr_prefs_init(VnrPrefs *prefs)
 {
     GError *error = NULL;
 
     if (!vnr_prefs_load(prefs, &error))
     {
-        g_warning("Error loading config file: %s. All preferences are set to their default values. Saving ...", error->message);
+        g_warning("Error loading config file: %s. All preferences are set"
+                  " to their default values. Saving ...",
+                  error->message);
         vnr_prefs_set_default(prefs);
         vnr_prefs_save(prefs);
     }
@@ -450,9 +435,8 @@ vnr_prefs_init(VnrPrefs *prefs)
     prefs->dialog = NULL;
 }
 
-/*************************************************************/
-/***** Actions ***********************************************/
-/*************************************************************/
+
+// Actions -------------------------------------------------------------------
 
 void vnr_prefs_show_dialog(VnrPrefs *prefs)
 {
@@ -462,21 +446,16 @@ void vnr_prefs_show_dialog(VnrPrefs *prefs)
         if (prefs->dialog == NULL)
             return;
     }
+
     gtk_window_present(GTK_WINDOW(prefs->dialog));
 }
 
-gboolean
-vnr_prefs_save(VnrPrefs *prefs)
+gboolean vnr_prefs_save(VnrPrefs *prefs)
 {
-    GKeyFile *conf;
-    FILE *rcfile;
-    const gchar *dir;
-    const gchar *path;
+    const gchar *dir = g_build_filename(g_get_user_config_dir(), PACKAGE, NULL);
+    const gchar *path = g_build_filename(dir, "viewnior.conf", NULL);
 
-    dir = g_build_filename(g_get_user_config_dir(), PACKAGE, NULL);
-    path = g_build_filename(dir, "viewnior.conf", NULL);
-
-    conf = g_key_file_new();
+    GKeyFile *conf = g_key_file_new();
     g_key_file_set_integer(conf, "prefs", "zoom-mode", prefs->zoom);
     g_key_file_set_boolean(conf, "prefs", "fit-on-fullscreen", prefs->fit_on_fullscreen);
     g_key_file_set_boolean(conf, "prefs", "show-hidden", prefs->show_hidden);
@@ -500,7 +479,7 @@ vnr_prefs_save(VnrPrefs *prefs)
     if (g_mkdir_with_parents(dir, 0700) != 0)
         g_warning("Error creating config file's parent directory (%s)\n", dir);
 
-    rcfile = fopen(path, "w");
+    FILE *rcfile = fopen(path, "w");
 
     if (rcfile != NULL)
     {
@@ -510,7 +489,10 @@ vnr_prefs_save(VnrPrefs *prefs)
         g_free(data);
     }
     else
-        g_warning("Saving config file: Unable to open the configuration file for writing!\n");
+    {
+        g_warning("Saving config file: Unable to open the configuration file"
+                  " for writing!\n");
+    }
 
     g_key_file_free(conf);
     g_free((char *)dir);
@@ -522,7 +504,9 @@ vnr_prefs_save(VnrPrefs *prefs)
 void vnr_prefs_set_slideshow_timeout(VnrPrefs *prefs, int value)
 {
     if (prefs->dialog != NULL)
-        gtk_spin_button_set_value(prefs->slideshow_timeout_widget, (gdouble)value);
+    {
+        gtk_spin_button_set_value(prefs->slideshow_timeout_widget, (gdouble) value);
+    }
 }
 
 void vnr_prefs_set_show_toolbar(VnrPrefs *prefs, gboolean show_toolbar)
