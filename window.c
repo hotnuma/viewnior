@@ -539,7 +539,7 @@ static void window_init(VnrWindow *window)
     window->actions_open_with = NULL;
     window->open_with_menu_id = 0;
 
-    window->prefs = (VnrPrefs *)vnr_prefs_new(GTK_WIDGET(window));
+    window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
 
     window->mode = WINDOW_MODE_NORMAL;
 
@@ -550,16 +550,15 @@ static void window_init(VnrWindow *window)
 
     window->ui_manager = gtk_ui_manager_new();
 
-    window->actions_window = gtk_action_group_new("MenuActionsWindow");
+    // create actions --------------------------------------------------------
 
+    window->actions_window = gtk_action_group_new("MenuActionsWindow");
     gtk_action_group_set_translation_domain(window->actions_window,
                                             GETTEXT_PACKAGE);
-
     gtk_action_group_add_actions(window->actions_window,
                                  _action_entries_window,
                                  G_N_ELEMENTS(_action_entries_window),
                                  window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_window, 0);
 
@@ -570,9 +569,9 @@ static void window_init(VnrWindow *window)
                                  _action_entry_save,
                                  G_N_ELEMENTS(_action_entry_save),
                                  window);
-
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->action_save, 0);
+
     window->action_properties = gtk_action_group_new("MenuActionProperties");
     gtk_action_group_set_translation_domain(window->action_properties,
                                             GETTEXT_PACKAGE);
