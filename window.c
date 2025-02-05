@@ -42,12 +42,14 @@ G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 GtkWindow* window_new();
 static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
+static void _window_load_accel_map();
+
+static void _window_on_destroy(GtkWidget *widget, gpointer user_data);
+static void _window_save_accel_map();
 static void window_dispose(GObject *object);
 static void window_finalize(GObject *object);
 
 static void _window_update_openwith_menu(VnrWindow *window);
-static void _window_save_accel_map();
-static void _window_load_accel_map();
 static void _window_hide_cursor(VnrWindow *window);
 static void _window_show_cursor(VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
@@ -93,7 +95,6 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data);
 static gboolean _window_on_change_state(GtkWidget *widget,
                                         GdkEventWindowState *event,
                                         gpointer user_data);
-static void _window_on_destroy(GtkWidget *widget, gpointer user_data);
 static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 static void _window_on_drag_begin(GtkWidget *widget,
                                   GdkDragContext *drag_context,
@@ -550,7 +551,7 @@ static void window_init(VnrWindow *window)
 
     window->ui_manager = gtk_ui_manager_new();
 
-    // create actions --------------------------------------------------------
+    // create actions ---------------------------------------------------------
 
     window->actions_window = gtk_action_group_new("MenuActionsWindow");
     gtk_action_group_set_translation_domain(window->actions_window,
@@ -798,6 +799,34 @@ static void window_init(VnrWindow *window)
     _window_load_accel_map();
 }
 
+static void _window_load_accel_map()
+{
+    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
+                                        "accel_map", NULL);
+
+    gtk_accel_map_load(accelfile);
+    g_free(accelfile);
+}
+
+
+// Window destruction ---------------------------------------------------------
+
+static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
+{
+    _window_save_accel_map();
+    vnr_prefs_save(VNR_WINDOW(widget)->prefs);
+    gtk_main_quit();
+}
+
+static void _window_save_accel_map()
+{
+    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
+                                        "accel_map", NULL);
+
+    gtk_accel_map_save(accelfile);
+    g_free(accelfile);
+}
+
 static void window_dispose(GObject *object)
 {
     // do something
@@ -931,24 +960,6 @@ static void _window_update_openwith_menu(VnrWindow *window)
     }
 
     g_list_free(apps);
-}
-
-static void _window_save_accel_map()
-{
-    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                        "accel_map", NULL);
-
-    gtk_accel_map_save(accelfile);
-    g_free(accelfile);
-}
-
-static void _window_load_accel_map()
-{
-    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                        "accel_map", NULL);
-
-    gtk_accel_map_load(accelfile);
-    g_free(accelfile);
 }
 
 static void _window_hide_cursor(VnrWindow *window)
@@ -1701,13 +1712,6 @@ static gboolean _window_on_change_state(GtkWidget *widget,
     }
 
     return TRUE;
-}
-
-static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
-{
-    _window_save_accel_map();
-    vnr_prefs_save(VNR_WINDOW(widget)->prefs);
-    gtk_main_quit();
 }
 
 static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
