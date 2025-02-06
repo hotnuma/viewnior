@@ -128,7 +128,6 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
 static void _action_fullscreen(GtkAction *action, VnrWindow *window);
 static void _action_scrollbar(GtkAction *action, VnrWindow *window);
-//static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
 
 static gboolean _window_select_directory(VnrWindow *window);
@@ -167,28 +166,12 @@ const gchar* _ui_definition =
         "<accelerator name=\"ControlEqualAccel\" action=\"ControlEqual\"/>"
         "<accelerator name=\"ControlKPAddAccel\" action=\"ControlKpAdd\"/>"
         "<accelerator name=\"ControlKPSubAccel\" action=\"ControlKpSub\"/>"
-        "<accelerator name=\"DeleteAccel\" action=\"Delete\"/>"
-        "<accelerator name=\"SelectDirAccel\" action=\"FileSelectDirectory\"/>"
+
     "</ui>";
 // clang-format on
 
 static const GtkActionEntry _action_entries_window[] =
 {
-    {"Edit", NULL,
-     N_("_Edit"), NULL,
-     NULL,
-     NULL},
-
-    {"View", NULL,
-     N_("_View"), NULL,
-     NULL,
-     NULL},
-
-    {"Image", NULL,
-     N_("_Image"), NULL,
-     NULL,
-     NULL},
-
     {"FileOpen", "gtk-file",
      N_("Open _Image..."), "<control>O",
      N_("Open an Image"),
@@ -253,7 +236,7 @@ static const GtkActionEntry _action_entries_image[] =
      G_CALLBACK(_action_move)},
 
     {"FileDelete", "gtk-delete",
-     N_("_Delete"), NULL,
+     N_("_Delete"), "Delete",
      N_("Delete the current file"),
      G_CALLBACK(_action_delete)},
 
@@ -266,10 +249,6 @@ static const GtkActionEntry _action_entries_image[] =
      N_("_Reload"), NULL,
      N_("Reload the current file"),
      G_CALLBACK(_action_reload)},
-
-    {"Delete", NULL, N_("_Delete"), "Delete",
-     N_("Delete the current file"),
-     G_CALLBACK(_action_delete)},
 
     {"ViewZoomIn", "gtk-zoom-in",
      N_("_Zoom In"), "<control>plus",
@@ -354,11 +333,6 @@ static const GtkToggleActionEntry _toggle_entries_window[] =
      N_("Scrollbar"), NULL,
      N_("Show Scrollbar"),
      G_CALLBACK(_action_scrollbar)},
-
-//    {"ViewStatusbar", NULL,
-//     N_("Statusbar"), NULL,
-//     N_("Show Statusbar"),
-//     G_CALLBACK(_action_statusbar)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_collection[] =
