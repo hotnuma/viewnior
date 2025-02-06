@@ -310,16 +310,6 @@ static void window_init(VnrWindow *window)
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_window, 0);
 
-    //window->action_save = gtk_action_group_new("MenuActionSave");
-    //gtk_action_group_set_translation_domain(window->action_save,
-    //                                        GETTEXT_PACKAGE);
-    //gtk_action_group_add_actions(window->action_save,
-    //                             _action_entry_save,
-    //                             G_N_ELEMENTS(_action_entry_save),
-    //                             window);
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->action_save, 0);
-
     window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
     gtk_action_group_set_translation_domain(window->actions_static_image,
                                             GETTEXT_PACKAGE);
@@ -330,44 +320,6 @@ static void window_init(VnrWindow *window)
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_static_image, 0);
 
-    //window->actions_image = gtk_action_group_new("MenuActionsImage");
-    //gtk_action_group_set_translation_domain(window->actions_image,
-    //                                        GETTEXT_PACKAGE);
-    //gtk_action_group_add_actions(window->actions_image,
-    //                             _action_entries_image,
-    //                             G_N_ELEMENTS(_action_entries_image),
-    //                             window);
-    //gtk_action_group_add_toggle_actions(window->actions_image,
-    //                                    _toggle_entries_image,
-    //                                    G_N_ELEMENTS(_toggle_entries_image),
-    //                                    window);
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->actions_image, 0);
-
-    //window->actions_bars = gtk_action_group_new("MenuActionsBars");
-    //gtk_action_group_set_translation_domain(window->actions_bars,
-    //                                        GETTEXT_PACKAGE);
-    //gtk_action_group_add_toggle_actions(window->actions_bars,
-    //                                    _toggle_entries_window,
-    //                                    G_N_ELEMENTS(_toggle_entries_window),
-    //                                    window);
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->actions_bars, 0);
-
-    //window->actions_collection = gtk_action_group_new("MenuActionsCollection");
-    //gtk_action_group_set_translation_domain(window->actions_collection,
-    //                                        GETTEXT_PACKAGE);
-    //gtk_action_group_add_actions(window->actions_collection,
-    //                             _action_entries_collection,
-    //                             G_N_ELEMENTS(_action_entries_collection),
-    //                             window);
-    //gtk_action_group_add_toggle_actions(window->actions_collection,
-    //                                    _toggle_entries_collection,
-    //                                    G_N_ELEMENTS(_toggle_entries_collection),
-    //                                    window);
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->actions_collection, 0);
-
     if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
                                            _ui_definition,
                                            -1,
@@ -376,16 +328,6 @@ static void window_init(VnrWindow *window)
         g_error("building menus failed: %s\n", error->message);
         g_error_free(error);
     }
-
-    //window->action_wallpaper = gtk_action_group_new("ActionWallpaper");
-    //gtk_action_group_set_translation_domain(window->action_wallpaper,
-    //                                        GETTEXT_PACKAGE);
-    //gtk_action_group_add_actions(window->action_wallpaper,
-    //                             _action_entry_wallpaper,
-    //                             G_N_ELEMENTS(_action_entry_wallpaper),
-    //                             window);
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->action_wallpaper, 0);
 
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
@@ -425,26 +367,6 @@ static void window_init(VnrWindow *window)
     window->view = uni_anim_view_new();
     gtk_widget_set_can_focus(window->view, TRUE);
     window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
-
-    //window->statusbar = gtk_statusbar_new();
-    //gtk_box_pack_end(GTK_BOX(window->layout),
-    //                 window->statusbar, FALSE, FALSE, 0);
-
-    // Apply statusbar preference
-    //action = gtk_action_group_get_action(window->actions_bars,
-    //                                     "ViewStatusbar");
-    //if (!window->prefs->show_statusbar)
-    //    gtk_widget_hide(window->statusbar);
-    //else
-    //    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-
-    // Apply scrollbar preference
-    //action = gtk_action_group_get_action(window->actions_bars,
-    //                                     "ViewScrollbar");
-    //uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view),
-    //                                  window->prefs->show_scrollbar);
-    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action),
-    //                             window->prefs->show_scrollbar);
 
     gtk_box_pack_end(GTK_BOX(window->layout),
                      window->scroll_view, TRUE, TRUE, 0);
