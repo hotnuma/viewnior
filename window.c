@@ -222,34 +222,6 @@ static const GtkActionEntry _action_entries_window[] =
      G_CALLBACK(_action_about)},
 };
 
-static const GtkActionEntry _action_entries_static_image[] =
-{
-    {"ImageRotateCW", "object-rotate-right",
-     N_("Rotate _Clockwise"), "<control>R",
-     N_("Rotate image clockwise"),
-     G_CALLBACK(_action_rotate_cw)},
-
-    {"ImageRotateCCW", "object-rotate-left",
-     N_("Rotate _Anti-clockwise"), "<control><shift>R",
-     N_("Rotate image anti-clockwise"),
-     G_CALLBACK(_action_rotate_ccw)},
-
-    {"ImageFlipVertical", "object-flip-vertical",
-     N_("Flip _Vertical"), NULL,
-     N_("Flip image vertically"),
-     G_CALLBACK(_action_flip_vertical)},
-
-    {"ImageFlipHorizontal", "object-flip-horizontal",
-     N_("Flip _Horizontal"), NULL,
-     N_("Flip image horizontally"),
-     G_CALLBACK(_action_flip_horizontal)},
-
-    {"ImageCrop", NULL,
-     N_("Crop..."), NULL,
-     N_("Crop"),
-     G_CALLBACK(_action_crop)},
-};
-
 
 // Window creation -----------------------------------------------------------
 
@@ -309,16 +281,6 @@ static void window_init(VnrWindow *window)
                                  window);
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_window, 0);
-
-    //window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
-    //gtk_action_group_set_translation_domain(window->actions_static_image,
-    //                                        GETTEXT_PACKAGE);
-    //gtk_action_group_add_actions(window->actions_static_image,
-    //                             _action_entries_static_image,
-    //                             G_N_ELEMENTS(_action_entries_static_image),
-    //                             window);
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->actions_static_image, 0);
 
     if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
                                            _ui_definition,
@@ -415,8 +377,7 @@ static void _window_load_accel_map()
 {
     gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
                                         "accel_map", NULL);
-
-    gtk_accel_map_load(accelfile);
+    //gtk_accel_map_load(accelfile);
     g_free(accelfile);
 }
 
@@ -434,14 +395,14 @@ static void _window_save_accel_map()
 {
     gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
                                         "accel_map", NULL);
-
-    gtk_accel_map_save(accelfile);
+    //gtk_accel_map_save(accelfile);
     g_free(accelfile);
 }
 
 static void window_dispose(GObject *object)
 {
     // do something
+
     G_OBJECT_CLASS(window_parent_class)->dispose(object);
 }
 

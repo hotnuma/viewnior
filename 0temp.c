@@ -18,6 +18,34 @@ HelpAbout
 
 */
 
+static const GtkActionEntry _action_entries_static_image[] =
+{
+    {"ImageRotateCW", "object-rotate-right",
+     N_("Rotate _Clockwise"), "<control>R",
+     N_("Rotate image clockwise"),
+     G_CALLBACK(_action_rotate_cw)},
+
+    {"ImageRotateCCW", "object-rotate-left",
+     N_("Rotate _Anti-clockwise"), "<control><shift>R",
+     N_("Rotate image anti-clockwise"),
+     G_CALLBACK(_action_rotate_ccw)},
+
+    {"ImageFlipVertical", "object-flip-vertical",
+     N_("Flip _Vertical"), NULL,
+     N_("Flip image vertically"),
+     G_CALLBACK(_action_flip_vertical)},
+
+    {"ImageFlipHorizontal", "object-flip-horizontal",
+     N_("Flip _Horizontal"), NULL,
+     N_("Flip image horizontally"),
+     G_CALLBACK(_action_flip_horizontal)},
+
+    {"ImageCrop", NULL,
+     N_("Crop..."), NULL,
+     N_("Crop"),
+     G_CALLBACK(_action_crop)},
+};
+
 static const GtkToggleActionEntry _toggle_entries_collection[] =
 {
     {"ViewSlideshow", "gtk-network",
