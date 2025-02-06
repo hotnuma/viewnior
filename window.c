@@ -135,7 +135,7 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 
 static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
 static void _action_fullscreen(GtkAction *action, VnrWindow *window);
-static void _action_toolbar(GtkAction *action, VnrWindow *window);
+//static void _action_toolbar(GtkAction *action, VnrWindow *window);
 static void _action_scrollbar(GtkAction *action, VnrWindow *window);
 static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
@@ -196,7 +196,6 @@ const gchar* _ui_definition =
                 "<menuitem action=\"ViewZoomNormal\"/>"
                 "<menuitem action=\"ViewZoomFit\"/>"
                 "<separator/>"
-                "<menuitem action=\"ViewToolbar\"/>"
                 "<menuitem action=\"ViewScrollbar\"/>"
                 "<menuitem action=\"ViewStatusbar\"/>"
                 "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
@@ -430,10 +429,10 @@ static const GtkToggleActionEntry _toggle_entries_image[] =
 
 static const GtkToggleActionEntry _toggle_entries_window[] =
 {
-    {"ViewToolbar", NULL,
-     N_("Toolbar"), NULL,
-     N_("Show Toolbar"),
-     G_CALLBACK(_action_toolbar)},
+//    {"ViewToolbar", NULL,
+//     N_("Toolbar"), NULL,
+//     N_("Show Toolbar"),
+//     G_CALLBACK(_action_toolbar)},
 
     {"ViewScrollbar", NULL,
      N_("Scrollbar"), NULL,
@@ -648,23 +647,23 @@ static void window_init(VnrWindow *window)
     gtk_menu_attach_to_widget(GTK_MENU(window->button_menu),
                               GTK_WIDGET(window->properties_button), NULL);
 
-    window->toolbar = gtk_ui_manager_get_widget(window->ui_manager,
-                                                "/Toolbar");
-    g_assert(GTK_IS_WIDGET(window->toolbar));
-    gtk_toolbar_set_style(GTK_TOOLBAR(window->toolbar),
-                          GTK_TOOLBAR_ICONS);
-    g_object_set(G_OBJECT(window->toolbar),
-                 "show-arrow", FALSE, NULL);
-    gtk_toolbar_insert(
-            GTK_TOOLBAR(window->toolbar),
-            GTK_TOOL_ITEM(_window_get_fs_controls(window)), -1);
-    GtkStyleContext *context =
-            gtk_widget_get_style_context(window->toolbar);
-    gtk_style_context_add_class(context,
-                                GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+    //window->toolbar = gtk_ui_manager_get_widget(window->ui_manager,
+    //                                            "/Toolbar");
+    //g_assert(GTK_IS_WIDGET(window->toolbar));
+    //gtk_toolbar_set_style(GTK_TOOLBAR(window->toolbar),
+    //                      GTK_TOOLBAR_ICONS);
+    //g_object_set(G_OBJECT(window->toolbar),
+    //             "show-arrow", FALSE, NULL);
+    //gtk_toolbar_insert(
+    //        GTK_TOOLBAR(window->toolbar),
+    //        GTK_TOOL_ITEM(_window_get_fs_controls(window)), -1);
+    //GtkStyleContext *context =
+    //        gtk_widget_get_style_context(window->toolbar);
+    //gtk_style_context_add_class(context,
+    //                            GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
 
-    gtk_box_pack_start(GTK_BOX(window->layout),
-                       window->toolbar, FALSE, FALSE, 0);
+    //gtk_box_pack_start(GTK_BOX(window->layout),
+    //                   window->toolbar, FALSE, FALSE, 0);
 
     window->popup_menu =
         gtk_ui_manager_get_widget(window->ui_manager, "/PopupMenu");
@@ -675,12 +674,12 @@ static void window_init(VnrWindow *window)
     gtk_widget_hide(_window_get_fs_controls(window));
 
     // Apply toolbar preference
-    action = gtk_action_group_get_action(window->actions_bars,
-                                         "ViewToolbar");
-    if (!window->prefs->show_toolbar)
-        gtk_widget_hide(window->toolbar);
-    else
-        gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+    //action = gtk_action_group_get_action(window->actions_bars,
+    //                                     "ViewToolbar");
+    //if (!window->prefs->show_toolbar)
+    //    gtk_widget_hide(window->toolbar);
+    //else
+    //    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
     // Apply auto-resize preference
     action = gtk_action_group_get_action(window->actions_image,
@@ -1088,7 +1087,7 @@ static void _window_fullscreen(VnrWindow *window)
                                      VNR_PREFS_ZOOM_FIT);
 
     _window_update_fs_filename_label(window);
-    gtk_widget_hide(window->toolbar);
+    //gtk_widget_hide(window->toolbar);
     gtk_widget_hide(window->statusbar);
 
     gtk_widget_show(window->properties_button);
@@ -1107,10 +1106,10 @@ static void _window_fullscreen(VnrWindow *window)
                            window);
 
     /* Never hide the toolbar, while the mouse is over it */
-    g_signal_connect(window->toolbar,
-                     "enter-notify-event",
-                     G_CALLBACK(_on_leave_image_area),
-                     window);
+    //g_signal_connect(window->toolbar,
+    //                 "enter-notify-event",
+    //                 G_CALLBACK(_on_leave_image_area),
+    //                 window);
 
     g_signal_connect(window->msg_area,
                      "enter-notify-event",
@@ -1156,10 +1155,10 @@ static void _window_unfullscreen(VnrWindow *window)
 
     gtk_widget_hide(window->fs_controls);
 
-    if (!window->prefs->show_toolbar)
-        gtk_widget_hide(window->toolbar);
-    else
-        gtk_widget_show(window->toolbar);
+    //if (!window->prefs->show_toolbar)
+    //    gtk_widget_hide(window->toolbar);
+    //else
+    //    gtk_widget_show(window->toolbar);
 
     if (!window->prefs->show_statusbar)
         gtk_widget_hide(window->statusbar);
@@ -1170,9 +1169,9 @@ static void _window_unfullscreen(VnrWindow *window)
                                          G_CALLBACK(_on_fullscreen_motion),
                                          window);
 
-    g_signal_handlers_disconnect_by_func(window->toolbar,
-                                         G_CALLBACK(_on_leave_image_area),
-                                         window);
+    //g_signal_handlers_disconnect_by_func(window->toolbar,
+    //                                     G_CALLBACK(_on_leave_image_area),
+    //                                     window);
 
     g_signal_handlers_disconnect_by_func(window->msg_area,
                                          G_CALLBACK(_on_leave_image_area),
@@ -1266,14 +1265,16 @@ void window_slideshow_deny(VnrWindow *window)
 
 static gint _window_get_top_widgets_height(VnrWindow *window)
 {
-    GtkAllocation allocation;
+    return 0;
 
-    if (!window->prefs->show_toolbar)
-        return 0;
+    //GtkAllocation allocation;
 
-    gtk_widget_get_allocation(window->toolbar, &allocation);
+    //if (!window->prefs->show_toolbar)
+    //    return 0;
 
-    return allocation.height;
+    //gtk_widget_get_allocation(window->toolbar, &allocation);
+
+    //return allocation.height;
 }
 
 static void _window_rotate_pixbuf(VnrWindow *window,
@@ -1437,13 +1438,14 @@ static gboolean _on_fullscreen_motion(GtkWidget *widget,
 
     /* Show the toolbar only when the mouse moves to the top
      * of the UniImageView */
-    if (ev->y < 20 && !gtk_widget_get_visible(window->toolbar))
-        gtk_widget_show(GTK_WIDGET(window->toolbar));
+    //if (ev->y < 20 && !gtk_widget_get_visible(window->toolbar))
+    //    gtk_widget_show(GTK_WIDGET(window->toolbar));
 
     if (window->cursor_is_hidden)
         _window_show_cursor(window);
 
     _window_fullscreen_set_timeout(window);
+
     return FALSE;
 }
 
@@ -1455,8 +1457,10 @@ static gboolean _on_fullscreen_timeout(VnrWindow *window)
     if (window->disable_autohide)
         return FALSE;
 
-    gtk_widget_hide(window->toolbar);
+    //gtk_widget_hide(window->toolbar);
+
     _window_hide_cursor(window);
+
     return FALSE;
 }
 
@@ -1570,7 +1574,7 @@ static void _menu_position_func(GtkMenu *menu,
     GtkWidget *button = window->properties_button;
     GdkWindow *gdk_window = gtk_widget_get_window(button);
     GtkRequisition req = {0, 0};
-    GtkAllocation toolbar_allocation;
+    GtkAllocation toolbar_allocation = {0};
     GtkAllocation button_allocation;
 
     gdk_window_get_position(gdk_window, x, y);
@@ -1585,7 +1589,7 @@ static void _menu_position_func(GtkMenu *menu,
     }
 
     gtk_widget_size_request(GTK_WIDGET(menu), &req);
-    gtk_widget_get_allocation(window->toolbar, &toolbar_allocation);
+    //gtk_widget_get_allocation(window->toolbar, &toolbar_allocation);
     gtk_widget_get_allocation(button, &button_allocation);
 
     *x += toolbar_allocation.width - req.width;
@@ -2164,16 +2168,16 @@ static void _action_fullscreen(GtkAction *action, VnrWindow *window)
         _window_unfullscreen(window);
 }
 
-static void _action_toolbar(GtkAction *action, VnrWindow *window)
-{
-    gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
-    vnr_prefs_set_show_toolbar(window->prefs, show);
+//static void _action_toolbar(GtkAction *action, VnrWindow *window)
+//{
+//    gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
+//    vnr_prefs_set_show_toolbar(window->prefs, show);
 
-    if (show)
-        gtk_widget_show(window->toolbar);
-    else
-        gtk_widget_hide(window->toolbar);
-}
+//    if (show)
+//        gtk_widget_show(window->toolbar);
+//    else
+//        gtk_widget_hide(window->toolbar);
+//}
 
 static void _action_scrollbar(GtkAction *action, VnrWindow *window)
 {
@@ -2520,10 +2524,12 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
 {
     gint result = FALSE;
     VnrWindow *window = VNR_WINDOW(widget);
-    GtkWidget *toolbar_focus_child;
     GtkWidget *msg_area_focus_child;
 
-    toolbar_focus_child = gtk_container_get_focus_child(GTK_CONTAINER(window->toolbar));
+    GtkWidget *toolbar_focus_child = NULL;
+//    toolbar_focus_child = gtk_container_get_focus_child(
+//                GTK_CONTAINER(window->toolbar));
+
     msg_area_focus_child = gtk_container_get_focus_child(GTK_CONTAINER(window->msg_area));
 
     switch (event->keyval)

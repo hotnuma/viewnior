@@ -164,7 +164,7 @@ static void vnr_prefs_set_default(VnrPrefs *prefs)
     prefs->jpeg_quality = 90;
     prefs->png_compression = 9;
     prefs->reload_on_save = FALSE;
-    prefs->show_toolbar = TRUE;
+    //prefs->show_toolbar = TRUE;
     prefs->show_scrollbar = TRUE;
     prefs->show_statusbar = FALSE;
     prefs->start_maximized = FALSE;
@@ -383,7 +383,7 @@ static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error)
     VNR_PREF_LOAD_KEY(smooth_images, boolean, "smooth-images", TRUE);
     VNR_PREF_LOAD_KEY(confirm_delete, boolean, "confirm-delete", TRUE);
     VNR_PREF_LOAD_KEY(reload_on_save, boolean, "reload-on-save", FALSE);
-    VNR_PREF_LOAD_KEY(show_toolbar, boolean, "show-toolbar", TRUE);
+    //VNR_PREF_LOAD_KEY(show_toolbar, boolean, "show-toolbar", TRUE);
     VNR_PREF_LOAD_KEY(show_scrollbar, boolean, "show-scrollbar", TRUE);
     VNR_PREF_LOAD_KEY(show_statusbar, boolean, "show-statusbar", FALSE);
     VNR_PREF_LOAD_KEY(start_maximized, boolean, "start-maximized", FALSE);
@@ -463,7 +463,7 @@ gboolean vnr_prefs_save(VnrPrefs *prefs)
     g_key_file_set_boolean(conf, "prefs", "smooth-images", prefs->smooth_images);
     g_key_file_set_boolean(conf, "prefs", "confirm-delete", prefs->confirm_delete);
     g_key_file_set_boolean(conf, "prefs", "reload-on-save", prefs->reload_on_save);
-    g_key_file_set_boolean(conf, "prefs", "show-toolbar", prefs->show_toolbar);
+    //g_key_file_set_boolean(conf, "prefs", "show-toolbar", prefs->show_toolbar);
     g_key_file_set_boolean(conf, "prefs", "show-scrollbar", prefs->show_scrollbar);
     g_key_file_set_boolean(conf, "prefs", "show-statusbar", prefs->show_statusbar);
     g_key_file_set_boolean(conf, "prefs", "start-maximized", prefs->start_maximized);
@@ -511,11 +511,11 @@ void vnr_prefs_set_slideshow_timeout(VnrPrefs *prefs, int value)
 
 void vnr_prefs_set_show_toolbar(VnrPrefs *prefs, gboolean show_toolbar)
 {
-    if (prefs->show_toolbar != show_toolbar)
-    {
-        prefs->show_toolbar = show_toolbar;
-        vnr_prefs_save(prefs);
-    }
+//    if (prefs->show_toolbar != show_toolbar)
+//    {
+//        prefs->show_toolbar = show_toolbar;
+//        vnr_prefs_save(prefs);
+//    }
 }
 
 void vnr_prefs_set_show_scrollbar(VnrPrefs *prefs, gboolean show_scrollbar)

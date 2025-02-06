@@ -98,7 +98,7 @@ struct _VnrPrefs
     gboolean smooth_images;
     gboolean confirm_delete;
     gboolean reload_on_save;
-    gboolean show_toolbar;
+    //gboolean show_toolbar;
     gboolean show_scrollbar;
     gboolean show_statusbar;
     gboolean start_maximized;
