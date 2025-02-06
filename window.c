@@ -51,7 +51,10 @@ static void _window_save_accel_map();
 static void window_dispose(GObject *object);
 static void window_finalize(GObject *object);
 
-static void _window_update_openwith_menu(VnrWindow *window);
+//static void _window_update_openwith_menu(VnrWindow *window);
+//static void _on_open_with_launch_application(GtkAction *action,
+//                                             VnrWindow *window);
+
 static void _window_hide_cursor(VnrWindow *window);
 static void _window_show_cursor(VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
@@ -70,8 +73,6 @@ void window_slideshow_deny(VnrWindow *window);
 static void _window_rotate_pixbuf(VnrWindow *window,
                                   GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
-static void _on_open_with_launch_application(GtkAction *action,
-                                             VnrWindow *window);
 static gboolean _on_leave_image_area(GtkWidget *widget,
                                      GdkEventCrossing *ev,
                                      VnrWindow *window);
@@ -267,6 +268,8 @@ static void window_init(VnrWindow *window)
     GError *error = NULL;
     //GtkAction *action;
 
+    window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
+
     window->movedir = NULL;
     window->filelist = NULL;
 
@@ -331,6 +334,25 @@ static void window_init(VnrWindow *window)
     g_assert(GTK_IS_WIDGET(window->popup_menu));
 
     gtk_ui_manager_ensure_update(window->ui_manager);
+
+
+
+
+//    GtkWidget *menu = NULL;
+//    GtkWidget *item = NULL;
+
+//    menu = gtk_menu_new();
+//    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(menu));
+//    gtk_menu_set_accel_group(GTK_MENU(menu), window->accel_group);
+
+//    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+//                                  WINDOW_ACTION_FILE_OPEN,
+//                                  _window_actions,
+//                                  G_OBJECT(window));
+
+
+
+
 
     gtk_widget_hide(_window_get_fs_controls(window));
 
@@ -424,6 +446,11 @@ static void window_dispose(GObject *object)
 {
     // do something
 
+    VnrWindow *window = VNR_WINDOW(object);
+
+    etk_actions_dispose(GTK_WINDOW(window), window->accel_group);
+    window->accel_group = NULL;
+
     G_OBJECT_CLASS(window_parent_class)->dispose(object);
 }
 
@@ -440,7 +467,7 @@ static void window_finalize(GObject *object)
 
 
 // Private actions -----------------------------------------------------------
-
+#if 0
 static void _window_update_openwith_menu(VnrWindow *window)
 {
     // Modified version of eog's eog_window_update_openwith_menu
@@ -473,7 +500,8 @@ static void _window_update_openwith_menu(VnrWindow *window)
 
     if (window->actions_open_with != NULL)
     {
-        gtk_ui_manager_remove_action_group(window->ui_manager, window->actions_open_with);
+        gtk_ui_manager_remove_action_group(window->ui_manager,
+                                           window->actions_open_with);
         window->actions_open_with = NULL;
     }
 
@@ -491,7 +519,8 @@ static void _window_update_openwith_menu(VnrWindow *window)
         return;
 
     window->actions_open_with = gtk_action_group_new("OpenWithActions");
-    gtk_ui_manager_insert_action_group(window->ui_manager, window->actions_open_with, -1);
+    gtk_ui_manager_insert_action_group(window->ui_manager,
+                                       window->actions_open_with, -1);
 
     window->open_with_menu_id = gtk_ui_manager_new_merge_id(window->ui_manager);
 
@@ -511,7 +540,8 @@ static void _window_update_openwith_menu(VnrWindow *window)
         g_snprintf(name, sizeof(name), "OpenWith%u", action_id++);
 
         label = g_strdup(g_app_info_get_name(app));
-        tip = g_strdup_printf(_("Use \"%s\" to open the selected image"), g_app_info_get_name(app));
+        tip = g_strdup_printf(_("Use \"%s\" to open the selected image"),
+                              g_app_info_get_name(app));
         action = gtk_action_new(name, label, tip, NULL);
 
         g_free(label);
@@ -555,6 +585,29 @@ static void _window_update_openwith_menu(VnrWindow *window)
 
     g_list_free(apps);
 }
+
+static void _on_open_with_launch_application(GtkAction *action,
+                                             VnrWindow *window)
+{
+    // Modified version of eog's open_with_launch_application_cb
+
+    VnrFile *current = window_list_get_current(window);
+    GFile *file = g_file_new_for_path((gchar *)current->path);
+
+    GList *files = NULL;
+    files = g_list_append(files, file);
+
+    GAppInfo *app;
+    app = g_object_get_data(G_OBJECT(action), "app");
+
+    g_app_info_launch(app,
+                      files,
+                      NULL, NULL);
+
+    g_object_unref(file);
+    g_list_free(files);
+}
+#endif
 
 static void _window_hide_cursor(VnrWindow *window)
 {
@@ -1003,28 +1056,6 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 }
 
 // Private signal handlers ---------------------------------------------------
-
-static void _on_open_with_launch_application(GtkAction *action,
-                                             VnrWindow *window)
-{
-    // Modified version of eog's open_with_launch_application_cb
-
-    VnrFile *current = window_list_get_current(window);
-    GFile *file = g_file_new_for_path((gchar *)current->path);
-
-    GList *files = NULL;
-    files = g_list_append(files, file);
-
-    GAppInfo *app;
-    app = g_object_get_data(G_OBJECT(action), "app");
-
-    g_app_info_launch(app,
-                      files,
-                      NULL, NULL);
-
-    g_object_unref(file);
-    g_list_free(files);
-}
 
 static gboolean _on_leave_image_area(GtkWidget *widget,
                                      GdkEventCrossing *ev,
@@ -2304,7 +2335,7 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
 
-    _window_update_openwith_menu(window);
+    //_window_update_openwith_menu(window);
 
     g_object_unref(pixbuf);
     return TRUE;

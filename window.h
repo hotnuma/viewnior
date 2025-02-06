@@ -44,10 +44,9 @@ struct _VnrWindow
     // Interface
     GtkUIManager *ui_manager;
 
+    GtkAccelGroup *accel_group;
     GtkWidget *layout;
-    GtkWidget *button_menu;
 
-    GtkWidget *properties_button;
     GtkWidget *popup_menu;
     GtkWidget *msg_area;
     GtkWidget *props_dlg;
