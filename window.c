@@ -310,15 +310,15 @@ static void window_init(VnrWindow *window)
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_window, 0);
 
-    window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
-    gtk_action_group_set_translation_domain(window->actions_static_image,
-                                            GETTEXT_PACKAGE);
-    gtk_action_group_add_actions(window->actions_static_image,
-                                 _action_entries_static_image,
-                                 G_N_ELEMENTS(_action_entries_static_image),
-                                 window);
-    gtk_ui_manager_insert_action_group(window->ui_manager,
-                                       window->actions_static_image, 0);
+    //window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
+    //gtk_action_group_set_translation_domain(window->actions_static_image,
+    //                                        GETTEXT_PACKAGE);
+    //gtk_action_group_add_actions(window->actions_static_image,
+    //                             _action_entries_static_image,
+    //                             G_N_ELEMENTS(_action_entries_static_image),
+    //                             window);
+    //gtk_ui_manager_insert_action_group(window->ui_manager,
+    //                                   window->actions_static_image, 0);
 
     if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
                                            _ui_definition,
@@ -1322,16 +1322,16 @@ static void _action_preferences(GtkAction *action, gpointer user_data)
 
 static void _action_flip_horizontal(GtkAction *action, VnrWindow *window)
 {
-    if (!gtk_action_group_get_sensitive(window->actions_static_image))
-        return;
+//    if (!gtk_action_group_get_sensitive(window->actions_static_image))
+//        return;
 
     _window_flip_pixbuf(window, TRUE);
 }
 
 static void _action_flip_vertical(GtkAction *action, VnrWindow *window)
 {
-    if (!gtk_action_group_get_sensitive(window->actions_static_image))
-        return;
+//    if (!gtk_action_group_get_sensitive(window->actions_static_image))
+//        return;
 
     _window_flip_pixbuf(window, FALSE);
 }
@@ -2012,8 +2012,8 @@ static void _action_crop(GtkAction *action, VnrWindow *window)
 {
     VnrCrop *crop;
 
-    if (!gtk_action_group_get_sensitive(window->actions_static_image))
-        return;
+//    if (!gtk_action_group_get_sensitive(window->actions_static_image))
+//        return;
 
     crop = (VnrCrop *)vnr_crop_new(window);
 
@@ -2292,11 +2292,13 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
 
     last_fit_mode = UNI_IMAGE_VIEW(window->view)->fitting;
 
-    /* Return TRUE if the image is static */
-    if (uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf))
-        gtk_action_group_set_sensitive(window->actions_static_image, TRUE);
-    else
-        gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
+    // Return TRUE if the image is static
+    uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf);
+
+    //if (ret)
+    //    gtk_action_group_set_sensitive(window->actions_static_image, TRUE);
+    //else
+    //    gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
 
     if (window->mode != WINDOW_MODE_NORMAL && window->prefs->fit_on_fullscreen)
     {

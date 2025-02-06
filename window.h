@@ -70,10 +70,10 @@ struct _VnrWindow
     gboolean cursor_is_hidden;
 
     GtkActionGroup *actions_window;
-    GtkActionGroup *actions_static_image;
     GtkActionGroup *actions_open_with;
-
     guint open_with_menu_id;
+
+    //GtkActionGroup *actions_static_image;
 
     // Data
     gchar *movedir;
