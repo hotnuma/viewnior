@@ -366,9 +366,9 @@ static void window_init(VnrWindow *window)
     g_signal_connect(G_OBJECT(window->view), "drag-data-get",
                      G_CALLBACK(_window_on_drag_begin), window);
 
-    gtk_window_add_accel_group(
-            GTK_WINDOW(window),
-            gtk_ui_manager_get_accel_group(window->ui_manager));
+    //gtk_window_add_accel_group(
+    //        GTK_WINDOW(window),
+    //        gtk_ui_manager_get_accel_group(window->ui_manager));
 
     _window_load_accel_map();
 }
