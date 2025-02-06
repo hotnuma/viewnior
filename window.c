@@ -181,49 +181,20 @@ static const GtkActionEntry _action_entries_window[] =
      N_("Open a Folder"),
      G_CALLBACK(_action_open_dir)},
 
-    {"EditPreferences", "gtk-properties",
-     N_("_Preferences..."), NULL,
-     N_("User preferences for Viewnior"),
-     G_CALLBACK(_action_preferences)},
-
-    {"HelpAbout", "gtk-about",
-     N_("_About"), "F1",
-     N_("About this application"),
-     G_CALLBACK(_action_about)},
-};
-
-static const GtkActionEntry _action_entry_save[] =
-{
-    {"FileSave", "gtk-save",
-     N_("_Save"), "<control>S",
-     N_("Save changes"),
-     G_CALLBACK(_action_save_image)},
-};
-
-//static const GtkActionEntry _action_entry_wallpaper[] =
-//{
-//    {"SetAsWallpaper", NULL,
-//     N_("Set as _Wallpaper"), NULL,
-//     N_("Set the selected image as the desktop background"),
-//     G_CALLBACK(_action_set_wallpaper)},
-//};
-
-static const GtkActionEntry _action_entries_image[] =
-{
     {"FileOpenWith", NULL,
      N_("Open _With"), NULL,
      N_("Open the selected image with a different application"),
      NULL},
 
-    {"FileRename", NULL,
-     N_("Rename"), "F2",
-     N_("Rename the current file"),
-     G_CALLBACK(_action_rename)},
-
     {"FileSelectDirectory", NULL,
      N_("Select..."), "F7",
      N_("Select a directory to move files"),
      G_CALLBACK(_action_select_directory)},
+
+    {"FileRename", NULL,
+     N_("Rename"), "F2",
+     N_("Rename the current file"),
+     G_CALLBACK(_action_rename)},
 
     {"FileMove", NULL,
      N_("Move"), "F8",
@@ -240,45 +211,15 @@ static const GtkActionEntry _action_entries_image[] =
      N_("Show information about the current file"),
      G_CALLBACK(_action_properties)},
 
-    {"FileReload", "gtk-refresh",
-     N_("_Reload"), NULL,
-     N_("Reload the current file"),
-     G_CALLBACK(_action_reload)},
+    {"EditPreferences", "gtk-properties",
+     N_("_Preferences..."), NULL,
+     N_("User preferences for Viewnior"),
+     G_CALLBACK(_action_preferences)},
 
-    {"ViewZoomIn", "gtk-zoom-in",
-     N_("_Zoom In"), "<control>plus",
-     N_("Enlarge the image"),
-     G_CALLBACK(_action_zoom_in)},
-
-    {"ViewZoomOut", "gtk-zoom-out",
-     N_("Zoom _Out"), NULL,
-     N_("Shrink the image"),
-     G_CALLBACK(_action_zoom_out)},
-
-    {"ViewZoomNormal", "gtk-zoom-100",
-     N_("_Normal Size"), "<control>0",
-     N_("Show the image at its normal size"),
-     G_CALLBACK(_action_normal_size)},
-
-    {"ViewZoomFit", "gtk-zoom-fit",
-     N_("Best _Fit"), NULL,
-     N_("Fit the image to the window"),
-     G_CALLBACK(_action_fit)},
-
-    {"ControlEqual", "gtk-zoom-in",
-     N_("_Zoom In"), NULL,
-     N_("Shrink the image"),
-     G_CALLBACK(_action_zoom_in)},
-
-    {"ControlKpAdd", "gtk-zoom-in",
-     N_("_Zoom In"), NULL,
-     N_("Shrink the image"),
-     G_CALLBACK(_action_zoom_in)},
-
-    {"ControlKpSub", "gtk-zoom-out",
-     N_("Zoom _Out"), NULL,
-     N_("Shrink the image"),
-     G_CALLBACK(_action_zoom_out)},
+    {"HelpAbout", "gtk-about",
+     N_("_About"), "F1",
+     N_("About this application"),
+     G_CALLBACK(_action_about)},
 };
 
 static const GtkActionEntry _action_entries_static_image[] =
@@ -309,19 +250,6 @@ static const GtkActionEntry _action_entries_static_image[] =
      G_CALLBACK(_action_crop)},
 };
 
-static const GtkToggleActionEntry _toggle_entries_image[] =
-{
-    {"ViewFullscreen", "gtk-fullscreen",
-     N_("Full _Screen"), "F11",
-     N_("Show in fullscreen mode"),
-     G_CALLBACK(_action_fullscreen)},
-
-    {"ViewResizeWindow", NULL,
-     N_("_Adjust window size"), NULL,
-     N_("Adjust window size to fit the image"),
-     G_CALLBACK(_action_resize)},
-};
-
 
 // Window creation -----------------------------------------------------------
 
@@ -344,7 +272,7 @@ static void window_class_init(VnrWindowClass *klass)
 static void window_init(VnrWindow *window)
 {
     GError *error = NULL;
-    GtkAction *action;
+    //GtkAction *action;
 
     window->movedir = NULL;
     window->filelist = NULL;
@@ -382,15 +310,15 @@ static void window_init(VnrWindow *window)
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_window, 0);
 
-    window->action_save = gtk_action_group_new("MenuActionSave");
-    gtk_action_group_set_translation_domain(window->action_save,
-                                            GETTEXT_PACKAGE);
-    gtk_action_group_add_actions(window->action_save,
-                                 _action_entry_save,
-                                 G_N_ELEMENTS(_action_entry_save),
-                                 window);
-    gtk_ui_manager_insert_action_group(window->ui_manager,
-                                       window->action_save, 0);
+    //window->action_save = gtk_action_group_new("MenuActionSave");
+    //gtk_action_group_set_translation_domain(window->action_save,
+    //                                        GETTEXT_PACKAGE);
+    //gtk_action_group_add_actions(window->action_save,
+    //                             _action_entry_save,
+    //                             G_N_ELEMENTS(_action_entry_save),
+    //                             window);
+    //gtk_ui_manager_insert_action_group(window->ui_manager,
+    //                                   window->action_save, 0);
 
     window->actions_static_image = gtk_action_group_new("MenuActionsStaticImage");
     gtk_action_group_set_translation_domain(window->actions_static_image,
@@ -402,19 +330,19 @@ static void window_init(VnrWindow *window)
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->actions_static_image, 0);
 
-    window->actions_image = gtk_action_group_new("MenuActionsImage");
-    gtk_action_group_set_translation_domain(window->actions_image,
-                                            GETTEXT_PACKAGE);
-    gtk_action_group_add_actions(window->actions_image,
-                                 _action_entries_image,
-                                 G_N_ELEMENTS(_action_entries_image),
-                                 window);
-    gtk_action_group_add_toggle_actions(window->actions_image,
-                                        _toggle_entries_image,
-                                        G_N_ELEMENTS(_toggle_entries_image),
-                                        window);
-    gtk_ui_manager_insert_action_group(window->ui_manager,
-                                       window->actions_image, 0);
+    //window->actions_image = gtk_action_group_new("MenuActionsImage");
+    //gtk_action_group_set_translation_domain(window->actions_image,
+    //                                        GETTEXT_PACKAGE);
+    //gtk_action_group_add_actions(window->actions_image,
+    //                             _action_entries_image,
+    //                             G_N_ELEMENTS(_action_entries_image),
+    //                             window);
+    //gtk_action_group_add_toggle_actions(window->actions_image,
+    //                                    _toggle_entries_image,
+    //                                    G_N_ELEMENTS(_toggle_entries_image),
+    //                                    window);
+    //gtk_ui_manager_insert_action_group(window->ui_manager,
+    //                                   window->actions_image, 0);
 
     //window->actions_bars = gtk_action_group_new("MenuActionsBars");
     //gtk_action_group_set_translation_domain(window->actions_bars,
@@ -461,9 +389,9 @@ static void window_init(VnrWindow *window)
 
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
-    gtk_action_group_set_sensitive(window->actions_image, FALSE);
-    gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
-    gtk_action_group_set_sensitive(window->action_save, FALSE);
+    //gtk_action_group_set_sensitive(window->actions_image, FALSE);
+    //gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
+    //gtk_action_group_set_sensitive(window->action_save, FALSE);
     //gtk_action_group_set_sensitive(window->actions_bars, TRUE);
 
     // Continue with layout
@@ -482,11 +410,11 @@ static void window_init(VnrWindow *window)
     gtk_widget_hide(_window_get_fs_controls(window));
 
     // Apply auto-resize preference
-    action = gtk_action_group_get_action(window->actions_image,
-                                         "ViewResizeWindow");
+    //action = gtk_action_group_get_action(window->actions_image,
+    //                                     "ViewResizeWindow");
 
-    if (window->prefs->auto_resize)
-        gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+    //if (window->prefs->auto_resize)
+    //    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
     window->msg_area = vnr_message_area_new();
     VNR_MESSAGE_AREA(window->msg_area)->vnr_win = window;
@@ -872,10 +800,10 @@ static void _window_fullscreen(VnrWindow *window)
     window->mode = WINDOW_MODE_FULLSCREEN;
 
 
-    GtkAction *action = gtk_action_group_get_action(
-                                    window->actions_image,
-                                    "ViewFullscreen");
-    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+    //GtkAction *action = gtk_action_group_get_action(
+    //                                window->actions_image,
+    //                                "ViewFullscreen");
+    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
     // https://stackoverflow.com/questions/36520637/
     GdkRGBA color;
@@ -922,11 +850,10 @@ static void _window_unfullscreen(VnrWindow *window)
 
     gtk_window_unfullscreen(GTK_WINDOW(window));
 
-    GtkAction *action = gtk_action_group_get_action(
-        window->actions_image,
-        "ViewFullscreen");
-
-    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
+    //GtkAction *action = gtk_action_group_get_action(
+    //    window->actions_image,
+    //    "ViewFullscreen");
+    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
 
     if (window->prefs->dark_background)
     {
@@ -1091,7 +1018,8 @@ static void _window_rotate_pixbuf(VnrWindow *window,
         window->modifications ^= 3;
 
     window->modifications ^= 4;
-    gtk_action_group_set_sensitive(window->action_save, window->modifications);
+
+    //gtk_action_group_set_sensitive(window->action_save, window->modifications);
 
     if (window->modifications == 0 && window->prefs->behavior_modify != VNR_PREFS_MODIFY_IGNORE)
     {
@@ -1146,8 +1074,8 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
     /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
     window->modifications ^= (window->modifications & 4) ? 1 + horizontal : 2 - horizontal;
 
-    gtk_action_group_set_sensitive(window->action_save,
-                                   window->modifications);
+    //gtk_action_group_set_sensitive(window->action_save,
+    //                               window->modifications);
 
     if (window->modifications == 0)
     {
@@ -1322,7 +1250,7 @@ static void _action_save_image(GtkWidget *widget, VnrWindow *window)
 
     window->modifications = 0;
 
-    gtk_action_group_set_sensitive(window->action_save, FALSE);
+    //gtk_action_group_set_sensitive(window->action_save, FALSE);
 
     if (window->prefs->behavior_modify != VNR_PREFS_MODIFY_ASK)
         _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
@@ -1402,9 +1330,9 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 {
     /* Change the info, only if there is an image
      * (vnr_window_close isn't called on the current image) */
-    if (!gtk_action_group_get_sensitive(window->actions_image))
-        return;
 
+    //if (!gtk_action_group_get_sensitive(window->actions_image))
+    //    return;
 
     gint total = 0;
     gint position = vnr_list_get_position(window->filelist, &total);
@@ -2195,7 +2123,7 @@ static void _action_crop(GtkAction *action, VnrWindow *window)
     window->current_image_width = crop->area.width;
     window->current_image_height = crop->area.height;
 
-    gtk_action_group_set_sensitive(window->action_save, TRUE);
+    //gtk_action_group_set_sensitive(window->action_save, TRUE);
 
     if (window->writable_format_name == NULL)
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
@@ -2410,7 +2338,7 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
     }
 
-    gtk_action_group_set_sensitive(window->actions_image, TRUE);
+    //gtk_action_group_set_sensitive(window->actions_image, TRUE);
     //gtk_action_group_set_sensitive(window->action_wallpaper, TRUE);
 
     format = gdk_pixbuf_get_file_info(file->path, NULL, NULL);
@@ -2541,8 +2469,9 @@ void window_close(VnrWindow *window)
 {
     gtk_window_set_title(GTK_WINDOW(window), "Viewnior");
     uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), NULL);
-    gtk_action_group_set_sensitive(window->actions_image, FALSE);
-    gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
+
+    //gtk_action_group_set_sensitive(window->actions_image, FALSE);
+    //gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
 }
 

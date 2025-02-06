@@ -72,13 +72,13 @@ struct _VnrWindow
     GtkActionGroup *actions_window;
     GtkActionGroup *actions_image;
     GtkActionGroup *actions_static_image;
-    GtkActionGroup *action_save;
     GtkActionGroup *action_properties;
     GtkActionGroup *actions_open_with;
 
     //GtkActionGroup *actions_bars;
     //GtkActionGroup *actions_collection;
     //GtkActionGroup *action_wallpaper;
+    //GtkActionGroup *action_save;
 
     guint open_with_menu_id;
 
