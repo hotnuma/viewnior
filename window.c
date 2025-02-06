@@ -222,23 +222,16 @@ const gchar* _ui_definition =
         "</popup>"
 
         "<popup name=\"PopupMenu\">"
-            "<menuitem name=\"GoPrevious\" action=\"GoPrevious\"/>"
-            "<menuitem name=\"GoNext\" action=\"GoNext\"/>"
-            "<separator/>"
+            "<menuitem action=\"FileOpen\"/>"
+            "<menuitem action=\"FileOpenDir\"/>"
             "<menu action=\"FileOpenWith\">"
                 "<placeholder name=\"AppEntries\"/>"
             "</menu>"
             "<separator/>"
-            "<menuitem action=\"ViewZoomIn\"/>"
-            "<menuitem action=\"ViewZoomOut\"/>"
-            "<menuitem action=\"ViewZoomNormal\"/>"
-            "<menuitem action=\"ViewZoomFit\"/>"
-            "<placeholder name=\"WallpaperEntry\"/>"
-            "<separator/>"
-            "<menuitem name=\"Toolbar\" action=\"ViewToolbar\"/>"
-            "<menuitem name=\"Scrollbar\" action=\"ViewScrollbar\"/>"
-            "<menuitem name=\"Statusbar\" action=\"ViewStatusbar\"/>"
-            "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
+            "<menuitem action=\"FileRename\"/>"
+            "<menuitem action=\"FileSelectDirectory\"/>"
+            "<menuitem action=\"FileMove\"/>"
+            "<menuitem action=\"FileDelete\"/>"
             "<separator/>"
             "<menuitem action=\"FileProperties\"/>"
         "</popup>"
@@ -248,25 +241,6 @@ const gchar* _ui_definition =
         "<accelerator name=\"ControlKPSubAccel\" action=\"ControlKpSub\"/>"
         "<accelerator name=\"DeleteAccel\" action=\"Delete\"/>"
         "<accelerator name=\"SelectDirAccel\" action=\"FileSelectDirectory\"/>"
-    "</ui>";
-
-const gchar* _ui_definition_wallpaper =
-    "<ui>"
-        "<popup name=\"ButtonMenu\">"
-            "<menu action=\"Image\">"
-                "<placeholder name=\"WallpaperEntry\">"
-                    "<separator/>"
-                    "<menuitem name=\"Wallpaper\" action=\"SetAsWallpaper\"/>"
-                "</placeholder>"
-            "</menu>"
-        "</popup>"
-
-        "<popup name=\"PopupMenu\">"
-            "<placeholder name=\"WallpaperEntry\">"
-                "<separator/>"
-                "<menuitem action=\"SetAsWallpaper\"/>"
-            "</placeholder>"
-        "</popup>"
     "</ui>";
 // clang-format on
 
@@ -349,8 +323,8 @@ static const GtkActionEntry _action_entries_image[] =
      G_CALLBACK(_action_rename)},
 
     {"FileSelectDirectory", NULL,
-     N_("Move"), "F7",
-     N_("Move the current file"),
+     N_("Select..."), "F7",
+     N_("Select a directory to move files"),
      G_CALLBACK(_action_select_directory)},
 
     {"FileMove", NULL,
@@ -649,14 +623,6 @@ static void window_init(VnrWindow *window)
                                  window);
     gtk_ui_manager_insert_action_group(window->ui_manager,
                                        window->action_wallpaper, 0);
-
-    if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
-                                           _ui_definition_wallpaper, -1,
-                                           &error))
-    {
-        g_error("building menus failed: %s\n", error->message);
-        g_error_free(error);
-    }
 
     gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     gtk_action_group_set_sensitive(window->actions_collection, FALSE);
@@ -1115,7 +1081,7 @@ static void _window_fullscreen(VnrWindow *window)
     // https://stackoverflow.com/questions/36520637/
     GdkRGBA color;
     gdk_rgba_parse(&color, "black");
-    gtk_widget_override_background_color(window->view, GTK_STATE_NORMAL, &color);
+    gtk_widget_override_background_color(window->view,  GTK_STATE_FLAG_NORMAL, &color);
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
@@ -1175,13 +1141,13 @@ static void _window_unfullscreen(VnrWindow *window)
         GdkRGBA color;
         gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
         gtk_widget_override_background_color(window->view,
-                                             GTK_STATE_NORMAL, &color);
+                                              GTK_STATE_FLAG_NORMAL, &color);
 
     }
     else
     {
         gtk_widget_override_background_color(window->view,
-                                             GTK_STATE_NORMAL, NULL);
+                                              GTK_STATE_FLAG_NORMAL, NULL);
     }
 
     if (window->prefs->fit_on_fullscreen)
@@ -1520,8 +1486,10 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
         _window_slideshow_stop(window);
 }
 
-static void _action_save_image(GtkWidget *, VnrWindow *window)
+static void _action_save_image(GtkWidget *widget, VnrWindow *window)
 {
+    (void) widget;
+
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
@@ -1919,8 +1887,10 @@ static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data)
     }
 }
 
-static void _action_open(GtkAction *, VnrWindow *window)
+static void _action_open(GtkAction *action, VnrWindow *window)
 {
+    (void) action;
+
     GtkWidget *dialog = gtk_file_chooser_dialog_new(
                                 _("Open Image"),
                                 GTK_WINDOW(window),
@@ -1971,8 +1941,10 @@ static void _action_open(GtkAction *, VnrWindow *window)
     gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(dialog), window->prefs->show_hidden);
 }
 
-static void _action_open_dir(GtkAction*, VnrWindow *window)
+static void _action_open_dir(GtkAction *action, VnrWindow *window)
 {
+    (void) action;
+
     GtkWidget *dialog = gtk_file_chooser_dialog_new(
                                 _("Open Folder"),
                                 GTK_WINDOW(window),
@@ -2249,8 +2221,10 @@ static void _action_slideshow(GtkAction *action, VnrWindow *window)
     }
 }
 
-static void _action_rename(GtkAction*, VnrWindow *window)
+static void _action_rename(GtkAction *action, VnrWindow *window)
 {
+    (void) action;
+
     g_return_if_fail((window != NULL));
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
 
@@ -3011,7 +2985,9 @@ void window_preferences_apply(VnrWindow *window)
         // https://stackoverflow.com/questions/36520637/
         GdkRGBA color;
         gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
-        gtk_widget_override_background_color(window->view, GTK_STATE_NORMAL, &color);
+        gtk_widget_override_background_color(window->view,
+                                              GTK_STATE_FLAG_NORMAL,
+                                             &color);
     }
 
     if (window->prefs->smooth_images
