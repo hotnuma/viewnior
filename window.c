@@ -128,7 +128,7 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
 static void _action_fullscreen(GtkAction *action, VnrWindow *window);
 static void _action_scrollbar(GtkAction *action, VnrWindow *window);
-static void _action_statusbar(GtkAction *action, VnrWindow *window);
+//static void _action_statusbar(GtkAction *action, VnrWindow *window);
 static void _action_slideshow(GtkAction *action, VnrWindow *window);
 
 static gboolean _window_select_directory(VnrWindow *window);
@@ -149,53 +149,6 @@ static void _window_drag_data_received(GtkWidget *widget,
 // clang-format off
 const gchar* _ui_definition =
     "<ui>"
-        "<popup name=\"ButtonMenu\">"
-            "<menuitem action=\"FileOpen\"/>"
-            "<menuitem action=\"FileOpenDir\"/>"
-            "<menu action=\"FileOpenWith\">"
-                "<placeholder name=\"AppEntries\"/>"
-            "</menu>"
-            "<separator/>"
-            "<menuitem action=\"FileSave\"/>"
-            "<menuitem action=\"FileReload\"/>"
-            "<menuitem action=\"FileProperties\"/>"
-            "<separator/>"
-            "<menu action=\"Edit\">"
-                "<menuitem action=\"FileMove\"/>"
-                "<menuitem action=\"FileRename\"/>"
-                "<menuitem action=\"FileDelete\"/>"
-                "<separator/>"
-            "</menu>"
-            "<menu action=\"View\">"
-                "<menuitem action=\"ViewZoomIn\"/>"
-                "<menuitem action=\"ViewZoomOut\"/>"
-                "<menuitem action=\"ViewZoomNormal\"/>"
-                "<menuitem action=\"ViewZoomFit\"/>"
-                "<separator/>"
-                "<menuitem action=\"ViewScrollbar\"/>"
-                "<menuitem action=\"ViewStatusbar\"/>"
-                "<menuitem name=\"Fullscreen\" action=\"ViewFullscreen\"/>"
-                "<menuitem name=\"Slideshow\" action=\"ViewSlideshow\"/>"
-                "<separator/>"
-                "<menuitem name=\"ResizeWindow\" action=\"ViewResizeWindow\"/>"
-            "</menu>"
-            "<menu action=\"Image\">"
-                "<menuitem action=\"ImageFlipVertical\"/>"
-                "<menuitem action=\"ImageFlipHorizontal\"/>"
-                "<separator/>"
-                "<menuitem action=\"ImageRotateCW\"/>"
-                "<menuitem action=\"ImageRotateCCW\"/>"
-                "<separator/>"
-                "<menuitem action=\"ImageCrop\"/>"
-                "<placeholder name=\"WallpaperEntry\"/>"
-            "</menu>"
-            "<separator/>"
-            "<menuitem action=\"EditPreferences\"/>"
-            "<separator/>"
-            "<menuitem action=\"HelpAbout\"/>"
-            "<menuitem action=\"FileClose\"/>"
-        "</popup>"
-
         "<popup name=\"PopupMenu\">"
             "<menuitem action=\"FileOpen\"/>"
             "<menuitem action=\"FileOpenDir\"/>"
@@ -402,10 +355,10 @@ static const GtkToggleActionEntry _toggle_entries_window[] =
      N_("Show Scrollbar"),
      G_CALLBACK(_action_scrollbar)},
 
-    {"ViewStatusbar", NULL,
-     N_("Statusbar"), NULL,
-     N_("Show Statusbar"),
-     G_CALLBACK(_action_statusbar)},
+//    {"ViewStatusbar", NULL,
+//     N_("Statusbar"), NULL,
+//     N_("Show Statusbar"),
+//     G_CALLBACK(_action_statusbar)},
 };
 
 static const GtkToggleActionEntry _toggle_entries_collection[] =
@@ -615,17 +568,17 @@ static void window_init(VnrWindow *window)
     gtk_widget_set_can_focus(window->view, TRUE);
     window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
 
-    window->statusbar = gtk_statusbar_new();
-    gtk_box_pack_end(GTK_BOX(window->layout),
-                     window->statusbar, FALSE, FALSE, 0);
+    //window->statusbar = gtk_statusbar_new();
+    //gtk_box_pack_end(GTK_BOX(window->layout),
+    //                 window->statusbar, FALSE, FALSE, 0);
 
     // Apply statusbar preference
-    action = gtk_action_group_get_action(window->actions_bars,
-                                         "ViewStatusbar");
-    if (!window->prefs->show_statusbar)
-        gtk_widget_hide(window->statusbar);
-    else
-        gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+    //action = gtk_action_group_get_action(window->actions_bars,
+    //                                     "ViewStatusbar");
+    //if (!window->prefs->show_statusbar)
+    //    gtk_widget_hide(window->statusbar);
+    //else
+    //    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
     // Apply scrollbar preference
     action = gtk_action_group_get_action(window->actions_bars,
@@ -1004,8 +957,8 @@ static void _window_fullscreen(VnrWindow *window)
                                      VNR_PREFS_ZOOM_FIT);
 
     _window_update_fs_filename_label(window);
-    gtk_widget_hide(window->statusbar);
 
+    //gtk_widget_hide(window->statusbar);
     //gtk_widget_show(window->properties_button);
 
     gtk_widget_show(window->fs_controls);
@@ -1065,10 +1018,10 @@ static void _window_unfullscreen(VnrWindow *window)
 
     gtk_widget_hide(window->fs_controls);
 
-    if (!window->prefs->show_statusbar)
-        gtk_widget_hide(window->statusbar);
-    else
-        gtk_widget_show(window->statusbar);
+    //if (!window->prefs->show_statusbar)
+    //    gtk_widget_hide(window->statusbar);
+    //else
+    //    gtk_widget_show(window->statusbar);
 
     g_signal_handlers_disconnect_by_func(window->view,
                                          G_CALLBACK(_on_fullscreen_motion),
@@ -1535,9 +1488,12 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 
     gtk_window_set_title(GTK_WINDOW(window), buf);
 
-    gint context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(window->statusbar), "statusbar");
-    gtk_statusbar_pop(GTK_STATUSBAR(window->statusbar), GPOINTER_TO_INT(context_id));
-    gtk_statusbar_push(GTK_STATUSBAR(window->statusbar), GPOINTER_TO_INT(context_id), buf);
+    //gint context_id = gtk_statusbar_get_context_id(
+    //            GTK_STATUSBAR(window->statusbar), "statusbar");
+    //gtk_statusbar_pop(GTK_STATUSBAR(window->statusbar),
+    //                  GPOINTER_TO_INT(context_id));
+    //gtk_statusbar_push(GTK_STATUSBAR(window->statusbar),
+    //                   GPOINTER_TO_INT(context_id), buf);
 
     g_free(buf);
 }
@@ -2003,16 +1959,16 @@ static void _action_scrollbar(GtkAction *action, VnrWindow *window)
     uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), show);
 }
 
-static void _action_statusbar(GtkAction *action, VnrWindow *window)
-{
-    gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
-    vnr_prefs_set_show_statusbar(window->prefs, show);
+//static void _action_statusbar(GtkAction *action, VnrWindow *window)
+//{
+//    gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
+//    vnr_prefs_set_show_statusbar(window->prefs, show);
 
-    if (show)
-        gtk_widget_show(window->statusbar);
-    else
-        gtk_widget_hide(window->statusbar);
-}
+//    if (show)
+//        gtk_widget_show(window->statusbar);
+//    else
+//        gtk_widget_hide(window->statusbar);
+//}
 
 static void _action_slideshow(GtkAction *action, VnrWindow *window)
 {
