@@ -10,6 +10,7 @@ PKGCONFIG += gdk-pixbuf-2.0
 PKGCONFIG += gio-2.0
 PKGCONFIG += glib-2.0
 PKGCONFIG += exiv2
+PKGCONFIG += tinyui
 PKGCONFIG += shared-mime-info
 
 HEADERS = \

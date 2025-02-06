@@ -33,6 +33,8 @@
 #include "dialog.h"
 #include "list.h"
 
+#include <etkaction.h>
+
 // Timeout to hide the toolbar in fullscreen mode
 #define FULLSCREEN_TIMEOUT 1000
 #define DARK_BACKGROUND_COLOR "#222222"
@@ -220,6 +222,25 @@ static const GtkActionEntry _action_entries_window[] =
      N_("_About"), "F1",
      N_("About this application"),
      G_CALLBACK(_action_about)},
+};
+
+typedef enum
+{
+    WINDOW_ACTION_FILE_OPEN = 1,
+
+} WindowAction;
+
+static EtkActionEntry _window_actions[] =
+{
+    {WINDOW_ACTION_FILE_OPEN,
+     "<Actions>/AppWindow/FileOpen", "<Primary>o",
+     ETK_IMAGE_MENU_ITEM,
+     N_("_Open"),
+     N_("Open file"),
+     "document-open",
+     G_CALLBACK(_action_open)},
+
+    {0},
 };
 
 
@@ -507,21 +528,21 @@ static void _window_update_openwith_menu(VnrWindow *window)
         gtk_action_group_add_action(window->actions_open_with, action);
         g_object_unref(action);
 
-        gtk_ui_manager_add_ui(window->ui_manager,
-                              window->open_with_menu_id,
-                              "/MainMenu/File/FileOpenWith/AppEntries",
-                              name,
-                              name,
-                              GTK_UI_MANAGER_MENUITEM,
-                              FALSE);
+        //gtk_ui_manager_add_ui(window->ui_manager,
+        //                      window->open_with_menu_id,
+        //                      "/MainMenu/File/FileOpenWith/AppEntries",
+        //                      name,
+        //                      name,
+        //                      GTK_UI_MANAGER_MENUITEM,
+        //                      FALSE);
 
-        gtk_ui_manager_add_ui(window->ui_manager,
-                              window->open_with_menu_id,
-                              "/MainMenu/FileOpenWith/AppEntries",
-                              name,
-                              name,
-                              GTK_UI_MANAGER_MENUITEM,
-                              FALSE);
+        //gtk_ui_manager_add_ui(window->ui_manager,
+        //                      window->open_with_menu_id,
+        //                      "/MainMenu/FileOpenWith/AppEntries",
+        //                      name,
+        //                      name,
+        //                      GTK_UI_MANAGER_MENUITEM,
+        //                      FALSE);
 
         gtk_ui_manager_add_ui(window->ui_manager,
                               window->open_with_menu_id,
