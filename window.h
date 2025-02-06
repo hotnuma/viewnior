@@ -46,7 +46,6 @@ struct _VnrWindow
 
     GtkWidget *layout;
     GtkWidget *button_menu;
-    GtkWidget *statusbar;
 
     GtkWidget *properties_button;
     GtkWidget *popup_menu;

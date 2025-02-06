@@ -1959,17 +1959,6 @@ static void _action_scrollbar(GtkAction *action, VnrWindow *window)
     uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), show);
 }
 
-//static void _action_statusbar(GtkAction *action, VnrWindow *window)
-//{
-//    gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
-//    vnr_prefs_set_show_statusbar(window->prefs, show);
-
-//    if (show)
-//        gtk_widget_show(window->statusbar);
-//    else
-//        gtk_widget_hide(window->statusbar);
-//}
-
 static void _action_slideshow(GtkAction *action, VnrWindow *window)
 {
     g_assert(window != NULL && VNR_IS_WINDOW(window));
