@@ -42,7 +42,7 @@ struct _VnrWindow
     GtkWindow __parent__;
 
     // Interface
-    GtkUIManager *ui_manager;
+    //GtkUIManager *ui_manager;
 
     GtkAccelGroup *accel_group;
     GtkWidget *layout;
@@ -68,8 +68,8 @@ struct _VnrWindow
     guint8 modifications;
     gboolean cursor_is_hidden;
 
-    GtkActionGroup *actions_window;
-    GtkActionGroup *actions_open_with;
+    //GtkActionGroup *actions_window;
+    //GtkActionGroup *actions_open_with;
     guint open_with_menu_id;
 
     //GtkActionGroup *actions_static_image;

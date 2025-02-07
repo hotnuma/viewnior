@@ -18,6 +18,84 @@ HelpAbout
 
 */
 
+static const GtkActionEntry _action_entries_window[] =
+{
+    {"FileOpen", "gtk-file",
+     N_("Open _Image..."), "<control>O",
+     N_("Open an Image"),
+     G_CALLBACK(_action_open)},
+
+    {"FileOpenDir", "gtk-directory",
+     N_("Open _Folder..."), "<control>F",
+     N_("Open a Folder"),
+     G_CALLBACK(_action_open_dir)},
+
+    {"FileOpenWith", NULL,
+     N_("Open _With"), NULL,
+     N_("Open the selected image with a different application"),
+     NULL},
+
+    {"FileSelectDirectory", NULL,
+     N_("Select..."), "F7",
+     N_("Select a directory to move files"),
+     G_CALLBACK(_action_select_directory)},
+
+    {"FileRename", NULL,
+     N_("Rename"), "F2",
+     N_("Rename the current file"),
+     G_CALLBACK(_action_rename)},
+
+    {"FileMove", NULL,
+     N_("Move"), "F8",
+     N_("Move the current file"),
+     G_CALLBACK(_action_move)},
+
+    {"FileDelete", "gtk-delete",
+     N_("_Delete"), "Delete",
+     N_("Delete the current file"),
+     G_CALLBACK(_action_delete)},
+
+    {"FileProperties", "gtk-properties",
+     N_("_Properties..."), "<control>Return",
+     N_("Show information about the current file"),
+     G_CALLBACK(_action_properties)},
+
+    {"EditPreferences", "gtk-properties",
+     N_("_Preferences..."), NULL,
+     N_("User preferences for Viewnior"),
+     G_CALLBACK(_action_preferences)},
+
+    {"HelpAbout", "gtk-about",
+     N_("_About"), "F1",
+     N_("About this application"),
+     G_CALLBACK(_action_about)},
+};
+
+// clang-format off
+const gchar* _ui_definition =
+    "<ui>"
+        "<popup name=\"PopupMenu\">"
+            "<menuitem action=\"FileOpen\"/>"
+            "<menuitem action=\"FileOpenDir\"/>"
+            "<menu action=\"FileOpenWith\">"
+                "<placeholder name=\"AppEntries\"/>"
+            "</menu>"
+            "<separator/>"
+            "<menuitem action=\"FileRename\"/>"
+            "<menuitem action=\"FileSelectDirectory\"/>"
+            "<menuitem action=\"FileMove\"/>"
+            "<menuitem action=\"FileDelete\"/>"
+            "<separator/>"
+            "<menuitem action=\"FileProperties\"/>"
+            "<menuitem action=\"EditPreferences\"/>"
+        "</popup>"
+
+        "<accelerator name=\"ControlHelpAbout\" action=\"HelpAbout\"/>"
+
+    "</ui>";
+// clang-format on
+
+
 static const GtkActionEntry _action_entries_static_image[] =
 {
     {"ImageRotateCW", "object-rotate-right",

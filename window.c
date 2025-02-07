@@ -117,7 +117,7 @@ static void _action_reload(GtkAction *action, VnrWindow *window);
 static gboolean _file_size_is_small(char *filename);
 static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
 
-static void _action_open(GtkAction *action, VnrWindow *window);
+static void _window_action_open(VnrWindow *window, GtkAction *action);
 static void _action_open_dir(GtkAction *action, VnrWindow *window);
 static GSList* _window_file_chooser(VnrWindow *window,
                                     const gchar *title,
@@ -148,83 +148,6 @@ static void _window_drag_data_received(GtkWidget *widget,
                                        GtkSelectionData *selection_data,
                                        guint info, guint time);
 
-// clang-format off
-const gchar* _ui_definition =
-    "<ui>"
-        "<popup name=\"PopupMenu\">"
-            "<menuitem action=\"FileOpen\"/>"
-            "<menuitem action=\"FileOpenDir\"/>"
-            "<menu action=\"FileOpenWith\">"
-                "<placeholder name=\"AppEntries\"/>"
-            "</menu>"
-            "<separator/>"
-            "<menuitem action=\"FileRename\"/>"
-            "<menuitem action=\"FileSelectDirectory\"/>"
-            "<menuitem action=\"FileMove\"/>"
-            "<menuitem action=\"FileDelete\"/>"
-            "<separator/>"
-            "<menuitem action=\"FileProperties\"/>"
-            "<menuitem action=\"EditPreferences\"/>"
-        "</popup>"
-
-        "<accelerator name=\"ControlHelpAbout\" action=\"HelpAbout\"/>"
-
-    "</ui>";
-// clang-format on
-
-static const GtkActionEntry _action_entries_window[] =
-{
-    {"FileOpen", "gtk-file",
-     N_("Open _Image..."), "<control>O",
-     N_("Open an Image"),
-     G_CALLBACK(_action_open)},
-
-    {"FileOpenDir", "gtk-directory",
-     N_("Open _Folder..."), "<control>F",
-     N_("Open a Folder"),
-     G_CALLBACK(_action_open_dir)},
-
-    {"FileOpenWith", NULL,
-     N_("Open _With"), NULL,
-     N_("Open the selected image with a different application"),
-     NULL},
-
-    {"FileSelectDirectory", NULL,
-     N_("Select..."), "F7",
-     N_("Select a directory to move files"),
-     G_CALLBACK(_action_select_directory)},
-
-    {"FileRename", NULL,
-     N_("Rename"), "F2",
-     N_("Rename the current file"),
-     G_CALLBACK(_action_rename)},
-
-    {"FileMove", NULL,
-     N_("Move"), "F8",
-     N_("Move the current file"),
-     G_CALLBACK(_action_move)},
-
-    {"FileDelete", "gtk-delete",
-     N_("_Delete"), "Delete",
-     N_("Delete the current file"),
-     G_CALLBACK(_action_delete)},
-
-    {"FileProperties", "gtk-properties",
-     N_("_Properties..."), "<control>Return",
-     N_("Show information about the current file"),
-     G_CALLBACK(_action_properties)},
-
-    {"EditPreferences", "gtk-properties",
-     N_("_Preferences..."), NULL,
-     N_("User preferences for Viewnior"),
-     G_CALLBACK(_action_preferences)},
-
-    {"HelpAbout", "gtk-about",
-     N_("_About"), "F1",
-     N_("About this application"),
-     G_CALLBACK(_action_about)},
-};
-
 typedef enum
 {
     WINDOW_ACTION_FILE_OPEN = 1,
@@ -239,7 +162,7 @@ static EtkActionEntry _window_actions[] =
      N_("_Open"),
      N_("Open file"),
      "document-open",
-     G_CALLBACK(_action_open)},
+     G_CALLBACK(_window_action_open)},
 
     {0},
 };
@@ -265,7 +188,7 @@ static void window_class_init(VnrWindowClass *klass)
 
 static void window_init(VnrWindow *window)
 {
-    GError *error = NULL;
+    //GError *error = NULL;
     //GtkAction *action;
 
     window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
@@ -280,7 +203,7 @@ static void window_init(VnrWindow *window)
     window->slideshow = TRUE;
     window->cursor_is_hidden = FALSE;
     window->disable_autohide = FALSE;
-    window->actions_open_with = NULL;
+    //window->actions_open_with = NULL;
     window->open_with_menu_id = 0;
 
     window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
@@ -292,28 +215,28 @@ static void window_init(VnrWindow *window)
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-    window->ui_manager = gtk_ui_manager_new();
+    //window->ui_manager = gtk_ui_manager_new();
 
     // create actions ---------------------------------------------------------
 
-    window->actions_window = gtk_action_group_new("MenuActionsWindow");
-    gtk_action_group_set_translation_domain(window->actions_window,
-                                            GETTEXT_PACKAGE);
-    gtk_action_group_add_actions(window->actions_window,
-                                 _action_entries_window,
-                                 G_N_ELEMENTS(_action_entries_window),
-                                 window);
-    gtk_ui_manager_insert_action_group(window->ui_manager,
-                                       window->actions_window, 0);
+    //window->actions_window = gtk_action_group_new("MenuActionsWindow");
+    //gtk_action_group_set_translation_domain(window->actions_window,
+    //                                        GETTEXT_PACKAGE);
+    //gtk_action_group_add_actions(window->actions_window,
+    //                             _action_entries_window,
+    //                             G_N_ELEMENTS(_action_entries_window),
+    //                             window);
+    //gtk_ui_manager_insert_action_group(window->ui_manager,
+    //                                   window->actions_window, 0);
 
-    if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
-                                           _ui_definition,
-                                           -1,
-                                           &error))
-    {
-        g_error("building menus failed: %s\n", error->message);
-        g_error_free(error);
-    }
+    //if (!gtk_ui_manager_add_ui_from_string(window->ui_manager,
+    //                                       _ui_definition,
+    //                                       -1,
+    //                                       &error))
+    //{
+    //    g_error("building menus failed: %s\n", error->message);
+    //    g_error_free(error);
+    //}
 
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
@@ -329,17 +252,26 @@ static void window_init(VnrWindow *window)
     gtk_container_add(GTK_CONTAINER(window), window->layout);
     gtk_widget_show(window->layout);
 
-    window->popup_menu =
-        gtk_ui_manager_get_widget(window->ui_manager, "/PopupMenu");
-    g_assert(GTK_IS_WIDGET(window->popup_menu));
+    //window->popup_menu =
+    //    gtk_ui_manager_get_widget(window->ui_manager, "/PopupMenu");
+    //g_assert(GTK_IS_WIDGET(window->popup_menu));
 
-    gtk_ui_manager_ensure_update(window->ui_manager);
-
-
+    //gtk_ui_manager_ensure_update(window->ui_manager);
 
 
-//    GtkWidget *menu = NULL;
-//    GtkWidget *item = NULL;
+
+
+    GtkWidget *menu = NULL;
+    GtkWidget *item = NULL;
+
+    menu = gtk_menu_new();
+    window->popup_menu = menu;
+    gtk_menu_set_accel_group(GTK_MENU(menu), window->accel_group);
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_FILE_OPEN,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
 
 //    menu = gtk_menu_new();
 //    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(menu));
@@ -351,7 +283,7 @@ static void window_init(VnrWindow *window)
 //                                  G_OBJECT(window));
 
 
-
+    gtk_widget_show_all(menu);
 
 
     gtk_widget_hide(_window_get_fs_controls(window));
@@ -1471,7 +1403,7 @@ static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data)
     }
 }
 
-static void _action_open(GtkAction *action, VnrWindow *window)
+static void _window_action_open(VnrWindow *window, GtkAction *action)
 {
     (void) action;
 
