@@ -70,8 +70,9 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _window_action_opendir(VnrWindow *window, GtkWidget *widget);
 static void _window_action_rename(VnrWindow *window, GtkWidget *widget);
-static void _window_action_select_directory(VnrWindow *window, GtkWidget *widget);
+static void _window_action_move_to(VnrWindow *window, GtkWidget *widget);
 static void _window_action_move(VnrWindow *window, GtkWidget *widget);
+static void _window_move(VnrWindow *window);
 static gboolean _window_select_directory(VnrWindow *window);
 static GSList* _window_file_chooser(VnrWindow *window,
                                     const gchar *title,
@@ -165,8 +166,7 @@ typedef enum
     WINDOW_ACTION_OPENDIR,
     WINDOW_ACTION_OPENWITH,
     WINDOW_ACTION_RENAME,
-    WINDOW_ACTION_SELECT,
-    WINDOW_ACTION_SELECTMOVE,
+    WINDOW_ACTION_MOVETO,
     WINDOW_ACTION_MOVE,
     WINDOW_ACTION_DELETE,
     WINDOW_ACTION_PROPERTIES,
@@ -211,6 +211,13 @@ static EtkActionEntry _window_actions[] =
      N_("Rename the current file"),
      NULL,
      G_CALLBACK(_window_action_rename)},
+
+    {WINDOW_ACTION_MOVETO,
+     "<Actions>/AppWindow/MoveTo", "F7",
+     ETK_MENU_ITEM, N_("Move to..."),
+     N_("Move the current file..."),
+     NULL,
+     G_CALLBACK(_window_action_move_to)},
 
     {WINDOW_ACTION_MOVE,
      "<Actions>/AppWindow/Move", "F8",
@@ -303,6 +310,11 @@ static void window_init(VnrWindow *window)
 
     etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                   WINDOW_ACTION_RENAME,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_MOVETO,
                                   _window_actions,
                                   G_OBJECT(window));
 
@@ -816,7 +828,7 @@ static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
     }
 }
 
-static void _window_action_select_directory(VnrWindow *window, GtkWidget *widget)
+static void _window_action_move_to(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
 
@@ -824,6 +836,11 @@ static void _window_action_select_directory(VnrWindow *window, GtkWidget *widget
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
 
     _window_select_directory(window);
+
+    if (window->movedir == NULL)
+        return;
+
+    _window_move(window);
 }
 
 static void _window_action_move(VnrWindow *window, GtkWidget *widget)
@@ -838,6 +855,13 @@ static void _window_action_move(VnrWindow *window, GtkWidget *widget)
 
     if (window->movedir == NULL)
         return;
+
+    _window_move(window);
+}
+
+static void _window_move(VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
 
     VnrFile *file = VNR_FILE(window->filelist->data);
     const gchar *display_name = file->display_name;
