@@ -2,7 +2,6 @@
 #if 0
 
 /*
-
 FileOpen
 FileOpenDir
 FileOpenWith
@@ -14,8 +13,6 @@ FileProperties
 EditPreferences
 
 HelpAbout
-
-
 */
 
 static const GtkActionEntry _action_entries_window[] =
