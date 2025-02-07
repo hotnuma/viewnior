@@ -88,9 +88,9 @@ GType window_get_type() G_GNUC_CONST;
 GtkWindow* window_new();
 
 // Actions
-gboolean window_open(VnrWindow *window, gboolean fit_to_screen);
-void window_open_from_list(VnrWindow *window, GSList *uri_list);
-void window_close(VnrWindow *window);
+gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen);
+void window_open_list(VnrWindow *window, GSList *uri_list);
+void window_file_close(VnrWindow *window);
 
 void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);

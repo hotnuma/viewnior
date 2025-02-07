@@ -490,7 +490,7 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
     {
         if (VNR_WINDOW(widget)->prefs->start_maximized)
         {
-            window_open(VNR_WINDOW(widget), FALSE);
+            window_file_load(VNR_WINDOW(widget), FALSE);
         }
         else
         {
@@ -505,7 +505,7 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
             VNR_WINDOW(widget)->max_width = monitor.width * 0.9 - 100;
             VNR_WINDOW(widget)->max_height = monitor.height * 0.9 - 100;
 
-            window_open(VNR_WINDOW(widget), TRUE);
+            window_file_load(VNR_WINDOW(widget), TRUE);
         }
 
         if (VNR_WINDOW(widget)->prefs->start_slideshow && VNR_WINDOW(widget)->filelist != NULL)
@@ -543,7 +543,6 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
             break;
 
-        //_window_action_prev(window, NULL);
         window_prev(window);
         result = TRUE;
         break;
@@ -919,8 +918,8 @@ static void _window_move(VnrWindow *window)
     {
         _window_delete_item(window);
 
-        window_close(window);
-        window_open(window, FALSE);
+        window_file_close(window);
+        window_file_load(window, FALSE);
     }
 
 cleanup:
@@ -1085,8 +1084,8 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
 
                 //gdk_flush();
 
-                window_close(window);
-                window_open(window, FALSE);
+                window_file_close(window);
+                window_file_load(window, FALSE);
 
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     vnr_tools_set_cursor(GTK_WIDGET(dlg), GDK_LEFT_PTR, false);
@@ -1120,7 +1119,7 @@ static gboolean _window_delete_item(VnrWindow *window)
 
     if (next == NULL)
     {
-        window_close(window);
+        window_file_close(window);
 
         //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
 
@@ -2056,7 +2055,7 @@ static void _action_save_image(GtkWidget *widget, VnrWindow *window)
 
     if (window->prefs->reload_on_save)
     {
-        window_open(window, FALSE);
+        window_file_load(window, FALSE);
         return;
     }
 
@@ -2103,7 +2102,7 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
     {
         GSList *uri_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
         g_return_if_fail(uri_list != NULL);
-        window_open_from_list(window, uri_list);
+        window_open_list(window, uri_list);
         g_slist_free_full(uri_list, g_free);
     }
 
@@ -2254,7 +2253,7 @@ static void _window_drag_data_received(GtkWidget *widget,
         uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *)data);
         if (uri_list == NULL)
         {
-            window_close(VNR_WINDOW(widget));
+            window_file_close(VNR_WINDOW(widget));
 
             //gtk_action_group_set_sensitive(VNR_WINDOW(widget)->actions_collection, FALSE);
 
@@ -2265,25 +2264,86 @@ static void _window_drag_data_received(GtkWidget *widget,
             return;
         }
 
-        window_open_from_list(VNR_WINDOW(widget), uri_list);
+        window_open_list(VNR_WINDOW(widget), uri_list);
     }
 }
 
 
 // Actions --------------------------------------------------------------------
 
-gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
+void window_open_list(VnrWindow *window, GSList *uri_list)
 {
-    VnrFile *file;
+    GList *file_list = NULL;
+    GError *error = NULL;
+
+    if (g_slist_length(uri_list) == 1)
+    {
+        file_list = vnr_list_new_for_path(uri_list->data, window->prefs->show_hidden, &error);
+    }
+    else
+    {
+        file_list = vnr_list_new_multiple(uri_list, window->prefs->show_hidden, &error);
+    }
+
+    if (error != NULL && file_list != NULL)
+    {
+        window_file_close(window);
+
+        //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
+
+        window_slideshow_deny(window);
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
+                              TRUE, error->message, TRUE);
+
+        window_list_set(window, file_list); // TRUE);
+    }
+    else if (error != NULL)
+    {
+        window_file_close(window);
+        window_slideshow_deny(window);
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
+                              TRUE, error->message, TRUE);
+    }
+    else if (file_list == NULL)
+    {
+        window_file_close(window);
+
+        //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
+
+        window_slideshow_deny(window);
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
+                              _("The given locations contain no images."),
+                              TRUE);
+    }
+    else
+    {
+        window_list_set(window, file_list); // TRUE);
+
+        if (!window->cursor_is_hidden)
+            vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+        //gdk_flush();
+
+        window_file_close(window);
+        window_file_load(window, FALSE);
+
+        if (!window->cursor_is_hidden)
+            vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+    }
+}
+
+gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
+{
+    g_return_val_if_fail(window != NULL, false);
+
+    VnrFile *file = window_list_get_current(window);
+    if (!file)
+        return false;
+
     GdkPixbufAnimation *pixbuf;
     GdkPixbufFormat *format;
     UniFittingMode last_fit_mode;
     GError *error = NULL;
-
-    if (window->filelist == NULL)
-        return FALSE;
-
-    file = window_list_get_current(window);
 
     _window_update_fs_filename_label(window);
 
@@ -2336,13 +2396,8 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
 
     last_fit_mode = UNI_IMAGE_VIEW(window->view)->fitting;
 
-    // Return TRUE if the image is static
-    uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf);
-
-    //if (ret)
-    //    gtk_action_group_set_sensitive(window->actions_static_image, TRUE);
-    //else
-    //    gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
+    // returns true if the image is static
+    window->can_edit = uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf);
 
     if (window->mode != WINDOW_MODE_NORMAL && window->prefs->fit_on_fullscreen)
     {
@@ -2372,68 +2427,7 @@ gboolean window_open(VnrWindow *window, gboolean fit_to_screen)
     return TRUE;
 }
 
-void window_open_from_list(VnrWindow *window, GSList *uri_list)
-{
-    GList *file_list = NULL;
-    GError *error = NULL;
-
-    if (g_slist_length(uri_list) == 1)
-    {
-        file_list = vnr_list_new_for_path(uri_list->data, window->prefs->show_hidden, &error);
-    }
-    else
-    {
-        file_list = vnr_list_new_multiple(uri_list, window->prefs->show_hidden, &error);
-    }
-
-    if (error != NULL && file_list != NULL)
-    {
-        window_close(window);
-
-        //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
-
-        window_slideshow_deny(window);
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                              TRUE, error->message, TRUE);
-
-        window_list_set(window, file_list); // TRUE);
-    }
-    else if (error != NULL)
-    {
-        window_close(window);
-        window_slideshow_deny(window);
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                              TRUE, error->message, TRUE);
-    }
-    else if (file_list == NULL)
-    {
-        window_close(window);
-
-        //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
-
-        window_slideshow_deny(window);
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
-                              _("The given locations contain no images."),
-                              TRUE);
-    }
-    else
-    {
-        window_list_set(window, file_list); // TRUE);
-
-        if (!window->cursor_is_hidden)
-            vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
-
-        //gdk_flush();
-
-        window_close(window);
-        window_open(window, FALSE);
-
-        if (!window->cursor_is_hidden)
-            vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
-    }
-}
-
-void window_close(VnrWindow *window)
+void window_file_close(VnrWindow *window)
 {
     gtk_window_set_title(GTK_WINDOW(window), "Viewnior");
     uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), NULL);
@@ -2496,7 +2490,7 @@ gboolean window_next(VnrWindow *window, gboolean rem_timeout)
 
     //gdk_flush();
 
-    window_open(window, FALSE);
+    window_file_load(window, FALSE);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -2534,7 +2528,7 @@ gboolean window_prev(VnrWindow *window)
 
     //gdk_flush();
 
-    window_open(window, FALSE);
+    window_file_load(window, FALSE);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -2563,7 +2557,7 @@ gboolean window_first(VnrWindow *window)
 
     //gdk_flush();
 
-    window_open(window, FALSE);
+    window_file_load(window, FALSE);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -2587,7 +2581,7 @@ gboolean window_last(VnrWindow *window)
 
     //gdk_flush();
 
-    window_open(window, FALSE);
+    window_file_load(window, FALSE);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
