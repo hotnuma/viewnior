@@ -47,6 +47,7 @@ struct _VnrWindow
     WindowMode mode;
     GtkAccelGroup *accel_group;
     VnrPrefs *prefs;
+    gboolean can_edit;
 
     // Widgets
     GtkWidget *layout_box;

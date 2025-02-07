@@ -83,6 +83,12 @@ static gboolean _window_delete_item(VnrWindow *window);
 static void _window_action_properties(VnrWindow *window, GtkWidget *widget);
 static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
+// Private actions ------------------------------------------------------------
+
+static void _action_save_image(GtkWidget *widget, VnrWindow *window);
+static void _action_crop(GtkAction *action, VnrWindow *window);
+static void _action_resize(GtkToggleAction *action, VnrWindow *window);
+
 //static void _action_about(GtkAction *action, VnrWindow *window);
 //static void _action_first(GtkAction *action, gpointer user_data);
 //static void _action_last(GtkAction *action, gpointer user_data);
@@ -103,16 +109,6 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 //static void _window_update_openwith_menu(VnrWindow *window);
 //static void _on_open_with_launch_application(GtkAction *action,
 //                                             VnrWindow *window);
-
-// ----------------------------------------------------------------------------
-
-static void _action_save_image(GtkWidget *widget, VnrWindow *window);
-static void _action_flip_horizontal(GtkAction *action, VnrWindow *window);
-static void _action_flip_vertical(GtkAction *action, VnrWindow *window);
-static void _action_next(GtkAction *action, gpointer user_data);
-static void _action_prev(GtkAction *action, gpointer user_data);
-static void _action_resize(GtkToggleAction *action, VnrWindow *window);
-static void _action_crop(GtkAction *action, VnrWindow *window);
 
 // ----------------------------------------------------------------------------
 
@@ -287,6 +283,7 @@ static void window_init(VnrWindow *window)
     window->mode = WINDOW_MODE_NORMAL;
     window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
     window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
+    window->can_edit = false;
 
     //window->actions_open_with = NULL;
     window->open_with_menu_id = 0;
@@ -540,55 +537,42 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
     switch (event->keyval)
     {
     case GDK_KEY_Left:
-        if (event->state & GDK_MOD1_MASK)
-        {
-            _action_prev(NULL, window);
-            result = TRUE;
-            break;
-        } /* else fall-trough is intended */
-
-    case GDK_KEY_Up:
         if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
-        {
-            /* break to let scrollview handle the key */
-            break;
-        }
+            break; // let scrollview handle the key
+
         if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
             break;
 
-        _action_prev(NULL, window);
+        //_window_action_prev(window, NULL);
+        window_prev(window);
         result = TRUE;
         break;
 
     case GDK_KEY_Right:
-        if (event->state & GDK_MOD1_MASK)
-        {
-            _action_next(NULL, window);
-            result = TRUE;
-            break;
-        } /* else fall-trough is intended */
-
-    case GDK_KEY_Down:
         if (!uni_scroll_win_image_fits(UNI_SCROLL_WIN(window->scroll_view)))
-        {
-            /* break to let scrollview handle the key */
-            break;
-        }
+            break; // let scrollview handle the key
+
         if (toolbar_focus_child != NULL || msg_area_focus_child != NULL)
             break;
 
-        _action_next(NULL, window);
+        window_next(window, TRUE);
         result = TRUE;
         break;
 
-    case GDK_KEY_Page_Up:
-        _action_prev(NULL, window);
-        result = TRUE;
+    case GDK_KEY_Up:
+        if (event->state & GDK_CONTROL_MASK)
+        {
+            _window_flip_pixbuf(window, TRUE);
+            result = TRUE;
+        }
         break;
 
-    case GDK_KEY_Page_Down:
-        _action_next(NULL, window);
-        result = TRUE;
+    case GDK_KEY_Down:
+        if (event->state & GDK_CONTROL_MASK)
+        {
+            _window_flip_pixbuf(window, FALSE);
+            result = TRUE;
+        }
         break;
 
     case GDK_KEY_Escape:
@@ -622,11 +606,11 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         break;
 
     case 'h':
-        _action_flip_horizontal(NULL, window);
+        _window_flip_pixbuf(window, TRUE);
         break;
 
     case 'v':
-        _action_flip_vertical(NULL, window);
+        _window_flip_pixbuf(window, FALSE);
         break;
 
     case 'c':
@@ -1891,6 +1875,9 @@ static void _window_rotate_pixbuf(VnrWindow *window,
 
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 {
+    if (!window->can_edit)
+        return;
+
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
@@ -2121,32 +2108,6 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
     }
 
     gtk_widget_destroy(dialog);
-}
-
-static void _action_flip_horizontal(GtkAction *action, VnrWindow *window)
-{
-//    if (!gtk_action_group_get_sensitive(window->actions_static_image))
-//        return;
-
-    _window_flip_pixbuf(window, TRUE);
-}
-
-static void _action_flip_vertical(GtkAction *action, VnrWindow *window)
-{
-//    if (!gtk_action_group_get_sensitive(window->actions_static_image))
-//        return;
-
-    _window_flip_pixbuf(window, FALSE);
-}
-
-static void _action_prev(GtkAction *action, gpointer user_data)
-{
-    window_prev(VNR_WINDOW(user_data));
-}
-
-static void _action_next(GtkAction *action, gpointer user_data)
-{
-    window_next(VNR_WINDOW(user_data), TRUE);
 }
 
 static void _action_resize(GtkToggleAction *action, VnrWindow *window)
