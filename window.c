@@ -69,9 +69,9 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _window_action_opendir(VnrWindow *window, GtkWidget *widget);
-static void _action_rename(GtkAction *action, VnrWindow *window);
-static void _action_select_directory(GtkAction *action, VnrWindow *window);
-static void _action_move(GtkAction *action, VnrWindow *window);
+static void _window_action_rename(VnrWindow *window, GtkWidget *widget);
+static void _window_action_select_directory(VnrWindow *window, GtkWidget *widget);
+static void _window_action_move(VnrWindow *window, GtkWidget *widget);
 static gboolean _window_select_directory(VnrWindow *window);
 static GSList* _window_file_chooser(VnrWindow *window,
                                     const gchar *title,
@@ -163,6 +163,15 @@ typedef enum
 {
     WINDOW_ACTION_OPENFILE = 1,
     WINDOW_ACTION_OPENDIR,
+    WINDOW_ACTION_OPENWITH,
+    WINDOW_ACTION_RENAME,
+    WINDOW_ACTION_SELECT,
+    WINDOW_ACTION_SELECTMOVE,
+    WINDOW_ACTION_MOVE,
+    WINDOW_ACTION_DELETE,
+    WINDOW_ACTION_PROPERTIES,
+    WINDOW_ACTION_PREFERENCES,
+    WINDOW_ACTION_ITEM1,
     WINDOW_ACTION_ITEM2,
     WINDOW_ACTION_ITEM3,
     WINDOW_ACTION_ITEM4,
@@ -170,27 +179,59 @@ typedef enum
     WINDOW_ACTION_ITEM6,
     WINDOW_ACTION_ITEM7,
     WINDOW_ACTION_ITEM8,
-    WINDOW_ACTION_ITEM9,
 
 } WindowAction;
 
 static EtkActionEntry _window_actions[] =
 {
     {WINDOW_ACTION_OPENFILE,
-     "<Actions>/AppWindow/OpenFile", "<control>o",
-     ETK_IMAGE_MENU_ITEM,
-     N_("Open _Image..."),
+     "<Actions>/AppWindow/OpenFile", "<Control>O",
+     ETK_IMAGE_MENU_ITEM, N_("Open _Image..."),
      N_("Open an Image"),
      "gtk-file",
      G_CALLBACK(_window_action_openfile)},
 
     {WINDOW_ACTION_OPENDIR,
-     "<Actions>/AppWindow/OpenDir", "<control>f",
-     ETK_IMAGE_MENU_ITEM,
-     N_("Open _Folder..."),
+     "<Actions>/AppWindow/OpenDir", "<Control>F",
+     ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
      N_("Open a Folder"),
      "gtk-directory",
      G_CALLBACK(_window_action_opendir)},
+
+    //{WINDOW_ACTION_OPENWITH,
+    // "<Actions>/AppWindow/OpenWith", NULL,
+    // ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
+    // N_("Open a Folder"),
+    // "gtk-directory",
+    // G_CALLBACK(_window_action_opendir)},
+
+    {WINDOW_ACTION_RENAME,
+     "<Actions>/AppWindow/Rebame", "F2",
+     ETK_MENU_ITEM, N_("Rename"),
+     N_("Rename the current file"),
+     NULL,
+     G_CALLBACK(_window_action_rename)},
+
+    {WINDOW_ACTION_MOVE,
+     "<Actions>/AppWindow/Move", "F8",
+     ETK_MENU_ITEM, N_("Move"),
+     N_("Move the current file"),
+     NULL,
+     G_CALLBACK(_window_action_move)},
+
+    //{WINDOW_ACTION_OPENDIR,
+    // "<Actions>/AppWindow/OpenDir", "<control>f",
+    // ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
+    // N_("Open a Folder"),
+    // "gtk-directory",
+    // G_CALLBACK(_window_action_opendir)},
+
+    //{WINDOW_ACTION_OPENDIR,
+    // "<Actions>/AppWindow/OpenDir", "<control>f",
+    // ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
+    // N_("Open a Folder"),
+    // "gtk-directory",
+    // G_CALLBACK(_window_action_opendir)},
 
     {0},
 };
@@ -257,6 +298,16 @@ static void window_init(VnrWindow *window)
 
     etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                   WINDOW_ACTION_OPENDIR,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_RENAME,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_MOVE,
                                   _window_actions,
                                   G_OBJECT(window));
 
@@ -747,9 +798,9 @@ static void _window_action_opendir(VnrWindow *window, GtkWidget *widget)
                                      window->prefs->show_hidden);
 }
 
-static void _action_rename(GtkAction *action, VnrWindow *window)
+static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
 {
-    (void) action;
+    (void) widget;
 
     g_return_if_fail((window != NULL));
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
@@ -765,9 +816,9 @@ static void _action_rename(GtkAction *action, VnrWindow *window)
     }
 }
 
-static void _action_select_directory(GtkAction *action, VnrWindow *window)
+static void _window_action_select_directory(VnrWindow *window, GtkWidget *widget)
 {
-    (void) action;
+    (void) widget;
 
     g_return_if_fail(window != NULL);
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
@@ -775,9 +826,9 @@ static void _action_select_directory(GtkAction *action, VnrWindow *window)
     _window_select_directory(window);
 }
 
-static void _action_move(GtkAction *action, VnrWindow *window)
+static void _window_action_move(VnrWindow *window, GtkWidget *widget)
 {
-    (void) action;
+    (void) widget;
 
     g_return_if_fail(window != NULL);
     g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
