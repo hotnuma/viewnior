@@ -85,12 +85,43 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
 static void _action_about(GtkAction *action, VnrWindow *window);
 
-
 // ----------------------------------------------------------------------------
 
 //static void _window_update_openwith_menu(VnrWindow *window);
 //static void _on_open_with_launch_application(GtkAction *action,
 //                                             VnrWindow *window);
+
+// ----------------------------------------------------------------------------
+
+static void _action_save_image(GtkWidget *widget, VnrWindow *window);
+static void _action_flip_horizontal(GtkAction *action, VnrWindow *window);
+static void _action_flip_vertical(GtkAction *action, VnrWindow *window);
+static void _action_rotate_cw(GtkAction *action, gpointer user_data);
+static void _action_rotate_ccw(GtkAction *action, gpointer user_data);
+static void _action_zoom_in(GtkAction *action, gpointer user_data);
+static void _action_zoom_out(GtkAction *action, gpointer user_data);
+static void _action_normal_size(GtkAction *action, gpointer user_data);
+static void _action_fit(GtkAction *action, gpointer user_data);
+static void _action_next(GtkAction *action, gpointer user_data);
+static void _action_first(GtkAction *action, gpointer user_data);
+static void _action_last(GtkAction *action, gpointer user_data);
+static void _action_prev(GtkAction *action, gpointer user_data);
+static void _action_resize(GtkToggleAction *action, VnrWindow *window);
+static void _action_reload(GtkAction *action, VnrWindow *window);
+static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
+static void _action_fullscreen(GtkAction *action, VnrWindow *window);
+static void _action_scrollbar(GtkAction *action, VnrWindow *window);
+static void _action_slideshow(GtkAction *action, VnrWindow *window);
+static void _action_crop(GtkAction *action, VnrWindow *window);
+
+// ----------------------------------------------------------------------------
+
+static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
+static gboolean _file_size_is_small(char *filename);
+static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
+static void _on_file_open_dialog_response(GtkWidget *dialog,
+                                          gint response_id,
+                                          VnrWindow *window);
 
 static void _window_hide_cursor(VnrWindow *window);
 static void _window_show_cursor(VnrWindow *window);
@@ -119,32 +150,6 @@ static void _on_spin_value_change(GtkSpinButton *spinbutton,
                                   VnrWindow *window);
 static void _on_toggle_show_next(GtkToggleButton *togglebutton,
                                  VnrWindow *window);
-static void _action_save_image(GtkWidget *widget, VnrWindow *window);
-static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
-static void _action_flip_horizontal(GtkAction *action, VnrWindow *window);
-static void _action_flip_vertical(GtkAction *action, VnrWindow *window);
-static void _action_rotate_cw(GtkAction *action, gpointer user_data);
-static void _action_rotate_ccw(GtkAction *action, gpointer user_data);
-static void _action_zoom_in(GtkAction *action, gpointer user_data);
-static void _action_zoom_out(GtkAction *action, gpointer user_data);
-static void _action_normal_size(GtkAction *action, gpointer user_data);
-static void _action_fit(GtkAction *action, gpointer user_data);
-static void _action_next(GtkAction *action, gpointer user_data);
-static void _action_first(GtkAction *action, gpointer user_data);
-static void _action_last(GtkAction *action, gpointer user_data);
-static void _action_prev(GtkAction *action, gpointer user_data);
-static void _action_resize(GtkToggleAction *action, VnrWindow *window);
-static void _action_reload(GtkAction *action, VnrWindow *window);
-static gboolean _file_size_is_small(char *filename);
-static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
-static void _on_file_open_dialog_response(GtkWidget *dialog,
-                                          gint response_id,
-                                          VnrWindow *window);
-static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
-static void _action_fullscreen(GtkAction *action, VnrWindow *window);
-static void _action_scrollbar(GtkAction *action, VnrWindow *window);
-static void _action_slideshow(GtkAction *action, VnrWindow *window);
-static void _action_crop(GtkAction *action, VnrWindow *window);
 
 // DnD ------------------------------------------------------------------------
 
@@ -199,12 +204,12 @@ static EtkActionEntry _window_actions[] =
      "gtk-directory",
      G_CALLBACK(_window_action_opendir)},
 
-    //{WINDOW_ACTION_OPENWITH,
-    // "<Actions>/AppWindow/OpenWith", NULL,
-    // ETK_MENU_ITEM_IMAGE, N_("Open _Folder..."),
-    // N_("Open a Folder"),
-    // "gtk-directory",
-    // G_CALLBACK(_window_action_opendir)},
+    {WINDOW_ACTION_OPENWITH,
+     "<Actions>/AppWindow/OpenWith", "",
+     ETK_MENU_ITEM, N_("Open _With"),
+     N_("Open the selected image with a different application"),
+     NULL,
+     NULL},
 
     {WINDOW_ACTION_RENAME,
      "<Actions>/AppWindow/Rebame", "F2",
@@ -294,10 +299,10 @@ static void window_init(VnrWindow *window)
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-    window->layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    window->layout_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-    gtk_container_add(GTK_CONTAINER(window), window->layout);
-    gtk_widget_show(window->layout);
+    gtk_container_add(GTK_CONTAINER(window), window->layout_box);
+    gtk_widget_show(window->layout_box);
 
     GtkWidget *menu = NULL;
     //GtkWidget *item = NULL;
@@ -315,6 +320,14 @@ static void window_init(VnrWindow *window)
                                   WINDOW_ACTION_OPENDIR,
                                   _window_actions,
                                   G_OBJECT(window));
+
+    window->openwith_item =
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_OPENWITH,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    etk_menu_append_separator(GTK_MENU_SHELL(menu));
 
     etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                   WINDOW_ACTION_RENAME,
@@ -341,14 +354,15 @@ static void window_init(VnrWindow *window)
                                   _window_actions,
                                   G_OBJECT(window));
 
+    etk_menu_append_separator(GTK_MENU_SHELL(menu));
+
     etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                   WINDOW_ACTION_PREFERENCES,
                                   _window_actions,
                                   G_OBJECT(window));
 
-    //gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(menu));
-
     gtk_widget_show_all(menu);
+    gtk_widget_hide(window->openwith_item);
 
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
@@ -368,7 +382,7 @@ static void window_init(VnrWindow *window)
 
     window->msg_area = vnr_message_area_new();
     VNR_MESSAGE_AREA(window->msg_area)->vnr_win = window;
-    gtk_box_pack_start(GTK_BOX(window->layout),
+    gtk_box_pack_start(GTK_BOX(window->layout_box),
                        window->msg_area, FALSE, FALSE, 0);
     gtk_widget_show(GTK_WIDGET(window->msg_area));
 
@@ -376,7 +390,7 @@ static void window_init(VnrWindow *window)
     gtk_widget_set_can_focus(window->view, TRUE);
     window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
 
-    gtk_box_pack_end(GTK_BOX(window->layout),
+    gtk_box_pack_end(GTK_BOX(window->layout_box),
                      window->scroll_view, TRUE, TRUE, 0);
     gtk_widget_show_all(GTK_WIDGET(window->scroll_view));
 

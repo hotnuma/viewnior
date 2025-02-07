@@ -41,42 +41,30 @@ struct _VnrWindow
 {
     GtkWindow __parent__;
 
-    // Interface
-    //GtkUIManager *ui_manager;
-
+    // Data
+    GList *filelist;
+    gchar *movedir;
+    WindowMode mode;
     GtkAccelGroup *accel_group;
-    GtkWidget *layout;
+    VnrPrefs *prefs;
 
-    GtkWidget *popup_menu;
+    // Widgets
+    GtkWidget *layout_box;
     GtkWidget *msg_area;
-    GtkWidget *props_dlg;
-
     GtkWidget *view;
     GtkWidget *scroll_view;
-
-    // Parameters
-    VnrPrefs *prefs;
+    GtkWidget *popup_menu;
+    GtkWidget *props_dlg;
+    GtkWidget *openwith_item;
 
     gint max_width;
     gint max_height;
     gchar *writable_format_name;
-
     gint current_image_height;
     gint current_image_width;
-
-    WindowMode mode;
     guint8 modifications;
     gboolean cursor_is_hidden;
-
-    //GtkActionGroup *actions_window;
-    //GtkActionGroup *actions_open_with;
     guint open_with_menu_id;
-
-    //GtkActionGroup *actions_static_image;
-
-    // Data
-    gchar *movedir;
-    GList *filelist;
 
     // Fullscreen (fs) variables
     GtkWidget *fs_controls;
@@ -92,11 +80,6 @@ struct _VnrWindow
     gint sl_timeout;
     GtkWidget *sl_timeout_widget;
 };
-
-//struct _VnrWindowClass
-//{
-//    GtkWindowClass parent_class;
-//};
 
 GType window_get_type() G_GNUC_CONST;
 
