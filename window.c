@@ -78,8 +78,11 @@ static GSList* _window_file_chooser(VnrWindow *window,
                                     const gchar *title,
                                     GtkFileChooserAction action,
                                     gboolean multiple);
-static void _action_delete(GtkAction *action, VnrWindow *window);
+static void _window_action_delete(VnrWindow *window, GtkWidget *widget);
 static gboolean _window_delete_item(VnrWindow *window);
+static void _window_action_properties(VnrWindow *window, GtkWidget *widget);
+static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
+
 static void _action_about(GtkAction *action, VnrWindow *window);
 
 
@@ -118,7 +121,6 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
                                  VnrWindow *window);
 static void _action_save_image(GtkWidget *widget, VnrWindow *window);
 static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
-static void _action_preferences(GtkAction *action, gpointer user_data);
 static void _action_flip_horizontal(GtkAction *action, VnrWindow *window);
 static void _action_flip_vertical(GtkAction *action, VnrWindow *window);
 static void _action_rotate_cw(GtkAction *action, gpointer user_data);
@@ -132,7 +134,6 @@ static void _action_first(GtkAction *action, gpointer user_data);
 static void _action_last(GtkAction *action, gpointer user_data);
 static void _action_prev(GtkAction *action, gpointer user_data);
 static void _action_resize(GtkToggleAction *action, VnrWindow *window);
-static void _action_properties(GtkAction *action, VnrWindow *window);
 static void _action_reload(GtkAction *action, VnrWindow *window);
 static gboolean _file_size_is_small(char *filename);
 static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
@@ -186,21 +187,21 @@ static EtkActionEntry _window_actions[] =
 {
     {WINDOW_ACTION_OPENFILE,
      "<Actions>/AppWindow/OpenFile", "<Control>O",
-     ETK_IMAGE_MENU_ITEM, N_("Open _Image..."),
+     ETK_MENU_ITEM_IMAGE, N_("Open _Image..."),
      N_("Open an Image"),
      "gtk-file",
      G_CALLBACK(_window_action_openfile)},
 
     {WINDOW_ACTION_OPENDIR,
      "<Actions>/AppWindow/OpenDir", "<Control>F",
-     ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
+     ETK_MENU_ITEM_IMAGE, N_("Open _Folder..."),
      N_("Open a Folder"),
      "gtk-directory",
      G_CALLBACK(_window_action_opendir)},
 
     //{WINDOW_ACTION_OPENWITH,
     // "<Actions>/AppWindow/OpenWith", NULL,
-    // ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
+    // ETK_MENU_ITEM_IMAGE, N_("Open _Folder..."),
     // N_("Open a Folder"),
     // "gtk-directory",
     // G_CALLBACK(_window_action_opendir)},
@@ -226,19 +227,26 @@ static EtkActionEntry _window_actions[] =
      NULL,
      G_CALLBACK(_window_action_move)},
 
-    //{WINDOW_ACTION_OPENDIR,
-    // "<Actions>/AppWindow/OpenDir", "<control>f",
-    // ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
-    // N_("Open a Folder"),
-    // "gtk-directory",
-    // G_CALLBACK(_window_action_opendir)},
+    {WINDOW_ACTION_DELETE,
+     "<Actions>/AppWindow/Delete", "Delete",
+     ETK_MENU_ITEM, N_("_Delete"),
+     N_("Delete the current file"),
+     NULL,
+     G_CALLBACK(_window_action_delete)},
 
-    //{WINDOW_ACTION_OPENDIR,
-    // "<Actions>/AppWindow/OpenDir", "<control>f",
-    // ETK_IMAGE_MENU_ITEM, N_("Open _Folder..."),
-    // N_("Open a Folder"),
-    // "gtk-directory",
-    // G_CALLBACK(_window_action_opendir)},
+    {WINDOW_ACTION_PROPERTIES,
+     "<Actions>/AppWindow/Properties", "<Control>Return",
+     ETK_MENU_ITEM, N_("_Properties..."),
+     N_("Show information about the current file"),
+     NULL,
+     G_CALLBACK(_window_action_properties)},
+
+    {WINDOW_ACTION_PREFERENCES,
+     "<Actions>/AppWindow/Preferences", "",
+     ETK_MENU_ITEM, N_("_Preferences..."),
+     N_("User preferences for Viewnior"),
+     NULL,
+     G_CALLBACK(_window_action_preferences)},
 
     {0},
 };
@@ -323,7 +331,22 @@ static void window_init(VnrWindow *window)
                                   _window_actions,
                                   G_OBJECT(window));
 
-//    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(menu));
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_DELETE,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_PROPERTIES,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_PREFERENCES,
+                                  _window_actions,
+                                  G_OBJECT(window));
+
+    //gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(menu));
 
     gtk_widget_show_all(menu);
 
@@ -949,9 +972,9 @@ static GSList* _window_file_chooser(VnrWindow *window,
     return uri_list;
 }
 
-static void _action_delete(GtkAction *action, VnrWindow *window)
+static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
 {
-    (void) action;
+    (void) widget;
 
     gboolean restart_slideshow = FALSE;
 
@@ -1097,6 +1120,20 @@ static gboolean _window_delete_item(VnrWindow *window)
     window_list_set(window, next);
 
     return true;
+}
+
+static void _window_action_properties(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    vnr_properties_dialog_show(VNR_PROPERTIES_DIALOG(window->props_dlg));
+}
+
+static void _window_action_preferences(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    vnr_prefs_show_dialog(window->prefs);
 }
 
 static void _action_about(GtkAction *action, VnrWindow *window)
@@ -1842,11 +1879,6 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
     gtk_widget_destroy(dialog);
 }
 
-static void _action_preferences(GtkAction *action, gpointer user_data)
-{
-    vnr_prefs_show_dialog(VNR_WINDOW(user_data)->prefs);
-}
-
 static void _action_flip_horizontal(GtkAction *action, VnrWindow *window)
 {
 //    if (!gtk_action_group_get_sensitive(window->actions_static_image))
@@ -1936,11 +1968,6 @@ static void _action_resize(GtkToggleAction *action, VnrWindow *window)
     gtk_window_resize(GTK_WINDOW(window),
                       img_w,
                       img_h /*+ _window_get_top_widgets_height(window)*/);
-}
-
-static void _action_properties(GtkAction *action, VnrWindow *window)
-{
-    vnr_properties_dialog_show(VNR_PROPERTIES_DIALOG(window->props_dlg));
 }
 
 static void _action_reload(GtkAction *action, VnrWindow *window)
