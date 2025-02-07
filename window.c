@@ -159,12 +159,12 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 // DnD ------------------------------------------------------------------------
 
 static void _window_set_drag(VnrWindow *window);
-static void _window_on_drag_begin(GtkWidget *widget,
-                                  GdkDragContext *drag_context,
-                                  GtkSelectionData *data,
-                                  guint info,
-                                  guint time,
-                                  gpointer user_data);
+static void _view_on_drag_begin(GtkWidget *widget,
+                                GdkDragContext *drag_context,
+                                GtkSelectionData *data,
+                                guint info,
+                                guint time,
+                                gpointer user_data);
 static void _window_drag_data_received(GtkWidget *widget,
                                        GdkDragContext *context,
                                        gint x, gint y,
@@ -429,7 +429,7 @@ static void window_init(VnrWindow *window)
                      G_CALLBACK(_view_on_zoom_changed), window);
 
     g_signal_connect(G_OBJECT(window->view), "drag-data-get",
-                     G_CALLBACK(_window_on_drag_begin), window);
+                     G_CALLBACK(_view_on_drag_begin), window);
 
     _window_load_accel_map();
 }
@@ -439,6 +439,7 @@ static void _window_load_accel_map()
     gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
                                         "accel_map", NULL);
     //gtk_accel_map_load(accelfile);
+
     g_free(accelfile);
 }
 
@@ -457,6 +458,7 @@ static void _window_save_accel_map()
     gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
                                         "accel_map", NULL);
     //gtk_accel_map_save(accelfile);
+
     g_free(accelfile);
 }
 
@@ -735,6 +737,8 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 
     //if (!gtk_action_group_get_sensitive(window->actions_image))
     //    return;
+    if (window_list_get_current(window) == NULL)
+        return;
 
     gint total = 0;
     gint position = vnr_list_get_position(window->filelist, &total);
@@ -767,6 +771,7 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
+    g_return_if_fail(window != NULL);
 
     GtkWidget *dialog = gtk_file_chooser_dialog_new(
                                 _("Open Image"),
@@ -821,6 +826,7 @@ static void _window_action_openfile(VnrWindow *window, GtkWidget *widget)
 static void _window_action_opendir(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
+    g_return_if_fail(window != NULL);
 
     GtkWidget *dialog = gtk_file_chooser_dialog_new(
                                 _("Open Folder"),
@@ -855,27 +861,30 @@ static void _window_action_opendir(VnrWindow *window, GtkWidget *widget)
 static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
+    g_return_if_fail(window != NULL);
 
-    g_return_if_fail((window != NULL));
-    g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     VnrFile *file = window_list_get_current(window);
-
     gboolean result = dialog_file_rename(GTK_WINDOW(window), file);
 
-    if (result)
-    {
-        vnr_list_sort(window->filelist);
-        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
-    }
+    if (!result)
+        return;
+
+    vnr_list_sort(window->filelist);
+    _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
 }
 
 static void _window_action_move_to(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
-
     g_return_if_fail(window != NULL);
-    g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     _window_select_directory(window);
 
@@ -888,9 +897,11 @@ static void _window_action_move_to(VnrWindow *window, GtkWidget *widget)
 static void _window_action_move(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
-
     g_return_if_fail(window != NULL);
-    g_return_if_fail(window->mode == WINDOW_MODE_NORMAL);
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     if (window->movedir == NULL)
         _window_select_directory(window);
@@ -904,6 +915,10 @@ static void _window_action_move(VnrWindow *window, GtkWidget *widget)
 static void _window_move(VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     VnrFile *file = VNR_FILE(window->filelist->data);
     const gchar *display_name = file->display_name;
@@ -994,6 +1009,11 @@ static GSList* _window_file_chooser(VnrWindow *window,
 static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
+    g_return_if_fail(window != NULL);
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     gboolean restart_slideshow = FALSE;
 
@@ -1144,6 +1164,11 @@ static gboolean _window_delete_item(VnrWindow *window)
 static void _window_action_properties(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
+    g_return_if_fail(window != NULL);
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     vnr_properties_dialog_show(VNR_PROPERTIES_DIALOG(window->props_dlg));
 }
@@ -1151,6 +1176,10 @@ static void _window_action_properties(VnrWindow *window, GtkWidget *widget)
 static void _window_action_preferences(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
+    g_return_if_fail(window != NULL);
+
+    if (window->mode != WINDOW_MODE_NORMAL)
+        return;
 
     vnr_prefs_show_dialog(window->prefs);
 }
@@ -2060,7 +2089,7 @@ static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window)
     _window_unfullscreen(window);
 }
 
-static void _window_on_drag_begin(GtkWidget *widget,
+static void _view_on_drag_begin(GtkWidget *widget,
                                   GdkDragContext *drag_context,
                                   GtkSelectionData *data,
                                   guint info,
@@ -2475,6 +2504,9 @@ void window_list_set(VnrWindow *window, GList *list)
 
 VnrFile* window_list_get_current(VnrWindow *window)
 {
+    if (window->filelist == NULL)
+        return NULL;
+
     return VNR_FILE(window->filelist->data);
 }
 
