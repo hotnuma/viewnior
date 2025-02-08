@@ -69,9 +69,9 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _window_action_opendir(VnrWindow *window, GtkWidget *widget);
-//static void _window_update_openwith_menu(VnrWindow *window);
-//static void _on_open_with_launch_application(GtkAction *action,
-//                                             VnrWindow *window);
+static void _window_update_openwith_menu(VnrWindow *window);
+static void _on_open_with_launch_application(VnrWindow *window,
+                                             gpointer user_data);
 
 // Actions --------------------------------------------------------------------
 
@@ -284,7 +284,7 @@ static void window_init(VnrWindow *window)
     window->list_image = NULL;
 
     //window->actions_open_with = NULL;
-    window->open_with_menu_id = 0;
+    //window->open_with_menu_id = 0;
 
     window->writable_format_name = NULL;
     window->fs_controls = NULL;
@@ -365,7 +365,7 @@ static void window_init(VnrWindow *window)
                                          G_OBJECT(window));
 
     gtk_widget_show_all(menu);
-    gtk_widget_hide(window->openwith_item);
+    //gtk_widget_hide(window->openwith_item);
 
     etk_widget_list_set_sensitive(window->list_image, false);
 
@@ -802,44 +802,6 @@ VnrFile* window_list_get_current(VnrWindow *window)
     return VNR_FILE(window->filelist->data);
 }
 
-gboolean window_next(VnrWindow *window, gboolean rem_timeout)
-{
-    GList *next;
-
-    /* Don't reload current image
-     * if the list contains only one(or no) image */
-    if (g_list_length(g_list_first(window->filelist)) < 2)
-        return FALSE;
-
-    if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
-        g_source_remove(window->sl_source_tag);
-
-    next = g_list_next(window->filelist);
-    if (next == NULL)
-    {
-        next = g_list_first(window->filelist);
-    }
-
-    window->filelist = next;
-
-    if (!window->cursor_is_hidden)
-        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
-
-    //gdk_flush();
-
-    window_file_load(window, FALSE);
-
-    if (!window->cursor_is_hidden)
-        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
-
-    if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
-        window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
-                                                      (GSourceFunc)_window_next_image_src,
-                                                      window);
-
-    return TRUE;
-}
-
 gboolean window_prev(VnrWindow *window)
 {
     GList *prev;
@@ -871,6 +833,44 @@ gboolean window_prev(VnrWindow *window)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
+        window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
+                                                      (GSourceFunc)_window_next_image_src,
+                                                      window);
+
+    return TRUE;
+}
+
+gboolean window_next(VnrWindow *window, gboolean rem_timeout)
+{
+    GList *next;
+
+    // don't reload current image if the list contains only one(or no) image
+
+    if (g_list_length(g_list_first(window->filelist)) < 2)
+        return FALSE;
+
+    if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
+        g_source_remove(window->sl_source_tag);
+
+    next = g_list_next(window->filelist);
+    if (next == NULL)
+    {
+        next = g_list_first(window->filelist);
+    }
+
+    window->filelist = next;
+
+    if (!window->cursor_is_hidden)
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+    //gdk_flush();
+
+    window_file_load(window, FALSE);
+
+    if (!window->cursor_is_hidden)
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+    if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
         window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
                                                       (GSourceFunc)_window_next_image_src,
                                                       window);
@@ -1168,9 +1168,10 @@ gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
 
-    //_window_update_openwith_menu(window);
+    _window_update_openwith_menu(window);
 
     g_object_unref(pixbuf);
+
     return TRUE;
 }
 
@@ -1187,43 +1188,38 @@ void window_file_close(VnrWindow *window)
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
 }
 
-#if 0
 static void _window_update_openwith_menu(VnrWindow *window)
 {
     // Modified version of eog's eog_window_update_openwith_menu
 
-    GFile *file;
-    GFileInfo *file_info;
-    GList *iter;
-    gchar *label, *tip;
-    const gchar *mime_type;
-    GtkAction *action;
-    GList *apps;
-    guint action_id = 0;
+    return;
 
     VnrFile *current = window_list_get_current(window);
-    file = g_file_new_for_path((gchar *)current->path);
-    file_info = g_file_query_info(file,
-                                  G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
-                                  0, NULL, NULL);
-
-    if (file_info == NULL)
+    if (!current)
         return;
-    else
-        mime_type = g_file_info_get_content_type(file_info);
 
-    if (window->open_with_menu_id != 0)
-    {
-        gtk_ui_manager_remove_ui(window->ui_manager, window->open_with_menu_id);
-        window->open_with_menu_id = 0;
-    }
+    GFile *file = g_file_new_for_path((gchar*) current->path);
+    GFileInfo *file_info = g_file_query_info(
+                            file,
+                            G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+                            0, NULL, NULL);
+    if (!file_info)
+        return;
 
-    if (window->actions_open_with != NULL)
-    {
-        gtk_ui_manager_remove_action_group(window->ui_manager,
-                                           window->actions_open_with);
-        window->actions_open_with = NULL;
-    }
+    const gchar *mime_type = g_file_info_get_content_type(file_info);
+
+    //if (window->open_with_menu_id != 0)
+    //{
+    //    gtk_ui_manager_remove_ui(window->ui_manager, window->open_with_menu_id);
+    //    window->open_with_menu_id = 0;
+    //}
+
+    //if (window->actions_open_with != NULL)
+    //{
+    //    gtk_ui_manager_remove_action_group(window->ui_manager,
+    //                                       window->actions_open_with);
+    //    window->actions_open_with = NULL;
+    //}
 
     if (mime_type == NULL)
     {
@@ -1231,25 +1227,29 @@ static void _window_update_openwith_menu(VnrWindow *window)
         return;
     }
 
-    apps = g_app_info_get_all_for_type(mime_type);
+    // see launcher.c: 816
+    // launcher_append_open_section
+    // gtk_menu_item_set_submenu
+    // Sets or replaces the menu item’s submenu,
+    // or removes it when a NULL submenu is passed.
 
+    GList *apps = g_app_info_get_all_for_type(mime_type);
     g_object_unref(file_info);
 
     if (!apps)
         return;
 
-    window->actions_open_with = gtk_action_group_new("OpenWithActions");
-    gtk_ui_manager_insert_action_group(window->ui_manager,
-                                       window->actions_open_with, -1);
+    //window->actions_open_with = gtk_action_group_new("OpenWithActions");
+    //gtk_ui_manager_insert_action_group(window->ui_manager,
+    //                                   window->actions_open_with, -1);
+    //window->open_with_menu_id = gtk_ui_manager_new_merge_id(window->ui_manager);
 
-    window->open_with_menu_id = gtk_ui_manager_new_merge_id(window->ui_manager);
-
-    for (iter = apps; iter; iter = iter->next)
+    for (GList *iter = apps; iter; iter = iter->next)
     {
         GAppInfo *app = iter->data;
         gchar name[64];
 
-        /* Do not include viewnior itself */
+        // Do not include viewnior itself
         if (g_ascii_strcasecmp(g_app_info_get_executable(app),
                                g_get_prgname()) == 0)
         {
@@ -1257,18 +1257,23 @@ static void _window_update_openwith_menu(VnrWindow *window)
             continue;
         }
 
-        g_snprintf(name, sizeof(name), "OpenWith%u", action_id++);
+        //g_snprintf(name, sizeof(name), "OpenWith%u", action_id++);
 
-        label = g_strdup(g_app_info_get_name(app));
-        tip = g_strdup_printf(_("Use \"%s\" to open the selected image"),
-                              g_app_info_get_name(app));
-        action = gtk_action_new(name, label, tip, NULL);
+        gchar *label = g_strdup(g_app_info_get_name(app));
+        gchar *tip = g_strdup_printf(_("Use \"%s\" to open the selected image"),
+                                     g_app_info_get_name(app));
+
+        //GtkAction *action = gtk_action_new(name, label, tip, NULL);
 
         g_free(label);
         g_free(tip);
 
-        g_object_set_data_full(G_OBJECT(action), "app", app,
-                               (GDestroyNotify)g_object_unref);
+        //g_object_set_data_full(G_OBJECT(action),
+        //                       "app",
+        //                       app,
+        //                       (GDestroyNotify) g_object_unref);
+
+        #if 0
 
         g_signal_connect(action,
                          "activate",
@@ -1278,6 +1283,8 @@ static void _window_update_openwith_menu(VnrWindow *window)
         gtk_action_group_add_action(window->actions_open_with, action);
         g_object_unref(action);
 
+        #endif
+
         //gtk_ui_manager_add_ui(window->ui_manager,
         //                      window->open_with_menu_id,
         //                      "/MainMenu/File/FileOpenWith/AppEntries",
@@ -1285,7 +1292,6 @@ static void _window_update_openwith_menu(VnrWindow *window)
         //                      name,
         //                      GTK_UI_MANAGER_MENUITEM,
         //                      FALSE);
-
         //gtk_ui_manager_add_ui(window->ui_manager,
         //                      window->open_with_menu_id,
         //                      "/MainMenu/FileOpenWith/AppEntries",
@@ -1293,41 +1299,42 @@ static void _window_update_openwith_menu(VnrWindow *window)
         //                      name,
         //                      GTK_UI_MANAGER_MENUITEM,
         //                      FALSE);
-
-        gtk_ui_manager_add_ui(window->ui_manager,
-                              window->open_with_menu_id,
-                              "/PopupMenu/FileOpenWith/AppEntries",
-                              name,
-                              name,
-                              GTK_UI_MANAGER_MENUITEM,
-                              FALSE);
+        //gtk_ui_manager_add_ui(window->ui_manager,
+        //                      window->open_with_menu_id,
+        //                      "/PopupMenu/FileOpenWith/AppEntries",
+        //                      name,
+        //                      name,
+        //                      GTK_UI_MANAGER_MENUITEM,
+        //                      FALSE);
     }
 
     g_list_free(apps);
 }
 
-static void _on_open_with_launch_application(GtkAction *action,
-                                             VnrWindow *window)
+static void _on_open_with_launch_application(VnrWindow *window,
+                                             gpointer user_data)
 {
+    (void) user_data;
+
     // Modified version of eog's open_with_launch_application_cb
 
+    return;
+
     VnrFile *current = window_list_get_current(window);
-    GFile *file = g_file_new_for_path((gchar *)current->path);
+    g_return_if_fail(current != NULL);
+
+    GFile *file = g_file_new_for_path((gchar*) current->path);
 
     GList *files = NULL;
     files = g_list_append(files, file);
 
-    GAppInfo *app;
-    app = g_object_get_data(G_OBJECT(action), "app");
+//    GAppInfo *app = g_object_get_data(G_OBJECT(action), "app");
 
-    g_app_info_launch(app,
-                      files,
-                      NULL, NULL);
+//    g_app_info_launch(app, files, NULL, NULL);
 
     g_object_unref(file);
     g_list_free(files);
 }
-#endif
 
 
 // ----------------------------------------------------------------------------

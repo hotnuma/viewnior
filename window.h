@@ -67,7 +67,7 @@ struct _VnrWindow
     gint current_image_width;
     guint8 modifications;
     gboolean cursor_is_hidden;
-    guint open_with_menu_id;
+    //guint open_with_menu_id;
 
     // Fullscreen (fs) variables
     GtkWidget *fs_controls;
