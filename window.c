@@ -280,6 +280,8 @@ static void window_init(VnrWindow *window)
     window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
     window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
     window->can_edit = false;
+    g_assert(window->list_image == NULL);
+    window->list_image = NULL;
 
     //window->actions_open_with = NULL;
     window->open_with_menu_id = 0;
@@ -302,10 +304,10 @@ static void window_init(VnrWindow *window)
     gtk_container_add(GTK_CONTAINER(window), window->layout_box);
     gtk_widget_show(window->layout_box);
 
-    GtkWidget *menu = NULL;
-    //GtkWidget *item = NULL;
+    // create popup menu.
+    GtkWidget *menu = gtk_menu_new();
+    GtkWidget *item = NULL;
 
-    menu = gtk_menu_new();
     window->popup_menu = menu;
     gtk_menu_set_accel_group(GTK_MENU(menu), window->accel_group);
 
@@ -319,52 +321,58 @@ static void window_init(VnrWindow *window)
                                   _window_actions,
                                   G_OBJECT(window));
 
-    window->openwith_item =
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_OPENWITH,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_OPENWITH,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->openwith_item = item;
 
     etk_menu_append_separator(GTK_MENU_SHELL(menu));
 
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_RENAME,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_RENAME,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
 
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_MOVETO,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_MOVETO,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
 
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_MOVE,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_MOVE,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
 
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_DELETE,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_DELETE,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
 
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_PROPERTIES,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_PROPERTIES,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
 
     etk_menu_append_separator(GTK_MENU_SHELL(menu));
 
-    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_PREFERENCES,
-                                  _window_actions,
-                                  G_OBJECT(window));
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_PREFERENCES,
+                                         _window_actions,
+                                         G_OBJECT(window));
 
     gtk_widget_show_all(menu);
     gtk_widget_hide(window->openwith_item);
 
+    etk_widget_list_set_sensitive(window->list_image, false);
+
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
     //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
-    //gtk_action_group_set_sensitive(window->actions_image, FALSE);
     //gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
     //gtk_action_group_set_sensitive(window->action_save, FALSE);
     //gtk_action_group_set_sensitive(window->actions_bars, TRUE);
@@ -461,8 +469,9 @@ static void window_dispose(GObject *object)
 
     VnrWindow *window = VNR_WINDOW(object);
 
-    etk_actions_dispose(GTK_WINDOW(window), window->accel_group);
-    window->accel_group = NULL;
+    window->accel_group = etk_actions_dispose(GTK_WINDOW(window),
+                                              window->accel_group);
+    window->list_image = etk_widget_list_free(window->list_image);
 
     G_OBJECT_CLASS(window_parent_class)->dispose(object);
 }
@@ -1096,6 +1105,7 @@ gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
     }
 
+    etk_widget_list_set_sensitive(window->list_image, true);
     //gtk_action_group_set_sensitive(window->actions_image, TRUE);
     //gtk_action_group_set_sensitive(window->action_wallpaper, TRUE);
 
@@ -1167,6 +1177,7 @@ void window_file_close(VnrWindow *window)
     //gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
     window->can_edit = false;
 
+    etk_widget_list_set_sensitive(window->list_image, false);
     //gtk_action_group_set_sensitive(window->actions_image, FALSE);
     //gtk_action_group_set_sensitive(window->action_wallpaper, FALSE);
 }

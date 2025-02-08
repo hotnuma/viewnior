@@ -14,6 +14,7 @@ PKGCONFIG += tinyui
 PKGCONFIG += shared-mime-info
 
 HEADERS = \
+    etkwidgetlist.h \
     list.h \
     src/uni-anim-view.h \
     src/uni-cache.h \
@@ -37,6 +38,7 @@ HEADERS = \
 
 SOURCES = \
     0temp.c \
+    etkwidgetlist.c \
     list.c \
     src/uni-anim-view.c \
     src/uni-cache.c \
