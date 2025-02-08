@@ -15,6 +15,37 @@ EditPreferences
 HelpAbout
 */
 
+g_signal_connect(action,
+                 "activate",
+                 G_CALLBACK(_on_open_with_launch_application),
+                 window);
+gtk_action_group_add_action(window->actions_open_with, action);
+g_object_unref(action);
+
+gtk_ui_manager_add_ui(window->ui_manager,
+                      window->open_with_menu_id,
+                      "/MainMenu/File/FileOpenWith/AppEntries",
+                      name,
+                      name,
+                      GTK_UI_MANAGER_MENUITEM,
+                      FALSE);
+
+gtk_ui_manager_add_ui(window->ui_manager,
+                      window->open_with_menu_id,
+                      "/MainMenu/FileOpenWith/AppEntries",
+                      name,
+                      name,
+                      GTK_UI_MANAGER_MENUITEM,
+                      FALSE);
+
+gtk_ui_manager_add_ui(window->ui_manager,
+                      window->open_with_menu_id,
+                      "/PopupMenu/FileOpenWith/AppEntries",
+                      name,
+                      name,
+                      GTK_UI_MANAGER_MENUITEM,
+                      FALSE);
+
 static const GtkActionEntry _action_entries_window[] =
 {
     {"FileOpen", "gtk-file",
