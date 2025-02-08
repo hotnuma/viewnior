@@ -70,7 +70,7 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _window_action_opendir(VnrWindow *window, GtkWidget *widget);
 static void _window_update_openwith_menu(VnrWindow *window);
-static void _on_open_with_launch_application(VnrWindow *window,
+static void _on_openwith(VnrWindow *window,
                                              gpointer user_data);
 
 // Actions --------------------------------------------------------------------
@@ -1208,30 +1208,11 @@ static void _window_update_openwith_menu(VnrWindow *window)
 
     const gchar *mime_type = g_file_info_get_content_type(file_info);
 
-    //if (window->open_with_menu_id != 0)
-    //{
-    //    gtk_ui_manager_remove_ui(window->ui_manager, window->open_with_menu_id);
-    //    window->open_with_menu_id = 0;
-    //}
-
-    //if (window->actions_open_with != NULL)
-    //{
-    //    gtk_ui_manager_remove_action_group(window->ui_manager,
-    //                                       window->actions_open_with);
-    //    window->actions_open_with = NULL;
-    //}
-
     if (mime_type == NULL)
     {
         g_object_unref(file_info);
         return;
     }
-
-    // see launcher.c: 816
-    // launcher_append_open_section
-    // gtk_menu_item_set_submenu
-    // Sets or replaces the menu item’s submenu,
-    // or removes it when a NULL submenu is passed.
 
     GList *apps = g_app_info_get_all_for_type(mime_type);
     g_object_unref(file_info);
@@ -1239,17 +1220,14 @@ static void _window_update_openwith_menu(VnrWindow *window)
     if (!apps)
         return;
 
-    //window->actions_open_with = gtk_action_group_new("OpenWithActions");
-    //gtk_ui_manager_insert_action_group(window->ui_manager,
-    //                                   window->actions_open_with, -1);
-    //window->open_with_menu_id = gtk_ui_manager_new_merge_id(window->ui_manager);
+    GtkWidget *menu = gtk_menu_new();
+    gint count = 0;
 
     for (GList *iter = apps; iter; iter = iter->next)
     {
         GAppInfo *app = iter->data;
-        gchar name[64];
 
-        // Do not include viewnior itself
+        // do not include viewnior itself
         if (g_ascii_strcasecmp(g_app_info_get_executable(app),
                                g_get_prgname()) == 0)
         {
@@ -1257,21 +1235,30 @@ static void _window_update_openwith_menu(VnrWindow *window)
             continue;
         }
 
+        //gchar name[64];
         //g_snprintf(name, sizeof(name), "OpenWith%u", action_id++);
 
         gchar *label = g_strdup(g_app_info_get_name(app));
-        gchar *tip = g_strdup_printf(_("Use \"%s\" to open the selected image"),
-                                     g_app_info_get_name(app));
+        gchar *tooltip = g_strdup_printf(
+                                _("Use \"%s\" to open the selected image"),
+                                g_app_info_get_name(app));
 
         //GtkAction *action = gtk_action_new(name, label, tip, NULL);
 
-        g_free(label);
-        g_free(tip);
+        GtkWidget *item = etk_menu_item_new(GTK_MENU_SHELL(menu),
+                                            label,
+                                            tooltip,
+                                            NULL,
+                                            G_CALLBACK(_on_openwith),
+                                            G_OBJECT(window));
 
-        //g_object_set_data_full(G_OBJECT(action),
-        //                       "app",
-        //                       app,
-        //                       (GDestroyNotify) g_object_unref);
+        g_free(label);
+        g_free(tooltip);
+
+        g_object_set_data_full(G_OBJECT(item),
+                               "app",
+                               app,
+                               (GDestroyNotify) g_object_unref);
 
         #if 0
 
@@ -1279,7 +1266,6 @@ static void _window_update_openwith_menu(VnrWindow *window)
                          "activate",
                          G_CALLBACK(_on_open_with_launch_application),
                          window);
-
         gtk_action_group_add_action(window->actions_open_with, action);
         g_object_unref(action);
 
@@ -1306,12 +1292,29 @@ static void _window_update_openwith_menu(VnrWindow *window)
         //                      name,
         //                      GTK_UI_MANAGER_MENUITEM,
         //                      FALSE);
+
+        ++count;
     }
 
     g_list_free(apps);
+
+    // see launcher.c: 816
+    // launcher_append_open_section
+    // gtk_menu_item_set_submenu
+    // Sets or replaces the menu item’s submenu,
+    // or removes it when a NULL submenu is passed.
+
+    if (!count)
+    {
+        gtk_widget_destroy(menu);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->openwith_item), NULL);
+        return;
+    }
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->openwith_item), menu);
 }
 
-static void _on_open_with_launch_application(VnrWindow *window,
+static void _on_openwith(VnrWindow *window,
                                              gpointer user_data)
 {
     (void) user_data;
