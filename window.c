@@ -297,8 +297,6 @@ static void window_init(VnrWindow *window)
     gtk_window_set_title((GtkWindow*) window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
 
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
     window->layout_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
     gtk_container_add(GTK_CONTAINER(window), window->layout_box);
@@ -502,10 +500,15 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
             GdkScreen *screen;
             GdkRectangle monitor;
             screen = gtk_window_get_screen(GTK_WINDOW(widget));
+
+            G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
             gdk_screen_get_monitor_geometry(screen,
                                             gdk_screen_get_monitor_at_window(screen,
                                                                              gtk_widget_get_window(widget)),
                                             &monitor);
+
+            G_GNUC_END_IGNORE_DEPRECATIONS
 
             VNR_WINDOW(widget)->max_width = monitor.width * 0.9 - 100;
             VNR_WINDOW(widget)->max_height = monitor.height * 0.9 - 100;
@@ -664,7 +667,9 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_container_add(GTK_CONTAINER(item), box);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     g_signal_connect(widget, "clicked", G_CALLBACK(_on_fullscreen_leave), window);
     gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);
@@ -689,9 +694,9 @@ static GtkWidget* _window_get_fs_controls(VnrWindow *window)
     // spinner_adj =(GtkAdjustment *) gtk_adjustment_new(
     //                                  5, 1.0, 30.0, 1.0, 1.0, 0);
 
-    spinner_adj =
-        (GtkAdjustment*) gtk_adjustment_new(window->prefs->slideshow_timeout,
-                                            1.0, 30.0, 1.0, 1.0, 0);
+    spinner_adj = (GtkAdjustment*) gtk_adjustment_new(
+                                    window->prefs->slideshow_timeout,
+                                    1.0, 30.0, 1.0, 1.0, 0);
 
     widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
     gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
@@ -2098,7 +2103,14 @@ static void _window_fullscreen(VnrWindow *window)
     // https://stackoverflow.com/questions/36520637/
     GdkRGBA color;
     gdk_rgba_parse(&color, "black");
-    gtk_widget_override_background_color(window->view,  GTK_STATE_FLAG_NORMAL, &color);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
+    gtk_widget_override_background_color(window->view,
+                                         GTK_STATE_FLAG_NORMAL,
+                                         &color);
+
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
@@ -2145,12 +2157,16 @@ static void _window_unfullscreen(VnrWindow *window)
     //    "ViewFullscreen");
     //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
 
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
     if (window->prefs->dark_background)
     {
         GdkRGBA color;
         gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
+
         gtk_widget_override_background_color(window->view,
-                                              GTK_STATE_FLAG_NORMAL, &color);
+                                             GTK_STATE_FLAG_NORMAL,
+                                             &color);
 
     }
     else
@@ -2158,6 +2174,8 @@ static void _window_unfullscreen(VnrWindow *window)
         gtk_widget_override_background_color(window->view,
                                               GTK_STATE_FLAG_NORMAL, NULL);
     }
+
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->fit_on_fullscreen)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
@@ -2457,11 +2475,15 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 
 static void _action_resize(GtkToggleAction *action, VnrWindow *window)
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
     if (action != NULL && !gtk_toggle_action_get_active(action))
     {
         window->prefs->auto_resize = FALSE;
         return;
     }
+
+    G_GNUC_END_IGNORE_DEPRECATIONS
 
     gint img_h, img_w; /* Width and Height of the pixbuf */
 
@@ -2622,9 +2644,14 @@ void window_preferences_apply(VnrWindow *window)
         // https://stackoverflow.com/questions/36520637/
         GdkRGBA color;
         gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
+
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
         gtk_widget_override_background_color(window->view,
-                                              GTK_STATE_FLAG_NORMAL,
+                                             GTK_STATE_FLAG_NORMAL,
                                              &color);
+
+        G_GNUC_END_IGNORE_DEPRECATIONS
     }
 
     if (window->prefs->smooth_images
