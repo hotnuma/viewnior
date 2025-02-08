@@ -258,14 +258,16 @@ vnr_properties_dialog_init(VnrPropertiesDialog *dialog)
 
 void vnr_properties_dialog_update(VnrPropertiesDialog *dialog)
 {
+    VnrFile *current = window_list_get_current(dialog->vnr_win);
+    if (!current)
+        return;
+
     gchar *filetype_desc = NULL;
     gchar *filesize_str = NULL;
 
-    VnrFile *current = window_list_get_current(dialog->vnr_win);
-
     goffset filesize = 0;
     const gchar *filetype = NULL;
-    get_file_info((gchar *)current->path, &filesize, &filetype);
+    get_file_info((gchar*) current->path, &filesize, &filetype);
 
     if (filetype == NULL && filesize == 0)
     {
@@ -345,25 +347,27 @@ vnr_cb_add_metadata(const char *label, const char *value, void *user_data)
 
 G_GNUC_END_IGNORE_DEPRECATIONS
 
-static void
-vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
+static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
 {
     vnr_properties_dialog_clear_metadata(dialog);
 
     VnrFile *current = window_list_get_current(dialog->vnr_win);
+    if (!current)
+        return;
 
-    uni_read_exiv2_map(current->path,
-                       vnr_cb_add_metadata,
-                       (void *)dialog);
+    uni_read_exiv2_map(current->path, vnr_cb_add_metadata, (void*) dialog);
 }
 
 void vnr_properties_dialog_update_image(VnrPropertiesDialog *dialog)
 {
+    VnrFile *current = window_list_get_current(dialog->vnr_win);
+    if (!current)
+        return;
+
     gchar *width_str, *height_str;
     int date_modified_buf_size = 80;
     gchar date_modified[date_modified_buf_size];
 
-    VnrFile *current = window_list_get_current(dialog->vnr_win);
     strftime(date_modified,
              date_modified_buf_size * sizeof(gchar),
              "%Ec",
