@@ -20,7 +20,7 @@
 #ifndef __VNR_WINDOW_H__
 #define __VNR_WINDOW_H__
 
-#include "etkwidgetlist.h"
+#include <etkwidgetlist.h>
 #include "preferences.h"
 #include "file.h"
 

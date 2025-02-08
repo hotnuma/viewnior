@@ -14,8 +14,6 @@ PKGCONFIG += tinyui
 PKGCONFIG += shared-mime-info
 
 HEADERS = \
-    etkwidgetlist.h \
-    list.h \
     src/uni-anim-view.h \
     src/uni-cache.h \
     src/uni-dragger.h \
@@ -33,13 +31,11 @@ HEADERS = \
     config.h.in \
     dialog.h \
     file.h \
+    list.h \
     preferences.h \
     window.h \
 
 SOURCES = \
-    0temp.c \
-    etkwidgetlist.c \
-    list.c \
     src/uni-anim-view.c \
     src/uni-cache.c \
     src/uni-dragger.c \
@@ -53,8 +49,10 @@ SOURCES = \
     src/vnr-properties-dialog.c \
     src/vnr-tools.c \
     src/xfce-filename-input.c \
+    0temp.c \
     dialog.c \
     file.c \
+    list.c \
     main.c \
     preferences.c \
     window.c \

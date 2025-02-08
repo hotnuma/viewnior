@@ -70,7 +70,6 @@ app_sources = [
     'src/vnr-tools.c',
     'src/xfce-filename-input.c',
     'dialog.c',
-    'etkwidgetlist.c',
     'file.c',
     'list.c',
     'main.c',
