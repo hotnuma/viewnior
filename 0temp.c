@@ -2,17 +2,6 @@
 #if 0
 
 //static void _action_about(GtkAction *action, VnrWindow *window);
-//static void _action_first(GtkAction *action, gpointer user_data);
-//static void _action_last(GtkAction *action, gpointer user_data);
-//static void _action_reload(GtkAction *action, VnrWindow *window);
-//static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
-//static void _action_fullscreen(GtkAction *action, VnrWindow *window);
-//static void _action_scrollbar(GtkAction *action, VnrWindow *window);
-//static void _action_slideshow(GtkAction *action, VnrWindow *window);
-//static void _action_fit(GtkAction *action, gpointer user_data);
-//static void _action_zoom_in(GtkAction *action, gpointer user_data);
-//static void _action_zoom_out(GtkAction *action, gpointer user_data);
-//static void _action_normal_size(GtkAction *action, gpointer user_data);
 
 static void _action_about(GtkAction *action, VnrWindow *window)
 {
@@ -50,6 +39,29 @@ static void _action_about(GtkAction *action, VnrWindow *window)
                 "translator-credits", _("translator-credits"),
                 NULL);
 }
+
+static void _action_fullscreen(GtkAction *action, VnrWindow *window);
+static void _action_fullscreen(GtkAction *action, VnrWindow *window)
+{
+    gboolean fullscreen = gtk_toggle_action_get_active(
+                GTK_TOGGLE_ACTION(action));
+
+    if (fullscreen)
+        _window_fullscreen(window);
+    else
+        _window_unfullscreen(window);
+}
+
+//static void _action_first(GtkAction *action, gpointer user_data);
+//static void _action_last(GtkAction *action, gpointer user_data);
+//static void _action_reload(GtkAction *action, VnrWindow *window);
+//static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
+//static void _action_scrollbar(GtkAction *action, VnrWindow *window);
+//static void _action_slideshow(GtkAction *action, VnrWindow *window);
+//static void _action_fit(GtkAction *action, gpointer user_data);
+//static void _action_zoom_in(GtkAction *action, gpointer user_data);
+//static void _action_zoom_out(GtkAction *action, gpointer user_data);
+//static void _action_normal_size(GtkAction *action, gpointer user_data);
 
 static void _action_reload(GtkAction *action, VnrWindow *window)
 {
@@ -187,17 +199,6 @@ static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
     {
         wait(NULL);
     }
-}
-
-static void _action_fullscreen(GtkAction *action, VnrWindow *window)
-{
-    gboolean fullscreen = gtk_toggle_action_get_active(
-                GTK_TOGGLE_ACTION(action));
-
-    if (fullscreen)
-        _window_fullscreen(window);
-    else
-        _window_unfullscreen(window);
 }
 
 static void _action_scrollbar(GtkAction *action, VnrWindow *window)
