@@ -94,7 +94,7 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
 static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
-static void _action_save_image(GtkWidget *widget, VnrWindow *window);
+static void _window_action_save_image(VnrWindow *window, GtkWidget *widget);
 
 // Fullscreen -----------------------------------------------------------------
 
@@ -1665,13 +1665,13 @@ static void _window_rotate_pixbuf(VnrWindow *window,
                               _("Image modifications cannot be saved.\nWriting in this format is not supported."),
                               FALSE);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _action_save_image(NULL, window);
+        _window_action_save_image(window, NULL);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, "gtk-save",
-                                          G_CALLBACK(_action_save_image));
+                                          G_CALLBACK(_window_action_save_image));
 }
 
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
@@ -1724,16 +1724,16 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
                               _("Image modifications cannot be saved.\nWriting in this format is not supported."),
                               FALSE);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _action_save_image(NULL, window);
+        _window_action_save_image(window, NULL);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, "gtk-save",
-                                          G_CALLBACK(_action_save_image));
+                                          G_CALLBACK(_window_action_save_image));
 }
 
-static void _action_save_image(GtkWidget *widget, VnrWindow *window)
+static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
 
@@ -2312,13 +2312,13 @@ static void _action_crop(GtkAction *action, VnrWindow *window)
                               _("Image modifications cannot be saved.\nWriting in this format is not supported."),
                               FALSE);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _action_save_image(NULL, window);
+        _window_action_save_image(window, NULL);
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
                                           FALSE,
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, "gtk-save",
-                                          G_CALLBACK(_action_save_image));
+                                          G_CALLBACK(_window_action_save_image));
 
     g_object_unref(crop);
 }

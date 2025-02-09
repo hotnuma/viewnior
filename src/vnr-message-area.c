@@ -156,7 +156,7 @@ void vnr_message_area_show_with_button(VnrMessageArea *msg_area,
         msg_area->with_button = TRUE;
 
     msg_area->c_handler = c_handler;
-    g_signal_connect(msg_area->user_button, "clicked",
+    g_signal_connect_swapped(msg_area->user_button, "clicked",
                      c_handler, msg_area->vnr_win);
 
     gtk_widget_show_all(GTK_WIDGET(msg_area));
