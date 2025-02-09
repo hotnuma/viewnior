@@ -138,11 +138,6 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
 //static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 //                                 VnrWindow *window);
 
-// ----------------------------------------------------------------------------
-
-static void _action_crop(GtkAction *action, VnrWindow *window);
-static void _action_resize(GtkToggleAction *action, VnrWindow *window);
-
 // Slideshow ------------------------------------------------------------------
 
 static void _window_action_slideshow(VnrWindow *window);
@@ -151,6 +146,12 @@ static void _window_slideshow_start(VnrWindow *window);
 //static void _window_slideshow_restart(VnrWindow *window);
 static void _window_slideshow_allow(VnrWindow *window);
 void window_slideshow_deny(VnrWindow *window);
+
+// ----------------------------------------------------------------------------
+
+static void _action_resize(GtkToggleAction *action, VnrWindow *window);
+static void _action_crop(GtkAction *action, VnrWindow *window);
+
 
 typedef enum
 {
@@ -472,6 +473,50 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
         window->mode = WINDOW_MODE_NORMAL;
         _window_slideshow_allow(window);
         _window_slideshow_start(window);
+    }
+}
+
+void window_preferences_apply(VnrWindow *window)
+{
+    if (window->prefs->dark_background)
+    {
+        // https://stackoverflow.com/questions/36520637/
+        GdkRGBA color;
+        gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
+
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
+        gtk_widget_override_background_color(window->view,
+                                             GTK_STATE_FLAG_NORMAL,
+                                             &color);
+
+        G_GNUC_END_IGNORE_DEPRECATIONS
+    }
+
+    if (window->prefs->smooth_images
+        && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_BILINEAR)
+    {
+        UNI_IMAGE_VIEW(window->view)->interp = GDK_INTERP_BILINEAR;
+        gtk_widget_queue_draw(window->view);
+    }
+    else if (!window->prefs->smooth_images
+             && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_NEAREST)
+    {
+        UNI_IMAGE_VIEW(window->view)->interp = GDK_INTERP_NEAREST;
+        gtk_widget_queue_draw(window->view);
+    }
+
+    if (window->fs_toolitem)
+    {
+        gint val = gtk_spin_button_get_value_as_int(
+                        GTK_SPIN_BUTTON(window->sl_timeout_widget));
+
+        if (val != window->prefs->slideshow_timeout)
+        {
+            gtk_spin_button_set_value(
+                        GTK_SPIN_BUTTON(window->sl_timeout_widget),
+                        (gdouble) window->prefs->slideshow_timeout);
+        }
     }
 }
 
@@ -2363,7 +2408,7 @@ void window_slideshow_deny(VnrWindow *window)
 }
 
 
-// private signal handlers ----------------------------------------------------
+// ----------------------------------------------------------------------------
 
 static void _action_resize(GtkToggleAction *action, VnrWindow *window)
 {
@@ -2447,53 +2492,6 @@ static void _action_crop(GtkAction *action, VnrWindow *window)
                                           G_CALLBACK(_window_action_save_image));
 
     g_object_unref(crop);
-}
-
-
-// ----------------------------------------------------------------------------
-
-void window_preferences_apply(VnrWindow *window)
-{
-    if (window->prefs->dark_background)
-    {
-        // https://stackoverflow.com/questions/36520637/
-        GdkRGBA color;
-        gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
-
-        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
-        gtk_widget_override_background_color(window->view,
-                                             GTK_STATE_FLAG_NORMAL,
-                                             &color);
-
-        G_GNUC_END_IGNORE_DEPRECATIONS
-    }
-
-    if (window->prefs->smooth_images
-        && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_BILINEAR)
-    {
-        UNI_IMAGE_VIEW(window->view)->interp = GDK_INTERP_BILINEAR;
-        gtk_widget_queue_draw(window->view);
-    }
-    else if (!window->prefs->smooth_images
-             && UNI_IMAGE_VIEW(window->view)->interp != GDK_INTERP_NEAREST)
-    {
-        UNI_IMAGE_VIEW(window->view)->interp = GDK_INTERP_NEAREST;
-        gtk_widget_queue_draw(window->view);
-    }
-
-    if (window->fs_toolitem)
-    {
-        gint val = gtk_spin_button_get_value_as_int(
-                        GTK_SPIN_BUTTON(window->sl_timeout_widget));
-
-        if (val != window->prefs->slideshow_timeout)
-        {
-            gtk_spin_button_set_value(
-                        GTK_SPIN_BUTTON(window->sl_timeout_widget),
-                        (gdouble) window->prefs->slideshow_timeout);
-        }
-    }
 }
 
 
