@@ -477,46 +477,55 @@ static void window_finalize(GObject *object)
 
 static void _window_on_realize(GtkWidget *widget, gpointer user_data)
 {
-    g_signal_handlers_disconnect_by_func(widget, _window_on_realize, user_data);
+    g_signal_handlers_disconnect_by_func(widget,
+                                         _window_on_realize,
+                                         user_data);
 
-    if (!vnr_message_area_is_critical(VNR_MESSAGE_AREA(VNR_WINDOW(widget)->msg_area)))
+    VnrWindow *window = VNR_WINDOW(widget);
+
+    if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
+        return;
+
+    if (window->prefs->start_maximized)
     {
-        if (VNR_WINDOW(widget)->prefs->start_maximized)
-        {
-            window_file_load(VNR_WINDOW(widget), FALSE);
-        }
-        else
-        {
-            GdkScreen *screen;
-            GdkRectangle monitor;
-            screen = gtk_window_get_screen(GTK_WINDOW(widget));
+        window_file_load(window, FALSE);
+    }
+    else
+    {
+        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(widget));
 
-            G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-            gdk_screen_get_monitor_geometry(screen,
-                                            gdk_screen_get_monitor_at_window(screen,
-                                                                             gtk_widget_get_window(widget)),
-                                            &monitor);
+        GdkRectangle monitor;
+        gdk_screen_get_monitor_geometry(
+                            screen,
+                            gdk_screen_get_monitor_at_window(screen,
+                            gtk_widget_get_window(widget)),
+                            &monitor);
 
-            G_GNUC_END_IGNORE_DEPRECATIONS
+        G_GNUC_END_IGNORE_DEPRECATIONS
 
-            VNR_WINDOW(widget)->max_width = monitor.width * 0.9 - 100;
-            VNR_WINDOW(widget)->max_height = monitor.height * 0.9 - 100;
+        window->max_width = monitor.width * 0.9 - 100;
+        window->max_height = monitor.height * 0.9 - 100;
 
-            window_file_load(VNR_WINDOW(widget), TRUE);
-        }
+        window_file_load(window, TRUE);
+    }
 
-        if (VNR_WINDOW(widget)->prefs->start_slideshow && VNR_WINDOW(widget)->filelist != NULL)
-        {
-            _window_fullscreen(VNR_WINDOW(widget));
-            VNR_WINDOW(widget)->mode = WINDOW_MODE_NORMAL;
-            _window_slideshow_allow(VNR_WINDOW(widget));
-            _window_slideshow_start(VNR_WINDOW(widget));
-        }
-        else if (VNR_WINDOW(widget)->prefs->start_fullscreen && VNR_WINDOW(widget)->filelist != NULL)
-        {
-            _window_fullscreen(VNR_WINDOW(widget));
-        }
+    VnrFile *current = window_list_get_current(window);
+
+    if (!current)
+        return;
+
+    if (window->prefs->start_fullscreen)
+    {
+        _window_fullscreen(window);
+    }
+    else if (window->prefs->start_slideshow)
+    {
+        _window_fullscreen(window);
+        window->mode = WINDOW_MODE_NORMAL;
+        _window_slideshow_allow(window);
+        _window_slideshow_start(window);
     }
 }
 
