@@ -98,6 +98,15 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
 
 static void _window_fullscreen(VnrWindow *window);
 static void _window_unfullscreen(VnrWindow *window);
+static gboolean _on_fullscreen_motion(GtkWidget *widget,
+                                      GdkEventMotion *ev,
+                                      VnrWindow *window);
+static void _window_fullscreen_set_timeout(VnrWindow *window);
+static gboolean _on_fullscreen_timeout(VnrWindow *window);
+static void _window_fullscreen_unset_timeout(VnrWindow *window);
+static gboolean _on_leave_image_area(GtkWidget *widget,
+                                     GdkEventCrossing *ev,
+                                     VnrWindow *window);
 
 //static GtkWidget* _window_get_fs_toolitem(VnrWindow *window);
 //static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
@@ -105,23 +114,12 @@ static void _window_unfullscreen(VnrWindow *window);
 //                                  VnrWindow *window);
 //static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 //                                 VnrWindow *window);
-static void _window_fullscreen_unset_timeout(VnrWindow *window);
-static void _window_fullscreen_set_timeout(VnrWindow *window);
-static gboolean _on_fullscreen_motion(GtkWidget *widget,
-                                      GdkEventMotion *ev,
-                                      VnrWindow *window);
-static gboolean _on_fullscreen_timeout(VnrWindow *window);
-static gboolean _on_leave_image_area(GtkWidget *widget,
-                                     GdkEventCrossing *ev,
-                                     VnrWindow *window);
+
+// ----------------------------------------------------------------------------
 
 static void _action_save_image(GtkWidget *widget, VnrWindow *window);
 static void _action_crop(GtkAction *action, VnrWindow *window);
 static void _action_resize(GtkToggleAction *action, VnrWindow *window);
-
-
-// ----------------------------------------------------------------------------
-
 static gboolean _file_size_is_small(char *filename);
 static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
 static void _on_file_open_dialog_response(GtkWidget *dialog,
@@ -129,6 +127,7 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
 static gboolean _window_next_image_src(VnrWindow *window);
+
 // Slideshow ------------------------------------------------------------------
 
 static void _window_slideshow_stop(VnrWindow *window);
@@ -1712,9 +1711,7 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 
 void window_fullscreen_toggle(VnrWindow *window)
 {
-    gboolean fullscreen = (window->mode == WINDOW_MODE_NORMAL) ? TRUE : FALSE;
-
-    if (fullscreen)
+    if (window->mode == WINDOW_MODE_NORMAL)
         _window_fullscreen(window);
     else
         _window_unfullscreen(window);
@@ -1722,26 +1719,20 @@ void window_fullscreen_toggle(VnrWindow *window)
 
 static void _window_fullscreen(VnrWindow *window)
 {
+    if (window_list_get_current(window) == NULL)
+        return;
+
     gtk_window_fullscreen(GTK_WINDOW(window));
 
     window->mode = WINDOW_MODE_FULLSCREEN;
 
-
-    //GtkAction *action = gtk_action_group_get_action(
-    //                                window->actions_image,
-    //                                "ViewFullscreen");
-    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-
-    // https://stackoverflow.com/questions/36520637/
     GdkRGBA color;
     gdk_rgba_parse(&color, "black");
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
     gtk_widget_override_background_color(window->view,
                                          GTK_STATE_FLAG_NORMAL,
                                          &color);
-
     G_GNUC_END_IGNORE_DEPRECATIONS
 
     if (window->prefs->fit_on_fullscreen)
@@ -1785,34 +1776,30 @@ static void _window_unfullscreen(VnrWindow *window)
 
     gtk_window_unfullscreen(GTK_WINDOW(window));
 
-    //GtkAction *action = gtk_action_group_get_action(
-    //    window->actions_image,
-    //    "ViewFullscreen");
-    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
-
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
     if (window->prefs->dark_background)
     {
         GdkRGBA color;
         gdk_rgba_parse(&color, DARK_BACKGROUND_COLOR);
 
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         gtk_widget_override_background_color(window->view,
                                              GTK_STATE_FLAG_NORMAL,
                                              &color);
-
+        G_GNUC_END_IGNORE_DEPRECATIONS
     }
     else
     {
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
         gtk_widget_override_background_color(window->view,
-                                              GTK_STATE_FLAG_NORMAL, NULL);
+                                             GTK_STATE_FLAG_NORMAL, NULL);
+        G_GNUC_END_IGNORE_DEPRECATIONS
     }
 
-    G_GNUC_END_IGNORE_DEPRECATIONS
-
     if (window->prefs->fit_on_fullscreen)
+    {
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
                                      window->prefs->zoom);
+    }
 
     if (window->fs_toolitem)
         gtk_widget_hide(window->fs_toolitem);
@@ -1832,6 +1819,64 @@ static void _window_unfullscreen(VnrWindow *window)
 
     _window_fullscreen_unset_timeout(window);
     _window_show_cursor(window);
+}
+
+static gboolean _on_fullscreen_motion(GtkWidget *widget,
+                                      GdkEventMotion *ev,
+                                      VnrWindow *window)
+{
+    if (window->disable_autohide)
+        return FALSE;
+
+    if (window->cursor_is_hidden)
+        _window_show_cursor(window);
+
+    _window_fullscreen_set_timeout(window);
+
+    return FALSE;
+}
+
+static void _window_fullscreen_set_timeout(VnrWindow *window)
+{
+    _window_fullscreen_unset_timeout(window);
+
+    window->fs_source = g_timeout_source_new(FULLSCREEN_TIMEOUT);
+    g_source_set_callback(window->fs_source,
+                          (GSourceFunc)_on_fullscreen_timeout,
+                          window, NULL);
+
+    g_source_attach(window->fs_source, NULL);
+}
+
+static gboolean _on_fullscreen_timeout(VnrWindow *window)
+{
+    // hides the toolbar
+    _window_fullscreen_unset_timeout(window);
+
+    if (window->disable_autohide)
+        return FALSE;
+
+    _window_hide_cursor(window);
+
+    return FALSE;
+}
+
+static void _window_fullscreen_unset_timeout(VnrWindow *window)
+{
+    if (window->fs_source != NULL)
+    {
+        g_source_unref(window->fs_source);
+        g_source_destroy(window->fs_source);
+        window->fs_source = NULL;
+    }
+}
+
+static gboolean _on_leave_image_area(GtkWidget *widget,
+                                     GdkEventCrossing *ev,
+                                     VnrWindow *window)
+{
+    _window_fullscreen_unset_timeout(window);
+    return FALSE;
 }
 
 
@@ -1934,64 +1979,6 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 
 
 // ----------------------------------------------------------------------------
-
-static void _window_fullscreen_unset_timeout(VnrWindow *window)
-{
-    if (window->fs_source != NULL)
-    {
-        g_source_unref(window->fs_source);
-        g_source_destroy(window->fs_source);
-        window->fs_source = NULL;
-    }
-}
-
-static void _window_fullscreen_set_timeout(VnrWindow *window)
-{
-    _window_fullscreen_unset_timeout(window);
-
-    window->fs_source = g_timeout_source_new(FULLSCREEN_TIMEOUT);
-    g_source_set_callback(window->fs_source,
-                          (GSourceFunc)_on_fullscreen_timeout,
-                          window, NULL);
-
-    g_source_attach(window->fs_source, NULL);
-}
-
-static gboolean _on_fullscreen_motion(GtkWidget *widget,
-                                      GdkEventMotion *ev,
-                                      VnrWindow *window)
-{
-    if (window->disable_autohide)
-        return FALSE;
-
-    if (window->cursor_is_hidden)
-        _window_show_cursor(window);
-
-    _window_fullscreen_set_timeout(window);
-
-    return FALSE;
-}
-
-// Hides the toolbar
-static gboolean _on_fullscreen_timeout(VnrWindow *window)
-{
-    _window_fullscreen_unset_timeout(window);
-
-    if (window->disable_autohide)
-        return FALSE;
-
-    _window_hide_cursor(window);
-
-    return FALSE;
-}
-
-static gboolean _on_leave_image_area(GtkWidget *widget,
-                                     GdkEventCrossing *ev,
-                                     VnrWindow *window)
-{
-    _window_fullscreen_unset_timeout(window);
-    return FALSE;
-}
 
 static void _window_update_fs_filename_label(VnrWindow *window)
 {
