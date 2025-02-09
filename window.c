@@ -73,6 +73,7 @@ static void _on_openwith(VnrWindow *window, gpointer user_data);
 
 // Actions --------------------------------------------------------------------
 
+static gboolean _window_next_image_src(VnrWindow *window);
 static void _window_action_rename(VnrWindow *window, GtkWidget *widget);
 static void _window_action_move_to(VnrWindow *window, GtkWidget *widget);
 static void _window_action_move(VnrWindow *window, GtkWidget *widget);
@@ -93,6 +94,7 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
 static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
+static void _action_save_image(GtkWidget *widget, VnrWindow *window);
 
 // Fullscreen -----------------------------------------------------------------
 
@@ -117,7 +119,6 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
 
 // ----------------------------------------------------------------------------
 
-static void _action_save_image(GtkWidget *widget, VnrWindow *window);
 static void _action_crop(GtkAction *action, VnrWindow *window);
 static void _action_resize(GtkToggleAction *action, VnrWindow *window);
 static gboolean _file_size_is_small(char *filename);
@@ -126,10 +127,10 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           gint response_id,
                                           VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
-static gboolean _window_next_image_src(VnrWindow *window);
 
 // Slideshow ------------------------------------------------------------------
 
+static void _window_action_slideshow(VnrWindow *window);
 static void _window_slideshow_stop(VnrWindow *window);
 static void _window_slideshow_start(VnrWindow *window);
 //static void _window_slideshow_restart(VnrWindow *window);
@@ -623,6 +624,11 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
 
     case GDK_KEY_End:
         window_last(window);
+        result = TRUE;
+        break;
+
+    case GDK_KEY_F6:
+        _window_action_slideshow(window);
         result = TRUE;
         break;
 
@@ -1151,9 +1157,12 @@ gboolean window_prev(VnrWindow *window)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
-        window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
-                                                      (GSourceFunc)_window_next_image_src,
-                                                      window);
+    {
+        window->sl_source_tag =
+            g_timeout_add_seconds(window->sl_timeout,
+                                  (GSourceFunc) _window_next_image_src,
+                                  window);
+    }
 
     return TRUE;
 }
@@ -1189,11 +1198,29 @@ gboolean window_next(VnrWindow *window, gboolean rem_timeout)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
 
     if (window->mode == WINDOW_MODE_SLIDESHOW && rem_timeout)
-        window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
-                                                      (GSourceFunc)_window_next_image_src,
-                                                      window);
+    {
+        window->sl_source_tag =
+            g_timeout_add_seconds(window->sl_timeout,
+                                  (GSourceFunc) _window_next_image_src,
+                                  window);
+    }
 
     return TRUE;
+}
+
+static gboolean _window_next_image_src(VnrWindow *window)
+{
+    if (g_list_length(g_list_first(window->filelist)) <= 1)
+        return FALSE;
+    else
+        window_next(window, FALSE);
+
+    window->sl_source_tag =
+        g_timeout_add_seconds(window->sl_timeout,
+                              (GSourceFunc) _window_next_image_src,
+                              window);
+
+    return FALSE;
 }
 
 gboolean window_first(VnrWindow *window)
@@ -1706,6 +1733,83 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
                                           G_CALLBACK(_action_save_image));
 }
 
+static void _action_save_image(GtkWidget *widget, VnrWindow *window)
+{
+    (void) widget;
+
+    VnrFile *current = window_list_get_current(window);
+    if (!current)
+        return;
+
+    if (!window->cursor_is_hidden)
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
+
+    //gdk_flush();
+
+    if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
+        vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
+
+    /* Store exiv2 metadata to cache, so we can restore it afterwards */
+    uni_read_exiv2_to_cache(current->path);
+
+    GError *error = NULL;
+
+    if (g_strcmp0(window->writable_format_name, "jpeg") == 0)
+    {
+        gchar *quality;
+        quality = g_strdup_printf("%i", window->prefs->jpeg_quality);
+
+        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
+                        current->path, "jpeg",
+                        &error, "quality", quality, NULL);
+        g_free(quality);
+    }
+    else if (g_strcmp0(window->writable_format_name, "png") == 0)
+    {
+        gchar *compression;
+        compression = g_strdup_printf("%i", window->prefs->png_compression);
+
+        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
+                        current->path, "png",
+                        &error, "compression", compression, NULL);
+        g_free(compression);
+    }
+    else
+    {
+        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
+                        current->path,
+                        window->writable_format_name, &error, NULL);
+    }
+
+    uni_write_exiv2_from_cache(current->path);
+
+    if (!window->cursor_is_hidden)
+        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
+
+    if (error != NULL)
+    {
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
+                              error->message, FALSE);
+        return;
+    }
+
+    if (window->prefs->reload_on_save)
+    {
+        window_file_load(window, FALSE);
+        return;
+    }
+
+    window->modifications = 0;
+
+    //gtk_action_group_set_sensitive(window->action_save, FALSE);
+
+    if (window->prefs->behavior_modify != VNR_PREFS_MODIFY_ASK)
+        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
+
+    if (gtk_widget_get_visible(window->props_dlg))
+        vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
+}
+
 
 // Fullscreen -----------------------------------------------------------------
 
@@ -2004,6 +2108,34 @@ static void _window_update_fs_filename_label(VnrWindow *window)
 
 // ----------------------------------------------------------------------------
 
+static void _window_action_slideshow(VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
+
+    if (!window->slideshow)
+        return;
+
+    VnrFile *current = window_list_get_current(window);
+    if (!current)
+        return;
+
+    if (window->mode != WINDOW_MODE_SLIDESHOW)
+    {
+        // Uncomment to force Fullscreen along with Slideshow
+        if (window->mode == WINDOW_MODE_NORMAL)
+            _window_fullscreen(window);
+
+        _window_slideshow_start(window);
+    }
+    else if (window->mode == WINDOW_MODE_SLIDESHOW)
+    {
+        // Uncomment to force Fullscreen along with Slideshow
+        _window_unfullscreen(window);
+
+        _window_slideshow_stop(window);
+    }
+}
+
 static void _window_slideshow_start(VnrWindow *window)
 {
     if (!window->slideshow)
@@ -2014,9 +2146,10 @@ static void _window_slideshow_start(VnrWindow *window)
 
     window->mode = WINDOW_MODE_SLIDESHOW;
 
-    window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
-                                                  (GSourceFunc)_window_next_image_src,
-                                                  window);
+    window->sl_source_tag =
+        g_timeout_add_seconds(window->sl_timeout,
+                              (GSourceFunc) _window_next_image_src,
+                              window);
 
 
     window->slideshow = FALSE;
@@ -2106,83 +2239,6 @@ void window_slideshow_deny(VnrWindow *window)
 
 // private signal handlers ----------------------------------------------------
 
-static void _action_save_image(GtkWidget *widget, VnrWindow *window)
-{
-    (void) widget;
-
-    VnrFile *current = window_list_get_current(window);
-    if (!current)
-        return;
-
-    if (!window->cursor_is_hidden)
-        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
-
-    //gdk_flush();
-
-    if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
-        vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
-
-    /* Store exiv2 metadata to cache, so we can restore it afterwards */
-    uni_read_exiv2_to_cache(current->path);
-
-    GError *error = NULL;
-
-    if (g_strcmp0(window->writable_format_name, "jpeg") == 0)
-    {
-        gchar *quality;
-        quality = g_strdup_printf("%i", window->prefs->jpeg_quality);
-
-        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                        current->path, "jpeg",
-                        &error, "quality", quality, NULL);
-        g_free(quality);
-    }
-    else if (g_strcmp0(window->writable_format_name, "png") == 0)
-    {
-        gchar *compression;
-        compression = g_strdup_printf("%i", window->prefs->png_compression);
-
-        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                        current->path, "png",
-                        &error, "compression", compression, NULL);
-        g_free(compression);
-    }
-    else
-    {
-        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                        current->path,
-                        window->writable_format_name, &error, NULL);
-    }
-
-    uni_write_exiv2_from_cache(current->path);
-
-    if (!window->cursor_is_hidden)
-        vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
-
-    if (error != NULL)
-    {
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area), TRUE,
-                              error->message, FALSE);
-        return;
-    }
-
-    if (window->prefs->reload_on_save)
-    {
-        window_file_load(window, FALSE);
-        return;
-    }
-
-    window->modifications = 0;
-
-    //gtk_action_group_set_sensitive(window->action_save, FALSE);
-
-    if (window->prefs->behavior_modify != VNR_PREFS_MODIFY_ASK)
-        _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
-
-    if (gtk_widget_get_visible(window->props_dlg))
-        vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
-}
-
 static void _action_resize(GtkToggleAction *action, VnrWindow *window)
 {
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
@@ -2269,20 +2325,6 @@ static void _action_crop(GtkAction *action, VnrWindow *window)
 
 
 // ----------------------------------------------------------------------------
-
-static gboolean _window_next_image_src(VnrWindow *window)
-{
-    if (g_list_length(g_list_first(window->filelist)) <= 1)
-        return FALSE;
-    else
-        window_next(window, FALSE);
-
-    window->sl_source_tag = g_timeout_add_seconds(window->sl_timeout,
-                                                  (GSourceFunc)_window_next_image_src,
-                                                  window);
-
-    return FALSE;
-}
 
 static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           gint response_id,

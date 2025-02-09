@@ -57,7 +57,6 @@ static void _action_fullscreen(GtkAction *action, VnrWindow *window)
 //static void _action_reload(GtkAction *action, VnrWindow *window);
 //static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
 //static void _action_scrollbar(GtkAction *action, VnrWindow *window);
-//static void _action_slideshow(GtkAction *action, VnrWindow *window);
 //static void _action_fit(GtkAction *action, gpointer user_data);
 //static void _action_zoom_in(GtkAction *action, gpointer user_data);
 //static void _action_zoom_out(GtkAction *action, gpointer user_data);
@@ -206,34 +205,6 @@ static void _action_scrollbar(GtkAction *action, VnrWindow *window)
     gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
     vnr_prefs_set_show_scrollbar(window->prefs, show);
     uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), show);
-}
-
-static void _action_slideshow(GtkAction *action, VnrWindow *window)
-{
-    g_assert(window != NULL && VNR_IS_WINDOW(window));
-
-    if (!window->slideshow)
-        return;
-
-    gboolean slideshow;
-
-    slideshow = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
-
-    if (slideshow && window->mode != WINDOW_MODE_SLIDESHOW)
-    {
-        /* ! Uncomment to force Fullscreen along with Slideshow */
-        if (window->mode == WINDOW_MODE_NORMAL)
-        {
-            _window_fullscreen(window);
-        }
-        _window_slideshow_start(window);
-    }
-    else if (window->mode == WINDOW_MODE_SLIDESHOW)
-    {
-        /* ! Uncomment to force Fullscreen along with Slideshow */
-        _window_unfullscreen(window);
-        _window_slideshow_stop(window);
-    }
 }
 
 #endif
