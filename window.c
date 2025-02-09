@@ -46,12 +46,12 @@ G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 GtkWindow* window_new();
 static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
+static void _window_on_realize(GtkWidget *widget, gpointer user_data);
 static void _window_load_accel_map();
 
 // Window destruction ---------------------------------------------------------
 
 static void _window_on_destroy(GtkWidget *widget, gpointer user_data);
-static void _window_on_realize(GtkWidget *widget, gpointer user_data);
 static void _window_save_accel_map();
 static void window_dispose(GObject *object);
 static void window_finalize(GObject *object);
@@ -59,6 +59,12 @@ static void window_finalize(GObject *object);
 // Window ---------------------------------------------------------------------
 
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
+static void _window_drag_data_received(GtkWidget *widget,
+                                       GdkDragContext *context,
+                                       gint x, gint y,
+                                       GtkSelectionData *selection_data,
+                                       guint info, guint time);
+
 static gboolean _window_on_change_state(GtkWidget *widget,
                                         GdkEventWindowState *event,
                                         gpointer user_data);
@@ -146,11 +152,6 @@ static void _view_on_drag_begin(GtkWidget *widget,
                                 guint info,
                                 guint time,
                                 gpointer user_data);
-static void _window_drag_data_received(GtkWidget *widget,
-                                       GdkDragContext *context,
-                                       gint x, gint y,
-                                       GtkSelectionData *selection_data,
-                                       guint info, guint time);
 
 typedef enum
 {
@@ -421,61 +422,6 @@ static void window_init(VnrWindow *window)
     _window_load_accel_map();
 }
 
-#if 0
-#endif
-
-static void _window_load_accel_map()
-{
-    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                        "accel_map", NULL);
-    //gtk_accel_map_load(accelfile);
-
-    g_free(accelfile);
-}
-
-
-// Window destruction ---------------------------------------------------------
-
-static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
-{
-    _window_save_accel_map();
-    vnr_prefs_save(VNR_WINDOW(widget)->prefs);
-    gtk_main_quit();
-}
-
-static void _window_save_accel_map()
-{
-    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                        "accel_map", NULL);
-    //gtk_accel_map_save(accelfile);
-
-    g_free(accelfile);
-}
-
-static void window_dispose(GObject *object)
-{
-    // do something
-
-    VnrWindow *window = VNR_WINDOW(object);
-
-    window->accel_group = etk_actions_dispose(GTK_WINDOW(window),
-                                              window->accel_group);
-    window->list_image = etk_widget_list_free(window->list_image);
-
-    G_OBJECT_CLASS(window_parent_class)->dispose(object);
-}
-
-static void window_finalize(GObject *object)
-{
-    VnrWindow *window = VNR_WINDOW(object);
-    if (window->movedir)
-        g_free(window->movedir);
-
-    window->filelist = vnr_list_free(window->filelist);
-
-    G_OBJECT_CLASS(window_parent_class)->finalize(object);
-}
-
 static void _window_on_realize(GtkWidget *widget, gpointer user_data)
 {
     g_signal_handlers_disconnect_by_func(widget,
@@ -528,6 +474,58 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
         _window_slideshow_allow(window);
         _window_slideshow_start(window);
     }
+}
+
+static void _window_load_accel_map()
+{
+    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
+                                        "accel_map", NULL);
+    //gtk_accel_map_load(accelfile);
+
+    g_free(accelfile);
+}
+
+
+// Window destruction ---------------------------------------------------------
+
+static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
+{
+    _window_save_accel_map();
+    vnr_prefs_save(VNR_WINDOW(widget)->prefs);
+    gtk_main_quit();
+}
+
+static void _window_save_accel_map()
+{
+    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
+                                        "accel_map", NULL);
+    //gtk_accel_map_save(accelfile);
+
+    g_free(accelfile);
+}
+
+static void window_dispose(GObject *object)
+{
+    // do something
+
+    VnrWindow *window = VNR_WINDOW(object);
+
+    window->accel_group = etk_actions_dispose(GTK_WINDOW(window),
+                                              window->accel_group);
+    window->list_image = etk_widget_list_free(window->list_image);
+
+    G_OBJECT_CLASS(window_parent_class)->dispose(object);
+}
+
+static void window_finalize(GObject *object)
+{
+    VnrWindow *window = VNR_WINDOW(object);
+    if (window->movedir)
+        g_free(window->movedir);
+
+    window->filelist = vnr_list_free(window->filelist);
+
+    G_OBJECT_CLASS(window_parent_class)->finalize(object);
 }
 
 
@@ -658,6 +656,45 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
     }
 
     return result;
+}
+
+static void _window_drag_data_received(GtkWidget *widget,
+                                       GdkDragContext *context,
+                                       gint x, gint y,
+                                       GtkSelectionData *selection_data,
+                                       guint info, guint time)
+{
+    GSList *uri_list = NULL;
+    GdkAtom target = gtk_selection_data_get_target(selection_data);
+    GdkDragAction suggested_action;
+
+    if (!gtk_targets_include_uri(&target, 1))
+        return;
+
+    if (gtk_drag_get_source_widget(context))
+        return;
+
+    suggested_action = gdk_drag_context_get_suggested_action(context);
+    if (suggested_action == GDK_ACTION_COPY || suggested_action == GDK_ACTION_ASK)
+    {
+        const guchar *data = gtk_selection_data_get_data(selection_data);
+
+        uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *)data);
+        if (uri_list == NULL)
+        {
+            window_file_close(VNR_WINDOW(widget));
+
+            //gtk_action_group_set_sensitive(VNR_WINDOW(widget)->actions_collection, FALSE);
+
+            window_slideshow_deny(VNR_WINDOW(widget));
+            vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(widget)->msg_area), TRUE,
+                                  _("The given locations contain no images."),
+                                  TRUE);
+            return;
+        }
+
+        window_open_list(VNR_WINDOW(widget), uri_list);
+    }
 }
 
 static gboolean _window_on_change_state(GtkWidget *widget,
@@ -2424,45 +2461,6 @@ void window_preferences_apply(VnrWindow *window)
 
 
 // Dnd ------------------------------------------------------------------------
-
-static void _window_drag_data_received(GtkWidget *widget,
-                                       GdkDragContext *context,
-                                       gint x, gint y,
-                                       GtkSelectionData *selection_data,
-                                       guint info, guint time)
-{
-    GSList *uri_list = NULL;
-    GdkAtom target = gtk_selection_data_get_target(selection_data);
-    GdkDragAction suggested_action;
-
-    if (!gtk_targets_include_uri(&target, 1))
-        return;
-
-    if (gtk_drag_get_source_widget(context))
-        return;
-
-    suggested_action = gdk_drag_context_get_suggested_action(context);
-    if (suggested_action == GDK_ACTION_COPY || suggested_action == GDK_ACTION_ASK)
-    {
-        const guchar *data = gtk_selection_data_get_data(selection_data);
-
-        uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *)data);
-        if (uri_list == NULL)
-        {
-            window_file_close(VNR_WINDOW(widget));
-
-            //gtk_action_group_set_sensitive(VNR_WINDOW(widget)->actions_collection, FALSE);
-
-            window_slideshow_deny(VNR_WINDOW(widget));
-            vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(widget)->msg_area), TRUE,
-                                  _("The given locations contain no images."),
-                                  TRUE);
-            return;
-        }
-
-        window_open_list(VNR_WINDOW(widget), uri_list);
-    }
-}
 
 static void _window_set_drag(VnrWindow *window)
 {
