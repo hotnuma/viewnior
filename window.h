@@ -71,16 +71,17 @@ struct _VnrWindow
     // fullscreen variables
     GtkWidget *fs_toolitem;
     GtkWidget *toggle_btn;
-    GtkWidget *fs_seconds_label;
+    //GtkWidget *fs_seconds_label;
     GtkWidget *fs_filename_label;
+
     GSource *fs_source;
     gboolean disable_autohide;
 
     // slideshow variables
+    GtkWidget *sl_timeout_widget;
     gboolean slideshow;
     guint sl_source_tag;
     gint sl_timeout;
-    GtkWidget *sl_timeout_widget;
 };
 
 GType window_get_type() G_GNUC_CONST;

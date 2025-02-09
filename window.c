@@ -2068,7 +2068,8 @@ static void _window_update_fs_filename_label(VnrWindow *window)
                                 position,
                                 total);
 
-    gtk_label_set_text(GTK_LABEL(window->fs_filename_label), buf);
+    if (window->fs_toolitem)
+        gtk_label_set_text(GTK_LABEL(window->fs_filename_label), buf);
 
     g_free(buf);
 }
@@ -2232,28 +2233,8 @@ static void _window_unfullscreen(VnrWindow *window)
     _window_show_cursor(window);
 }
 
-static void _window_slideshow_stop(VnrWindow *window)
-{
-    if (!window->slideshow)
-        return;
 
-    if (window->mode != WINDOW_MODE_SLIDESHOW)
-        return;
-
-    window->slideshow = FALSE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn), FALSE);
-
-//    GtkAction *action = gtk_action_group_get_action(
-//                                window->actions_collection,
-//                                "ViewSlideshow");
-//    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
-
-    window->slideshow = TRUE;
-
-    window->mode = WINDOW_MODE_FULLSCREEN;
-
-    g_source_remove(window->sl_source_tag);
-}
+// ----------------------------------------------------------------------------
 
 static void _window_slideshow_start(VnrWindow *window)
 {
@@ -2271,7 +2252,12 @@ static void _window_slideshow_start(VnrWindow *window)
 
 
     window->slideshow = FALSE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn), TRUE);
+
+    if (window->fs_toolitem)
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn),
+                                     TRUE);
+    }
 
     //GtkAction *action = gtk_action_group_get_action(
     //                            window->actions_collection,
@@ -2279,6 +2265,34 @@ static void _window_slideshow_start(VnrWindow *window)
     //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 
     window->slideshow = TRUE;
+}
+
+static void _window_slideshow_stop(VnrWindow *window)
+{
+    if (!window->slideshow)
+        return;
+
+    if (window->mode != WINDOW_MODE_SLIDESHOW)
+        return;
+
+    window->slideshow = FALSE;
+
+    if (window->fs_toolitem)
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn),
+                                     FALSE);
+    }
+
+    //GtkAction *action = gtk_action_group_get_action(
+    //                            window->actions_collection,
+    //                            "ViewSlideshow");
+    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
+
+    window->slideshow = TRUE;
+
+    window->mode = WINDOW_MODE_FULLSCREEN;
+
+    g_source_remove(window->sl_source_tag);
 }
 
 #if 0
@@ -2306,7 +2320,8 @@ static void _window_slideshow_allow(VnrWindow *window)
 
     window->slideshow = TRUE;
 
-    gtk_widget_set_sensitive(window->toggle_btn, TRUE);
+    if (window->fs_toolitem)
+        gtk_widget_set_sensitive(window->toggle_btn, TRUE);
 }
 
 void window_slideshow_deny(VnrWindow *window)
@@ -2316,8 +2331,11 @@ void window_slideshow_deny(VnrWindow *window)
 
     window->slideshow = FALSE;
 
-    gtk_widget_set_sensitive(window->toggle_btn, FALSE);
+    if (window->fs_toolitem)
+        gtk_widget_set_sensitive(window->toggle_btn, FALSE);
 }
+
+
 
 
 // Private signal handlers ---------------------------------------------------
@@ -2670,14 +2688,17 @@ void window_preferences_apply(VnrWindow *window)
         gtk_widget_queue_draw(window->view);
     }
 
-    if (window->sl_timeout_widget)
+    if (window->fs_toolitem)
     {
         gint val = gtk_spin_button_get_value_as_int(
-                    GTK_SPIN_BUTTON(window->sl_timeout_widget));
+                        GTK_SPIN_BUTTON(window->sl_timeout_widget));
 
         if (val != window->prefs->slideshow_timeout)
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->sl_timeout_widget),
-                                      (gdouble) window->prefs->slideshow_timeout);
+        {
+            gtk_spin_button_set_value(
+                        GTK_SPIN_BUTTON(window->sl_timeout_widget),
+                        (gdouble) window->prefs->slideshow_timeout);
+        }
     }
 }
 
