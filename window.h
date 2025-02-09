@@ -67,17 +67,16 @@ struct _VnrWindow
     gint current_image_width;
     guint8 modifications;
     gboolean cursor_is_hidden;
-    //guint open_with_menu_id;
 
-    // Fullscreen (fs) variables
-    GtkWidget *fs_controls;
+    // fullscreen variables
+    GtkWidget *fs_toolitem;
     GtkWidget *toggle_btn;
     GtkWidget *fs_seconds_label;
     GtkWidget *fs_filename_label;
     GSource *fs_source;
     gboolean disable_autohide;
 
-    // Slideshow (sl) variables
+    // slideshow variables
     gboolean slideshow;
     guint sl_source_tag;
     gint sl_timeout;

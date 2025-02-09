@@ -46,6 +46,7 @@ G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 GtkWindow* window_new();
 static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
+//static GtkWidget* _window_get_fs_toolitem(VnrWindow *window);
 static void _window_load_accel_map();
 
 // Window destruction ---------------------------------------------------------
@@ -58,7 +59,6 @@ static void window_finalize(GObject *object);
 
 // Window ---------------------------------------------------------------------
 
-static GtkWidget* _window_get_fs_controls(VnrWindow *window);
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
 static gboolean _window_on_change_state(GtkWidget *widget,
                                         GdkEventWindowState *event,
@@ -123,29 +123,32 @@ static void _window_show_cursor(VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
 static gboolean _window_next_image_src(VnrWindow *window);
 
-static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
+// ----------------------------------------------------------------------------
+
+//static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
+//static void _on_spin_value_change(GtkSpinButton *spinbutton,
+//                                  VnrWindow *window);
+//static void _on_toggle_show_next(GtkToggleButton *togglebutton,
+//                                 VnrWindow *window);
 static void _window_fullscreen_unset_timeout(VnrWindow *window);
 static void _window_fullscreen_set_timeout(VnrWindow *window);
 static void _window_fullscreen(VnrWindow *window);
 static void _window_unfullscreen(VnrWindow *window);
-
-static void _window_slideshow_stop(VnrWindow *window);
-static void _window_slideshow_start(VnrWindow *window);
-static void _window_slideshow_restart(VnrWindow *window);
-static void _window_slideshow_allow(VnrWindow *window);
-void window_slideshow_deny(VnrWindow *window);
-
-static gboolean _on_leave_image_area(GtkWidget *widget,
-                                     GdkEventCrossing *ev,
-                                     VnrWindow *window);
 static gboolean _on_fullscreen_motion(GtkWidget *widget,
                                       GdkEventMotion *ev,
                                       VnrWindow *window);
 static gboolean _on_fullscreen_timeout(VnrWindow *window);
-static void _on_spin_value_change(GtkSpinButton *spinbutton,
-                                  VnrWindow *window);
-static void _on_toggle_show_next(GtkToggleButton *togglebutton,
-                                 VnrWindow *window);
+static gboolean _on_leave_image_area(GtkWidget *widget,
+                                     GdkEventCrossing *ev,
+                                     VnrWindow *window);
+
+// ----------------------------------------------------------------------------
+
+static void _window_slideshow_stop(VnrWindow *window);
+static void _window_slideshow_start(VnrWindow *window);
+//static void _window_slideshow_restart(VnrWindow *window);
+static void _window_slideshow_allow(VnrWindow *window);
+void window_slideshow_deny(VnrWindow *window);
 
 // DnD ------------------------------------------------------------------------
 
@@ -287,7 +290,7 @@ static void window_init(VnrWindow *window)
     window->cursor_is_hidden = FALSE;
     window->disable_autohide = FALSE;
 
-    window->fs_controls = NULL;
+    window->fs_toolitem = NULL;
     window->fs_source = NULL;
     window->sl_timeout = 5;
     window->slideshow = TRUE;
@@ -373,7 +376,7 @@ static void window_init(VnrWindow *window)
     //gtk_action_group_set_sensitive(window->action_save, FALSE);
     //gtk_action_group_set_sensitive(window->actions_bars, TRUE);
 
-    gtk_widget_hide(_window_get_fs_controls(window));
+    //gtk_widget_hide(_window_get_fs_toolitem(window));
 
     // Apply auto-resize preference
     //action = gtk_action_group_get_action(window->actions_image,
@@ -430,6 +433,69 @@ static void window_init(VnrWindow *window)
 
     _window_load_accel_map();
 }
+
+#if 0
+static GtkWidget* _window_get_fs_toolitem(VnrWindow *window)
+{
+    if (window->fs_toolitem != NULL)
+        return window->fs_toolitem;
+
+    // Tool item, that contains the hbox
+    GtkToolItem *item = gtk_tool_item_new();
+    gtk_tool_item_set_expand(item, TRUE);
+
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_container_add(GTK_CONTAINER(item), box);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    GtkWidget *widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
+    g_signal_connect(widget, "clicked",
+                     G_CALLBACK(_on_fullscreen_leave), window);
+    gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);
+
+    // create label for the current image's filename
+    widget = gtk_label_new(NULL);
+    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
+    gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+    window->fs_filename_label = widget;
+    gtk_box_pack_end(GTK_BOX(box), widget, TRUE, TRUE, 10);
+
+    widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+
+    widget = gtk_check_button_new_with_label(_("Show next image after: "));
+    g_signal_connect(widget, "toggled",
+                     G_CALLBACK(_on_toggle_show_next), window);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    window->toggle_btn = widget;
+
+    // create spin button to adjust slideshow's timeout
+    GtkAdjustment *spinner_adj =
+        (GtkAdjustment*) gtk_adjustment_new(
+                                    window->prefs->slideshow_timeout,
+                                    1.0, 30.0, 1.0, 1.0, 0);
+
+    widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
+    gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
+    gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget),
+                                      GTK_UPDATE_ALWAYS);
+    g_signal_connect(widget, "value-changed",
+                     G_CALLBACK(_on_spin_value_change), window);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    window->sl_timeout_widget = widget;
+
+    window->fs_seconds_label = gtk_label_new(ngettext(" second", " seconds", 5));
+    gtk_box_pack_start(GTK_BOX(box), window->fs_seconds_label, FALSE, FALSE, 0);
+
+    window->fs_toolitem = GTK_WIDGET(item);
+
+    gtk_widget_show_all(window->fs_toolitem);
+
+    return window->fs_toolitem;
+}
+#endif
 
 static void _window_load_accel_map()
 {
@@ -530,72 +596,6 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
 
 
 // ----------------------------------------------------------------------------
-
-static GtkWidget* _window_get_fs_controls(VnrWindow *window)
-{
-    if (window->fs_controls != NULL)
-        return window->fs_controls;
-
-    GtkWidget *box;
-    GtkToolItem *item;
-    GtkWidget *widget;
-    GtkAdjustment *spinner_adj;
-
-    /* Tool item, that contains the hbox */
-    item = gtk_tool_item_new();
-    gtk_tool_item_set_expand(item, TRUE);
-
-    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_container_add(GTK_CONTAINER(item), box);
-
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
-    G_GNUC_END_IGNORE_DEPRECATIONS
-
-    g_signal_connect(widget, "clicked", G_CALLBACK(_on_fullscreen_leave), window);
-    gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);
-
-    /* Create label for the current image's filename */
-    widget = gtk_label_new(NULL);
-    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
-    gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
-    window->fs_filename_label = widget;
-    gtk_box_pack_end(GTK_BOX(box), widget, TRUE, TRUE, 10);
-
-    widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-
-    widget = gtk_check_button_new_with_label(_("Show next image after: "));
-    g_signal_connect(widget, "toggled", G_CALLBACK(_on_toggle_show_next),
-                     window);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    window->toggle_btn = widget;
-
-    // Create spin button to adjust slideshow's timeout
-    // spinner_adj =(GtkAdjustment *) gtk_adjustment_new(
-    //                                  5, 1.0, 30.0, 1.0, 1.0, 0);
-
-    spinner_adj = (GtkAdjustment*) gtk_adjustment_new(
-                                    window->prefs->slideshow_timeout,
-                                    1.0, 30.0, 1.0, 1.0, 0);
-
-    widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
-    gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
-    gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget),
-                                      GTK_UPDATE_ALWAYS);
-    g_signal_connect(widget, "value-changed",
-                     G_CALLBACK(_on_spin_value_change), window);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    window->sl_timeout_widget = widget;
-
-    window->fs_seconds_label = gtk_label_new(ngettext(" second", " seconds", 5));
-    gtk_box_pack_start(GTK_BOX(box), window->fs_seconds_label, FALSE, FALSE, 0);
-
-    window->fs_controls = GTK_WIDGET(item);
-
-    gtk_widget_show_all(window->fs_controls);
-    return window->fs_controls;
-}
 
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
 {
@@ -1981,6 +1981,64 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 }
 
 
+
+
+
+
+
+
+
+// ----------------------------------------------------------------------------
+
+#if 0
+static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window)
+{
+    _window_unfullscreen(window);
+}
+
+static void _on_spin_value_change(GtkSpinButton *spinbutton,
+                                  VnrWindow *window)
+{
+    int new_value = gtk_spin_button_get_value_as_int(spinbutton);
+
+    if (new_value != window->prefs->slideshow_timeout)
+        vnr_prefs_set_slideshow_timeout(window->prefs, new_value);
+
+    gtk_label_set_text(GTK_LABEL(window->fs_seconds_label),
+                       ngettext(" second", " seconds", new_value));
+    window->sl_timeout = new_value;
+    _window_slideshow_restart(window);
+}
+
+static void _on_toggle_show_next(GtkToggleButton *togglebutton,
+                                 VnrWindow *window)
+{
+    if (!window->slideshow)
+        return;
+
+    if (window->mode == WINDOW_MODE_FULLSCREEN)
+        _window_slideshow_start(window);
+    else if (window->mode == WINDOW_MODE_SLIDESHOW)
+        _window_slideshow_stop(window);
+}
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ----------------------------------------------------------------------------
 
 static void _window_hide_cursor(VnrWindow *window)
@@ -2093,7 +2151,8 @@ static void _window_fullscreen(VnrWindow *window)
     //gtk_widget_hide(window->statusbar);
     //gtk_widget_show(window->properties_button);
 
-    gtk_widget_show(window->fs_controls);
+    if (window->fs_toolitem)
+        gtk_widget_show(window->fs_toolitem);
 
     _window_slideshow_stop(window);
 
@@ -2153,7 +2212,8 @@ static void _window_unfullscreen(VnrWindow *window)
         uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
                                      window->prefs->zoom);
 
-    gtk_widget_hide(window->fs_controls);
+    if (window->fs_toolitem)
+        gtk_widget_hide(window->fs_toolitem);
 
     //if (!window->prefs->show_statusbar)
     //    gtk_widget_hide(window->statusbar);
@@ -2221,6 +2281,7 @@ static void _window_slideshow_start(VnrWindow *window)
     window->slideshow = TRUE;
 }
 
+#if 0
 static void _window_slideshow_restart(VnrWindow *window)
 {
     if (!window->slideshow)
@@ -2236,6 +2297,7 @@ static void _window_slideshow_restart(VnrWindow *window)
                         (GSourceFunc) _window_next_image_src,
                         window);
 }
+#endif
 
 static void _window_slideshow_allow(VnrWindow *window)
 {
@@ -2294,32 +2356,6 @@ static gboolean _on_fullscreen_timeout(VnrWindow *window)
     _window_hide_cursor(window);
 
     return FALSE;
-}
-
-static void _on_spin_value_change(GtkSpinButton *spinbutton,
-                                  VnrWindow *window)
-{
-    int new_value = gtk_spin_button_get_value_as_int(spinbutton);
-
-    if (new_value != window->prefs->slideshow_timeout)
-        vnr_prefs_set_slideshow_timeout(window->prefs, new_value);
-
-    gtk_label_set_text(GTK_LABEL(window->fs_seconds_label),
-                       ngettext(" second", " seconds", new_value));
-    window->sl_timeout = new_value;
-    _window_slideshow_restart(window);
-}
-
-static void _on_toggle_show_next(GtkToggleButton *togglebutton,
-                                 VnrWindow *window)
-{
-    if (!window->slideshow)
-        return;
-
-    if (window->mode == WINDOW_MODE_FULLSCREEN)
-        _window_slideshow_start(window);
-    else if (window->mode == WINDOW_MODE_SLIDESHOW)
-        _window_slideshow_stop(window);
 }
 
 static void _action_save_image(GtkWidget *widget, VnrWindow *window)
@@ -2397,11 +2433,6 @@ static void _action_save_image(GtkWidget *widget, VnrWindow *window)
 
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
-}
-
-static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window)
-{
-    _window_unfullscreen(window);
 }
 
 static void _view_on_drag_begin(GtkWidget *widget,
@@ -2639,9 +2670,14 @@ void window_preferences_apply(VnrWindow *window)
         gtk_widget_queue_draw(window->view);
     }
 
-    if (gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(window->sl_timeout_widget)) != window->prefs->slideshow_timeout)
+    if (window->sl_timeout_widget)
     {
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->sl_timeout_widget), (gdouble)window->prefs->slideshow_timeout);
+        gint val = gtk_spin_button_get_value_as_int(
+                    GTK_SPIN_BUTTON(window->sl_timeout_widget));
+
+        if (val != window->prefs->slideshow_timeout)
+            gtk_spin_button_set_value(GTK_SPIN_BUTTON(window->sl_timeout_widget),
+                                      (gdouble) window->prefs->slideshow_timeout);
     }
 }
 
