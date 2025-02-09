@@ -57,8 +57,8 @@ struct _VnrWindow
     GtkWidget *view;
     GtkWidget *scroll_view;
     GtkWidget *popup_menu;
-    GtkWidget *props_dlg;
     GtkWidget *openwith_item;
+    GtkWidget *props_dlg;
 
     gint max_width;
     gint max_height;

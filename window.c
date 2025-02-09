@@ -58,8 +58,8 @@ static void window_finalize(GObject *object);
 
 // Window ---------------------------------------------------------------------
 
-static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
 static GtkWidget* _window_get_fs_controls(VnrWindow *window);
+static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
 static gboolean _window_on_change_state(GtkWidget *widget,
                                         GdkEventWindowState *event,
                                         gpointer user_data);
@@ -70,8 +70,7 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _window_action_opendir(VnrWindow *window, GtkWidget *widget);
 static void _window_update_openwith_menu(VnrWindow *window);
-static void _on_openwith(VnrWindow *window,
-                                             gpointer user_data);
+static void _on_openwith(VnrWindow *window, gpointer user_data);
 
 // Actions --------------------------------------------------------------------
 
@@ -274,25 +273,24 @@ static void window_class_init(VnrWindowClass *klass)
 
 static void window_init(VnrWindow *window)
 {
+    g_assert(window->filelist == NULL);
+
     window->filelist = NULL;
     window->movedir = NULL;
     window->mode = WINDOW_MODE_NORMAL;
     window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
     window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
     window->can_edit = false;
-    g_assert(window->list_image == NULL);
     window->list_image = NULL;
 
-    //window->actions_open_with = NULL;
-    //window->open_with_menu_id = 0;
-
     window->writable_format_name = NULL;
+    window->cursor_is_hidden = FALSE;
+    window->disable_autohide = FALSE;
+
     window->fs_controls = NULL;
     window->fs_source = NULL;
     window->sl_timeout = 5;
     window->slideshow = TRUE;
-    window->cursor_is_hidden = FALSE;
-    window->disable_autohide = FALSE;
 
     gtk_window_set_title((GtkWindow*) window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
@@ -365,7 +363,7 @@ static void window_init(VnrWindow *window)
                                          G_OBJECT(window));
 
     gtk_widget_show_all(menu);
-    //gtk_widget_hide(window->openwith_item);
+    gtk_widget_hide(window->openwith_item);
 
     etk_widget_list_set_sensitive(window->list_image, false);
 
@@ -533,6 +531,72 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
 
 // ----------------------------------------------------------------------------
 
+static GtkWidget* _window_get_fs_controls(VnrWindow *window)
+{
+    if (window->fs_controls != NULL)
+        return window->fs_controls;
+
+    GtkWidget *box;
+    GtkToolItem *item;
+    GtkWidget *widget;
+    GtkAdjustment *spinner_adj;
+
+    /* Tool item, that contains the hbox */
+    item = gtk_tool_item_new();
+    gtk_tool_item_set_expand(item, TRUE);
+
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_container_add(GTK_CONTAINER(item), box);
+
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
+    G_GNUC_END_IGNORE_DEPRECATIONS
+
+    g_signal_connect(widget, "clicked", G_CALLBACK(_on_fullscreen_leave), window);
+    gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);
+
+    /* Create label for the current image's filename */
+    widget = gtk_label_new(NULL);
+    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
+    gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+    window->fs_filename_label = widget;
+    gtk_box_pack_end(GTK_BOX(box), widget, TRUE, TRUE, 10);
+
+    widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+
+    widget = gtk_check_button_new_with_label(_("Show next image after: "));
+    g_signal_connect(widget, "toggled", G_CALLBACK(_on_toggle_show_next),
+                     window);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    window->toggle_btn = widget;
+
+    // Create spin button to adjust slideshow's timeout
+    // spinner_adj =(GtkAdjustment *) gtk_adjustment_new(
+    //                                  5, 1.0, 30.0, 1.0, 1.0, 0);
+
+    spinner_adj = (GtkAdjustment*) gtk_adjustment_new(
+                                    window->prefs->slideshow_timeout,
+                                    1.0, 30.0, 1.0, 1.0, 0);
+
+    widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
+    gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
+    gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget),
+                                      GTK_UPDATE_ALWAYS);
+    g_signal_connect(widget, "value-changed",
+                     G_CALLBACK(_on_spin_value_change), window);
+    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    window->sl_timeout_widget = widget;
+
+    window->fs_seconds_label = gtk_label_new(ngettext(" second", " seconds", 5));
+    gtk_box_pack_start(GTK_BOX(box), window->fs_seconds_label, FALSE, FALSE, 0);
+
+    window->fs_controls = GTK_WIDGET(item);
+
+    gtk_widget_show_all(window->fs_controls);
+    return window->fs_controls;
+}
+
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
 {
     // Modified version of eog's eog_window_key_press
@@ -648,72 +712,6 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
     }
 
     return result;
-}
-
-static GtkWidget* _window_get_fs_controls(VnrWindow *window)
-{
-    if (window->fs_controls != NULL)
-        return window->fs_controls;
-
-    GtkWidget *box;
-    GtkToolItem *item;
-    GtkWidget *widget;
-    GtkAdjustment *spinner_adj;
-
-    /* Tool item, that contains the hbox */
-    item = gtk_tool_item_new();
-    gtk_tool_item_set_expand(item, TRUE);
-
-    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_container_add(GTK_CONTAINER(item), box);
-
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
-    G_GNUC_END_IGNORE_DEPRECATIONS
-
-    g_signal_connect(widget, "clicked", G_CALLBACK(_on_fullscreen_leave), window);
-    gtk_box_pack_end(GTK_BOX(box), widget, FALSE, FALSE, 0);
-
-    /* Create label for the current image's filename */
-    widget = gtk_label_new(NULL);
-    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
-    gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
-    window->fs_filename_label = widget;
-    gtk_box_pack_end(GTK_BOX(box), widget, TRUE, TRUE, 10);
-
-    widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-
-    widget = gtk_check_button_new_with_label(_("Show next image after: "));
-    g_signal_connect(widget, "toggled", G_CALLBACK(_on_toggle_show_next),
-                     window);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    window->toggle_btn = widget;
-
-    // Create spin button to adjust slideshow's timeout
-    // spinner_adj =(GtkAdjustment *) gtk_adjustment_new(
-    //                                  5, 1.0, 30.0, 1.0, 1.0, 0);
-
-    spinner_adj = (GtkAdjustment*) gtk_adjustment_new(
-                                    window->prefs->slideshow_timeout,
-                                    1.0, 30.0, 1.0, 1.0, 0);
-
-    widget = gtk_spin_button_new(spinner_adj, 1.0, 0);
-    gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(widget), TRUE);
-    gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget),
-                                      GTK_UPDATE_ALWAYS);
-    g_signal_connect(widget, "value-changed",
-                     G_CALLBACK(_on_spin_value_change), window);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    window->sl_timeout_widget = widget;
-
-    window->fs_seconds_label = gtk_label_new(ngettext(" second", " seconds", 5));
-    gtk_box_pack_start(GTK_BOX(box), window->fs_seconds_label, FALSE, FALSE, 0);
-
-    window->fs_controls = GTK_WIDGET(item);
-
-    gtk_widget_show_all(window->fs_controls);
-    return window->fs_controls;
 }
 
 static gboolean _window_on_change_state(GtkWidget *widget,
@@ -1057,6 +1055,7 @@ void window_file_close(VnrWindow *window)
     uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), NULL);
 
     //gtk_action_group_set_sensitive(window->actions_static_image, FALSE);
+    _window_update_openwith_menu(window);
     window->can_edit = false;
 
     etk_widget_list_set_sensitive(window->list_image, false);
@@ -1067,6 +1066,8 @@ void window_file_close(VnrWindow *window)
 static void _window_update_openwith_menu(VnrWindow *window)
 {
     // Modified version of eog's eog_window_update_openwith_menu
+
+    gtk_widget_hide(window->openwith_item);
 
     VnrFile *current = window_list_get_current(window);
     if (!current)
@@ -1148,31 +1149,29 @@ static void _window_update_openwith_menu(VnrWindow *window)
     {
         gtk_widget_destroy(menu);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->openwith_item), NULL);
+
         return;
     }
 
-    gtk_widget_show_all(menu);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(window->openwith_item), menu);
+    gtk_widget_show_all(window->openwith_item);
 }
 
 static void _on_openwith(VnrWindow *window, gpointer user_data)
 {
-    (void) user_data;
-    g_return_if_fail(VNR_IS_WINDOW(window));
-
-    return;
+    g_return_if_fail(VNR_IS_WINDOW(window) || !GTK_IS_WIDGET(user_data));
 
     VnrFile *current = window_list_get_current(window);
-    g_return_if_fail(current != NULL);
+    if (!current)
+        return;
 
     GFile *file = g_file_new_for_path((gchar*) current->path);
+    GList *files = g_list_append(NULL, file);
 
-    GList *files = NULL;
-    files = g_list_append(files, file);
-
-//    GAppInfo *app = g_object_get_data(G_OBJECT(action), "app");
-
-//    g_app_info_launch(app, files, NULL, NULL);
+    GtkWidget *item = GTK_WIDGET(user_data);
+    GAppInfo *app = g_object_get_data(G_OBJECT(item), "app");
+    if (app)
+        g_app_info_launch(app, files, NULL, NULL);
 
     g_object_unref(file);
     g_list_free(files);
