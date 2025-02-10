@@ -281,7 +281,7 @@ static void window_init(VnrWindow *window)
     window->fs_toolitem = NULL;
     window->fs_source = NULL;
     window->sl_timeout = 5;
-    window->slideshow = TRUE;
+    window->can_slideshow = TRUE;
 
     gtk_window_set_title((GtkWindow*) window, "Viewnior");
     gtk_window_set_default_icon_name("viewnior");
@@ -2276,14 +2276,11 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 
 // ----------------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------------
-
 static void _window_action_slideshow(VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
 
-    if (!window->slideshow)
+    if (!window->can_slideshow)
         return;
 
     VnrFile *current = window_list_get_current(window);
@@ -2309,7 +2306,7 @@ static void _window_action_slideshow(VnrWindow *window)
 
 static void _window_slideshow_start(VnrWindow *window)
 {
-    if (!window->slideshow)
+    if (!window->can_slideshow)
         return;
 
     if (window->mode == WINDOW_MODE_SLIDESHOW)
@@ -2323,7 +2320,7 @@ static void _window_slideshow_start(VnrWindow *window)
                               window);
 
 
-    window->slideshow = FALSE;
+    window->can_slideshow = FALSE;
 
     if (window->fs_toolitem)
     {
@@ -2331,23 +2328,18 @@ static void _window_slideshow_start(VnrWindow *window)
                                      TRUE);
     }
 
-    //GtkAction *action = gtk_action_group_get_action(
-    //                            window->actions_collection,
-    //                            "ViewSlideshow");
-    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-
-    window->slideshow = TRUE;
+    window->can_slideshow = TRUE;
 }
 
 static void _window_slideshow_stop(VnrWindow *window)
 {
-    if (!window->slideshow)
+    if (!window->can_slideshow)
         return;
 
     if (window->mode != WINDOW_MODE_SLIDESHOW)
         return;
 
-    window->slideshow = FALSE;
+    window->can_slideshow = FALSE;
 
     if (window->fs_toolitem)
     {
@@ -2355,12 +2347,7 @@ static void _window_slideshow_stop(VnrWindow *window)
                                      FALSE);
     }
 
-    //GtkAction *action = gtk_action_group_get_action(
-    //                            window->actions_collection,
-    //                            "ViewSlideshow");
-    //gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), FALSE);
-
-    window->slideshow = TRUE;
+    window->can_slideshow = TRUE;
 
     window->mode = WINDOW_MODE_FULLSCREEN;
 
@@ -2387,10 +2374,10 @@ static void _window_slideshow_restart(VnrWindow *window)
 
 static void _window_slideshow_allow(VnrWindow *window)
 {
-    if (window->slideshow)
+    if (window->can_slideshow)
         return;
 
-    window->slideshow = TRUE;
+    window->can_slideshow = TRUE;
 
     if (window->fs_toolitem)
         gtk_widget_set_sensitive(window->toggle_btn, TRUE);
@@ -2398,10 +2385,10 @@ static void _window_slideshow_allow(VnrWindow *window)
 
 void window_slideshow_deny(VnrWindow *window)
 {
-    if (!window->slideshow)
+    if (!window->can_slideshow)
         return;
 
-    window->slideshow = FALSE;
+    window->can_slideshow = FALSE;
 
     if (window->fs_toolitem)
         gtk_widget_set_sensitive(window->toggle_btn, FALSE);

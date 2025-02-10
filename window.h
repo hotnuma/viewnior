@@ -50,6 +50,7 @@ struct _VnrWindow
     VnrPrefs *prefs;
     GList *list_image;
     gboolean can_edit;
+    gboolean can_slideshow;
 
     // Widgets
     GtkWidget *layout_box;
@@ -70,16 +71,14 @@ struct _VnrWindow
 
     // fullscreen variables
     GtkWidget *fs_toolitem;
-    GtkWidget *toggle_btn;
     //GtkWidget *fs_seconds_label;
-    GtkWidget *fs_filename_label;
-
-    GSource *fs_source;
+    GtkWidget *toggle_btn;
     gboolean disable_autohide;
+    GtkWidget *fs_filename_label;
+    GSource *fs_source;
 
     // slideshow variables
     GtkWidget *sl_timeout_widget;
-    gboolean slideshow;
     guint sl_source_tag;
     gint sl_timeout;
 };
