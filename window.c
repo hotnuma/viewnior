@@ -95,15 +95,17 @@ static void _on_openwith(VnrWindow *window, gpointer user_data);
 // Actions --------------------------------------------------------------------
 
 static gboolean _window_next_image_src(VnrWindow *window);
-static void _window_action_rename(VnrWindow *window, GtkWidget *widget);
-static void _window_action_move_to(VnrWindow *window, GtkWidget *widget);
-static void _window_action_move(VnrWindow *window, GtkWidget *widget);
-static void _window_move(VnrWindow *window);
+static void _window_action_select(VnrWindow *window, GtkWidget *widget);
 static gboolean _window_select_directory(VnrWindow *window);
 static GSList* _window_file_chooser(VnrWindow *window,
                                     const gchar *title,
                                     GtkFileChooserAction action,
                                     gboolean multiple);
+static void _window_action_copy(VnrWindow *window, GtkWidget *widget);
+static void _window_copy(VnrWindow *window);
+static void _window_action_move(VnrWindow *window, GtkWidget *widget);
+static void _window_move(VnrWindow *window);
+static void _window_action_rename(VnrWindow *window, GtkWidget *widget);
 static void _window_action_delete(VnrWindow *window, GtkWidget *widget);
 static gboolean _window_delete_item(VnrWindow *window);
 static void _window_hide_cursor(VnrWindow *window);
@@ -159,7 +161,8 @@ typedef enum
     WINDOW_ACTION_OPENDIR,
     WINDOW_ACTION_OPENWITH,
     WINDOW_ACTION_RENAME,
-    WINDOW_ACTION_MOVETO,
+    WINDOW_ACTION_SELECT,
+    WINDOW_ACTION_COPY,
     WINDOW_ACTION_MOVE,
     WINDOW_ACTION_DELETE,
     WINDOW_ACTION_PROPERTIES,
@@ -198,19 +201,19 @@ static EtkActionEntry _window_actions[] =
      NULL,
      NULL},
 
-    {WINDOW_ACTION_RENAME,
-     "<Actions>/AppWindow/Rebame", "F2",
-     ETK_MENU_ITEM, N_("Rename"),
-     N_("Rename the current file"),
+    {WINDOW_ACTION_SELECT,
+     "<Actions>/AppWindow/Select", "",
+     ETK_MENU_ITEM, N_("Select..."),
+     N_("Select directory..."),
      NULL,
-     G_CALLBACK(_window_action_rename)},
+     G_CALLBACK(_window_action_select)},
 
-    {WINDOW_ACTION_MOVETO,
-     "<Actions>/AppWindow/MoveTo", "F7",
-     ETK_MENU_ITEM, N_("Move to..."),
-     N_("Move the current file..."),
+    {WINDOW_ACTION_COPY,
+     "<Actions>/AppWindow/Copy", "F7",
+     ETK_MENU_ITEM, N_("Copy"),
+     N_("Copy the current file"),
      NULL,
-     G_CALLBACK(_window_action_move_to)},
+     G_CALLBACK(_window_action_copy)},
 
     {WINDOW_ACTION_MOVE,
      "<Actions>/AppWindow/Move", "F8",
@@ -218,6 +221,13 @@ static EtkActionEntry _window_actions[] =
      N_("Move the current file"),
      NULL,
      G_CALLBACK(_window_action_move)},
+
+    {WINDOW_ACTION_RENAME,
+     "<Actions>/AppWindow/Rebame", "F2",
+     ETK_MENU_ITEM, N_("Rename"),
+     N_("Rename the current file"),
+     NULL,
+     G_CALLBACK(_window_action_rename)},
 
     {WINDOW_ACTION_DELETE,
      "<Actions>/AppWindow/Delete", "Delete",
@@ -317,19 +327,25 @@ static void window_init(VnrWindow *window)
     etk_menu_append_separator(GTK_MENU_SHELL(menu));
 
     item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                         WINDOW_ACTION_RENAME,
+                                         WINDOW_ACTION_SELECT,
                                          _window_actions,
                                          G_OBJECT(window));
     window->list_image = etk_widget_list_add(window->list_image, item);
 
     item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                         WINDOW_ACTION_MOVETO,
+                                         WINDOW_ACTION_COPY,
                                          _window_actions,
                                          G_OBJECT(window));
     window->list_image = etk_widget_list_add(window->list_image, item);
 
     item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                          WINDOW_ACTION_MOVE,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
+
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_RENAME,
                                          _window_actions,
                                          G_OBJECT(window));
     window->list_image = etk_widget_list_add(window->list_image, item);
@@ -746,7 +762,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         result = TRUE;
         break;
 
-    case GDK_KEY_F6:
+    case GDK_KEY_F9:
         _window_action_slideshow(window);
         result = TRUE;
         break;
@@ -1463,29 +1479,10 @@ gboolean window_last(VnrWindow *window)
     return TRUE;
 }
 
-static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
+static void _window_action_select(VnrWindow *window, GtkWidget *widget)
 {
-    (void) widget;
     g_return_if_fail(window != NULL);
-
-    VnrFile *current = window_list_get_current(window);
-
-    if (!current || window->mode != WINDOW_MODE_NORMAL)
-        return;
-
-    gboolean result = dialog_file_rename(GTK_WINDOW(window), current);
-
-    if (!result)
-        return;
-
-    vnr_list_sort(window->filelist);
-    _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
-}
-
-static void _window_action_move_to(VnrWindow *window, GtkWidget *widget)
-{
     (void) widget;
-    g_return_if_fail(window != NULL);
 
     if (window_list_get_current(window) == NULL
         || window->mode != WINDOW_MODE_NORMAL)
@@ -1495,57 +1492,6 @@ static void _window_action_move_to(VnrWindow *window, GtkWidget *widget)
 
     if (window->movedir == NULL)
         return;
-
-    _window_move(window);
-}
-
-static void _window_action_move(VnrWindow *window, GtkWidget *widget)
-{
-    (void) widget;
-    g_return_if_fail(window != NULL);
-
-    if (window_list_get_current(window) == NULL
-        || window->mode != WINDOW_MODE_NORMAL)
-        return;
-
-    if (window->movedir == NULL)
-        _window_select_directory(window);
-
-    if (window->movedir == NULL)
-        return;
-
-    _window_move(window);
-}
-
-static void _window_move(VnrWindow *window)
-{
-    g_return_if_fail(window != NULL);
-
-    VnrFile *current = window_list_get_current(window);
-    if (!current || window->mode != WINDOW_MODE_NORMAL)
-        return;
-
-    const gchar *display_name = current->display_name;
-    gchar *newpath = g_build_filename(window->movedir, display_name, NULL);
-
-    if (g_strcmp0(current->path, newpath) == 0)
-        goto cleanup;
-
-    //printf("move %s to %s\n", file->path, newpath);
-
-    gboolean ret = vnr_file_rename(current, newpath);
-
-    if (ret)
-    {
-        _window_delete_item(window);
-
-        window_file_close(window);
-        window_file_load(window, FALSE);
-    }
-
-cleanup:
-
-    g_free(newpath);
 }
 
 static gboolean _window_select_directory(VnrWindow *window)
@@ -1608,6 +1554,119 @@ static GSList* _window_file_chooser(VnrWindow *window,
     gtk_widget_destroy(dialog);
 
     return uri_list;
+}
+
+static void _window_action_copy(VnrWindow *window, GtkWidget *widget)
+{
+    g_return_if_fail(window != NULL);
+    (void) widget;
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
+
+    if (window->movedir == NULL)
+        _window_select_directory(window);
+
+    if (window->movedir == NULL)
+        return;
+
+    _window_copy(window);
+}
+
+static void _window_copy(VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
+
+    VnrFile *current = window_list_get_current(window);
+    if (!current || window->mode != WINDOW_MODE_NORMAL)
+        return;
+
+    const gchar *display_name = current->display_name;
+    gchar *newpath = g_build_filename(window->movedir, display_name, NULL);
+
+    if (g_strcmp0(current->path, newpath) == 0)
+        goto cleanup;
+
+    // https://docs.gtk.org/gio/method.File.copy.html
+
+    //gboolean ret = vnr_file_rename(current, newpath);
+
+    //if (ret)
+    //{
+    //    _window_delete_item(window);
+    //    window_file_close(window);
+    //    window_file_load(window, FALSE);
+    //}
+
+cleanup:
+
+    g_free(newpath);
+}
+
+static void _window_action_move(VnrWindow *window, GtkWidget *widget)
+{
+    g_return_if_fail(window != NULL);
+    (void) widget;
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
+
+    if (window->movedir == NULL)
+        _window_select_directory(window);
+
+    if (window->movedir == NULL)
+        return;
+
+    _window_move(window);
+}
+
+static void _window_move(VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
+
+    VnrFile *current = window_list_get_current(window);
+    if (!current || window->mode != WINDOW_MODE_NORMAL)
+        return;
+
+    const gchar *display_name = current->display_name;
+    gchar *newpath = g_build_filename(window->movedir, display_name, NULL);
+
+    if (g_strcmp0(current->path, newpath) == 0)
+        goto cleanup;
+
+    gboolean ret = vnr_file_rename(current, newpath);
+
+    if (ret)
+    {
+        _window_delete_item(window);
+        window_file_close(window);
+        window_file_load(window, FALSE);
+    }
+
+cleanup:
+
+    g_free(newpath);
+}
+
+static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+    g_return_if_fail(window != NULL);
+
+    VnrFile *current = window_list_get_current(window);
+
+    if (!current || window->mode != WINDOW_MODE_NORMAL)
+        return;
+
+    gboolean result = dialog_file_rename(GTK_WINDOW(window), current);
+
+    if (!result)
+        return;
+
+    vnr_list_sort(window->filelist);
+    _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
 }
 
 static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
