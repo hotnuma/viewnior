@@ -120,6 +120,19 @@ static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
 static void _window_action_save_image(VnrWindow *window, GtkWidget *widget);
 
+// Set wallpaper --------------------------------------------------------------
+
+static void _window_action_set_wallpaper(VnrWindow *window, GtkWidget *widget);
+
+// Slideshow ------------------------------------------------------------------
+
+static void _window_action_slideshow(VnrWindow *window);
+static void _window_slideshow_stop(VnrWindow *window);
+static void _window_slideshow_start(VnrWindow *window);
+//static void _window_slideshow_restart(VnrWindow *window);
+static void _window_slideshow_allow(VnrWindow *window);
+void window_slideshow_deny(VnrWindow *window);
+
 // Fullscreen -----------------------------------------------------------------
 
 static void _window_fullscreen(VnrWindow *window);
@@ -141,15 +154,6 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
 //static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 //                                 VnrWindow *window);
 
-// Slideshow ------------------------------------------------------------------
-
-static void _window_action_slideshow(VnrWindow *window);
-static void _window_slideshow_stop(VnrWindow *window);
-static void _window_slideshow_start(VnrWindow *window);
-//static void _window_slideshow_restart(VnrWindow *window);
-static void _window_slideshow_allow(VnrWindow *window);
-void window_slideshow_deny(VnrWindow *window);
-
 // ----------------------------------------------------------------------------
 
 static void _action_resize(GtkToggleAction *action, VnrWindow *window);
@@ -167,9 +171,9 @@ typedef enum
     WINDOW_ACTION_MOVE,
     WINDOW_ACTION_RENAME,
     WINDOW_ACTION_DELETE,
+    WINDOW_ACTION_SETWALLPAPER,
     WINDOW_ACTION_PROPERTIES,
     WINDOW_ACTION_PREFERENCES,
-    WINDOW_ACTION_ITEM1,
     WINDOW_ACTION_ITEM2,
     WINDOW_ACTION_ITEM3,
     WINDOW_ACTION_ITEM4,
@@ -244,6 +248,13 @@ static EtkActionEntry _window_actions[] =
      N_("Delete the current file"),
      NULL,
      G_CALLBACK(_window_action_delete)},
+
+    {WINDOW_ACTION_SETWALLPAPER,
+     "<Actions>/AppWindow/SetWallpaper", "F9",
+     ETK_MENU_ITEM, N_("_Wallpaper"),
+     N_("Set image as wallpaper"),
+     NULL,
+     G_CALLBACK(_window_action_set_wallpaper)},
 
     {WINDOW_ACTION_PROPERTIES,
      "<Actions>/AppWindow/Properties", "<Control>Return",
@@ -365,6 +376,14 @@ static void window_init(VnrWindow *window)
                                          G_OBJECT(window));
     window->list_image = etk_widget_list_add(window->list_image, item);
 
+    etk_menu_append_separator(GTK_MENU_SHELL(menu));
+
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_SETWALLPAPER,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
+
     item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                          WINDOW_ACTION_PROPERTIES,
                                          _window_actions,
@@ -373,10 +392,10 @@ static void window_init(VnrWindow *window)
 
     etk_menu_append_separator(GTK_MENU_SHELL(menu));
 
-    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                         WINDOW_ACTION_PREFERENCES,
-                                         _window_actions,
-                                         G_OBJECT(window));
+    etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                  WINDOW_ACTION_PREFERENCES,
+                                  _window_actions,
+                                  G_OBJECT(window));
 
     gtk_widget_show_all(menu);
     gtk_widget_hide(window->openwith_item);
@@ -772,7 +791,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         result = TRUE;
         break;
 
-    case GDK_KEY_F9:
+    case GDK_KEY_F10:
         _window_action_slideshow(window);
         result = TRUE;
         break;
@@ -1609,9 +1628,9 @@ static void _window_copy(VnrWindow *window)
     if (g_strcmp0(current->path, newpath) == 0)
         goto cleanup;
 
-    // https://docs.gtk.org/gio/method.File.copy.html
+    //gboolean ret =
 
-    //gboolean ret = vnr_file_rename(current, newpath);
+    vnr_file_copy(current, newpath);
 
     //if (ret)
     //{
@@ -2083,6 +2102,244 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
 }
 
 
+// Set wallpaper --------------------------------------------------------------
+
+static void _window_action_set_wallpaper(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    pid_t pid = fork();
+
+    if (pid == 0)
+    {
+        gchar *tmp;
+
+        VnrPrefsDesktop desktop_environment = window->prefs->desktop;
+
+        if (desktop_environment == VNR_PREFS_DESKTOP_AUTO)
+        {
+            desktop_environment = uni_detect_desktop_environment();
+        }
+
+        VnrFile *current = window_list_get_current(window);
+
+        switch (desktop_environment)
+        {
+
+        case VNR_PREFS_DESKTOP_CINNAMON:
+            tmp = g_strdup_printf("file://%s",
+                                  current->path);
+            execlp("gsettings", "gsettings",
+                   "set", "org.cinnamon.desktop.background",
+                   "picture-uri", tmp,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_FLUXBOX:
+            execlp("fbsetbg", "fbsetbg",
+                   "-f", current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_GNOME2:
+            execlp("gconftool-2", "gconftool-2",
+                   "--set", "/desktop/gnome/background/picture_filename",
+                   "--type", "string",
+                   current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_GNOME3:
+            tmp = g_strdup_printf("file://%s", current->path);
+            execlp("gsettings", "gsettings",
+                   "set", "org.gnome.desktop.background",
+                   "picture-uri", tmp,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_HSETROOT:
+            execlp("wallset", "wallset",
+                   current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_LXDE:
+            execlp("pcmanfm", "pcmanfm",
+                   "--set-wallpaper",
+                   current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_MATE:
+            execlp("gsettings", "gsettings",
+                   "set", "org.mate.background",
+                   "picture-filename", current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_NITROGEN:
+            execlp("nitrogen", "nitrogen",
+                   "--set-zoom-fill", "--save",
+                   current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_PUPPY:
+            execlp("set_bg", "set_bg",
+                   current->path,
+                   NULL);
+            break;
+
+        case VNR_PREFS_DESKTOP_XFCE:
+
+            G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+            tmp = g_strdup_printf(
+                "/backdrop/screen%d/monitor0/workspace0/last-image",
+                gdk_screen_get_number(
+                    gtk_widget_get_screen(GTK_WIDGET(window))));
+            G_GNUC_END_IGNORE_DEPRECATIONS
+
+            execlp("xfconf-query", "xfconf-query",
+                   "-c", "xfce4-desktop",
+                   "-p", tmp,
+                   "--type", "string",
+                   "--set",
+                   current->path,
+                   NULL);
+            break;
+
+        default:
+            _exit(0);
+        }
+    }
+    else
+    {
+        wait(NULL);
+    }
+}
+
+
+// Slideshow ------------------------------------------------------------------
+
+static void _window_action_slideshow(VnrWindow *window)
+{
+    g_return_if_fail(window != NULL);
+
+    if (!window->can_slideshow)
+        return;
+
+    VnrFile *current = window_list_get_current(window);
+    if (!current)
+        return;
+
+    if (window->mode != WINDOW_MODE_SLIDESHOW)
+    {
+        // Uncomment to force Fullscreen along with Slideshow
+        if (window->mode == WINDOW_MODE_NORMAL)
+            _window_fullscreen(window);
+
+        _window_slideshow_start(window);
+    }
+    else if (window->mode == WINDOW_MODE_SLIDESHOW)
+    {
+        // Uncomment to force Fullscreen along with Slideshow
+        _window_unfullscreen(window);
+
+        _window_slideshow_stop(window);
+    }
+}
+
+static void _window_slideshow_start(VnrWindow *window)
+{
+    if (!window->can_slideshow)
+        return;
+
+    if (window->mode == WINDOW_MODE_SLIDESHOW)
+        return;
+
+    window->mode = WINDOW_MODE_SLIDESHOW;
+
+    window->sl_source_tag =
+        g_timeout_add_seconds(window->sl_timeout,
+                              (GSourceFunc) _window_next_image_src,
+                              window);
+
+
+    window->can_slideshow = FALSE;
+
+    if (window->fs_toolitem)
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn),
+                                     TRUE);
+    }
+
+    window->can_slideshow = TRUE;
+}
+
+static void _window_slideshow_stop(VnrWindow *window)
+{
+    if (!window->can_slideshow)
+        return;
+
+    if (window->mode != WINDOW_MODE_SLIDESHOW)
+        return;
+
+    window->can_slideshow = FALSE;
+
+    if (window->fs_toolitem)
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn),
+                                     FALSE);
+    }
+
+    window->can_slideshow = TRUE;
+
+    window->mode = WINDOW_MODE_FULLSCREEN;
+
+    g_source_remove(window->sl_source_tag);
+}
+
+#if 0
+static void _window_slideshow_restart(VnrWindow *window)
+{
+    if (!window->slideshow)
+        return;
+
+    if (window->mode != WINDOW_MODE_SLIDESHOW)
+        return;
+
+    g_source_remove(window->sl_source_tag);
+    window->sl_source_tag =
+        g_timeout_add_seconds(
+                        window->sl_timeout,
+                        (GSourceFunc) _window_next_image_src,
+                        window);
+}
+#endif
+
+static void _window_slideshow_allow(VnrWindow *window)
+{
+    if (window->can_slideshow)
+        return;
+
+    window->can_slideshow = TRUE;
+
+    if (window->fs_toolitem)
+        gtk_widget_set_sensitive(window->toggle_btn, TRUE);
+}
+
+void window_slideshow_deny(VnrWindow *window)
+{
+    if (!window->can_slideshow)
+        return;
+
+    window->can_slideshow = FALSE;
+
+    if (window->fs_toolitem)
+        gtk_widget_set_sensitive(window->toggle_btn, FALSE);
+}
+
+
 // Fullscreen -----------------------------------------------------------------
 
 void window_fullscreen_toggle(VnrWindow *window)
@@ -2256,7 +2513,7 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
 }
 
 
-// ----------------------------------------------------------------------------
+// Toolitem -------------------------------------------------------------------
 
 #if 0
 static GtkWidget* _window_get_fs_toolitem(VnrWindow *window)
@@ -2352,127 +2609,6 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 }
 
 #endif
-
-
-// ----------------------------------------------------------------------------
-
-static void _window_action_slideshow(VnrWindow *window)
-{
-    g_return_if_fail(window != NULL);
-
-    if (!window->can_slideshow)
-        return;
-
-    VnrFile *current = window_list_get_current(window);
-    if (!current)
-        return;
-
-    if (window->mode != WINDOW_MODE_SLIDESHOW)
-    {
-        // Uncomment to force Fullscreen along with Slideshow
-        if (window->mode == WINDOW_MODE_NORMAL)
-            _window_fullscreen(window);
-
-        _window_slideshow_start(window);
-    }
-    else if (window->mode == WINDOW_MODE_SLIDESHOW)
-    {
-        // Uncomment to force Fullscreen along with Slideshow
-        _window_unfullscreen(window);
-
-        _window_slideshow_stop(window);
-    }
-}
-
-static void _window_slideshow_start(VnrWindow *window)
-{
-    if (!window->can_slideshow)
-        return;
-
-    if (window->mode == WINDOW_MODE_SLIDESHOW)
-        return;
-
-    window->mode = WINDOW_MODE_SLIDESHOW;
-
-    window->sl_source_tag =
-        g_timeout_add_seconds(window->sl_timeout,
-                              (GSourceFunc) _window_next_image_src,
-                              window);
-
-
-    window->can_slideshow = FALSE;
-
-    if (window->fs_toolitem)
-    {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn),
-                                     TRUE);
-    }
-
-    window->can_slideshow = TRUE;
-}
-
-static void _window_slideshow_stop(VnrWindow *window)
-{
-    if (!window->can_slideshow)
-        return;
-
-    if (window->mode != WINDOW_MODE_SLIDESHOW)
-        return;
-
-    window->can_slideshow = FALSE;
-
-    if (window->fs_toolitem)
-    {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(window->toggle_btn),
-                                     FALSE);
-    }
-
-    window->can_slideshow = TRUE;
-
-    window->mode = WINDOW_MODE_FULLSCREEN;
-
-    g_source_remove(window->sl_source_tag);
-}
-
-#if 0
-static void _window_slideshow_restart(VnrWindow *window)
-{
-    if (!window->slideshow)
-        return;
-
-    if (window->mode != WINDOW_MODE_SLIDESHOW)
-        return;
-
-    g_source_remove(window->sl_source_tag);
-    window->sl_source_tag =
-        g_timeout_add_seconds(
-                        window->sl_timeout,
-                        (GSourceFunc) _window_next_image_src,
-                        window);
-}
-#endif
-
-static void _window_slideshow_allow(VnrWindow *window)
-{
-    if (window->can_slideshow)
-        return;
-
-    window->can_slideshow = TRUE;
-
-    if (window->fs_toolitem)
-        gtk_widget_set_sensitive(window->toggle_btn, TRUE);
-}
-
-void window_slideshow_deny(VnrWindow *window)
-{
-    if (!window->can_slideshow)
-        return;
-
-    window->can_slideshow = FALSE;
-
-    if (window->fs_toolitem)
-        gtk_widget_set_sensitive(window->toggle_btn, FALSE);
-}
 
 
 // ----------------------------------------------------------------------------

@@ -17,8 +17,8 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VNR_FILE_H__
-#define __VNR_FILE_H__
+#ifndef VNR_FILE_H
+#define VNR_FILE_H
 
 #include <gtk/gtk.h>
 
@@ -45,9 +45,11 @@ GType vnr_file_get_type() G_GNUC_CONST;
 
 VnrFile* vnr_file_new();
 void vnr_file_set_display_name(VnrFile *vnr_file, const gchar *display_name);
+gboolean vnr_file_copy(VnrFile *file, const gchar *fullpath);
 gboolean vnr_file_rename(VnrFile *file, const gchar *fullpath);
+
 G_END_DECLS
 
-#endif // __VNR_FILE_H__
+#endif // VNR_FILE_H
 
 

@@ -1,8 +1,6 @@
 
 #if 0
 
-//static void _action_about(GtkAction *action, VnrWindow *window);
-
 static void _action_about(GtkAction *action, VnrWindow *window)
 {
     static const char *authors[] =
@@ -40,28 +38,6 @@ static void _action_about(GtkAction *action, VnrWindow *window)
                 NULL);
 }
 
-static void _action_fullscreen(GtkAction *action, VnrWindow *window);
-static void _action_fullscreen(GtkAction *action, VnrWindow *window)
-{
-    gboolean fullscreen = gtk_toggle_action_get_active(
-                GTK_TOGGLE_ACTION(action));
-
-    if (fullscreen)
-        _window_fullscreen(window);
-    else
-        _window_unfullscreen(window);
-}
-
-//static void _action_first(GtkAction *action, gpointer user_data);
-//static void _action_last(GtkAction *action, gpointer user_data);
-//static void _action_reload(GtkAction *action, VnrWindow *window);
-//static void _action_set_wallpaper(GtkAction *action, VnrWindow *win);
-//static void _action_scrollbar(GtkAction *action, VnrWindow *window);
-//static void _action_fit(GtkAction *action, gpointer user_data);
-//static void _action_zoom_in(GtkAction *action, gpointer user_data);
-//static void _action_zoom_out(GtkAction *action, gpointer user_data);
-//static void _action_normal_size(GtkAction *action, gpointer user_data);
-
 static void _action_reload(GtkAction *action, VnrWindow *window)
 {
     window_open(window, FALSE);
@@ -98,108 +74,6 @@ static void _action_last(GtkAction *action, gpointer user_data)
     window_last(VNR_WINDOW(user_data));
 }
 
-static void _action_set_wallpaper(GtkAction *action, VnrWindow *win)
-{
-    pid_t pid = fork();
-
-    if (pid == 0)
-    {
-        gchar *tmp;
-
-        VnrPrefsDesktop desktop_environment = win->prefs->desktop;
-
-        if (desktop_environment == VNR_PREFS_DESKTOP_AUTO)
-        {
-            desktop_environment = uni_detect_desktop_environment();
-        }
-
-        VnrFile *current = window_list_get_current(win);
-
-        switch (desktop_environment)
-        {
-
-        case VNR_PREFS_DESKTOP_GNOME2:
-            execlp("gconftool-2", "gconftool-2",
-                   "--set", "/desktop/gnome/background/picture_filename",
-                   "--type", "string",
-                   current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_MATE:
-            execlp("gsettings", "gsettings",
-                   "set", "org.mate.background",
-                   "picture-filename", current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_GNOME3:
-            tmp = g_strdup_printf("file://%s", current->path);
-            execlp("gsettings", "gsettings",
-                   "set", "org.gnome.desktop.background",
-                   "picture-uri", tmp,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_XFCE:
-            tmp = g_strdup_printf(
-                "/backdrop/screen%d/monitor0/workspace0/last-image",
-                gdk_screen_get_number(
-                    gtk_widget_get_screen(GTK_WIDGET(win))));
-            execlp("xfconf-query", "xfconf-query",
-                   "-c", "xfce4-desktop",
-                   "-p", tmp,
-                   "--type", "string",
-                   "--set",
-                   current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_LXDE:
-            execlp("pcmanfm", "pcmanfm",
-                   "--set-wallpaper",
-                   current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_PUPPY:
-            execlp("set_bg", "set_bg",
-                   current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_FLUXBOX:
-            execlp("fbsetbg", "fbsetbg",
-                   "-f", current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_NITROGEN:
-            execlp("nitrogen", "nitrogen",
-                   "--set-zoom-fill", "--save",
-                   current->path,
-                   NULL);
-            break;
-
-        case VNR_PREFS_DESKTOP_CINNAMON:
-            tmp = g_strdup_printf("file://%s",
-                                  current->path);
-            execlp("gsettings", "gsettings",
-                   "set", "org.cinnamon.desktop.background",
-                   "picture-uri", tmp,
-                   NULL);
-            break;
-
-        default:
-            _exit(0);
-        }
-    }
-    else
-    {
-        wait(NULL);
-    }
-}
-
 static void _action_scrollbar(GtkAction *action, VnrWindow *window)
 {
     gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
@@ -207,5 +81,17 @@ static void _action_scrollbar(GtkAction *action, VnrWindow *window)
     uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), show);
 }
 
+static void _action_fullscreen(GtkAction *action, VnrWindow *window)
+{
+    gboolean fullscreen = gtk_toggle_action_get_active(
+                GTK_TOGGLE_ACTION(action));
+
+    if (fullscreen)
+        _window_fullscreen(window);
+    else
+        _window_unfullscreen(window);
+}
+
 #endif
+
 

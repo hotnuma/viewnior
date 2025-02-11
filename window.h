@@ -90,8 +90,8 @@ GtkWindow* window_new();
 
 void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);
-gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_prev(VnrWindow *window);
+gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_first(VnrWindow *window);
 gboolean window_last(VnrWindow *window);
 
@@ -101,8 +101,9 @@ void window_open_list(VnrWindow *window, GSList *uri_list);
 void window_file_close(VnrWindow *window);
 
 void window_preferences_apply(VnrWindow *window);
-void window_fullscreen_toggle(VnrWindow *window);
+
 void window_slideshow_deny(VnrWindow *window);
+void window_fullscreen_toggle(VnrWindow *window);
 
 G_END_DECLS
 

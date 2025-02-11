@@ -55,6 +55,23 @@ void vnr_file_set_display_name(VnrFile *vnr_file,
             g_utf8_collate_key_for_filename(display_name, -1);
 }
 
+gboolean vnr_file_copy(VnrFile *file, const gchar *fullpath)
+{
+    if (!file || !fullpath)
+        return false;
+
+    g_autoptr(GFile) src = g_file_new_for_path(file->path);
+    g_autoptr(GFile) dest = g_file_new_for_path(fullpath);
+
+    gboolean ret = g_file_copy(src,
+                               dest,
+                               G_FILE_COPY_ALL_METADATA,
+                               NULL, NULL, NULL,
+                               NULL);
+
+    return ret;
+}
+
 gboolean vnr_file_rename(VnrFile *file, const gchar *fullpath)
 {
     if (!file || !fullpath)
