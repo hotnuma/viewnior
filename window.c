@@ -95,7 +95,8 @@ static void _on_openwith(VnrWindow *window, gpointer user_data);
 // Actions --------------------------------------------------------------------
 
 static gboolean _window_next_image_src(VnrWindow *window);
-static void _window_action_select(VnrWindow *window, GtkWidget *widget);
+static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget);
+static void _window_action_selectdir(VnrWindow *window, GtkWidget *widget);
 static gboolean _window_select_directory(VnrWindow *window);
 static GSList* _window_file_chooser(VnrWindow *window,
                                     const gchar *title,
@@ -157,13 +158,14 @@ static void _action_crop(GtkAction *action, VnrWindow *window);
 
 typedef enum
 {
-    WINDOW_ACTION_OPENFILE = 1,
+    WINDOW_ACTION_OPEN = 1,
     WINDOW_ACTION_OPENDIR,
     WINDOW_ACTION_OPENWITH,
-    WINDOW_ACTION_RENAME,
-    WINDOW_ACTION_SELECT,
+    WINDOW_ACTION_RESETDIR,
+    WINDOW_ACTION_SELECTDIR,
     WINDOW_ACTION_COPY,
     WINDOW_ACTION_MOVE,
+    WINDOW_ACTION_RENAME,
     WINDOW_ACTION_DELETE,
     WINDOW_ACTION_PROPERTIES,
     WINDOW_ACTION_PREFERENCES,
@@ -180,8 +182,8 @@ typedef enum
 
 static EtkActionEntry _window_actions[] =
 {
-    {WINDOW_ACTION_OPENFILE,
-     "<Actions>/AppWindow/OpenFile", "<Control>O",
+    {WINDOW_ACTION_OPEN,
+     "<Actions>/AppWindow/Open", "<Control>O",
      ETK_MENU_ITEM_IMAGE, N_("Open _Image..."),
      N_("Open an Image"),
      "gtk-file",
@@ -201,12 +203,19 @@ static EtkActionEntry _window_actions[] =
      NULL,
      NULL},
 
-    {WINDOW_ACTION_SELECT,
-     "<Actions>/AppWindow/Select", "",
+    {WINDOW_ACTION_RESETDIR,
+     "<Actions>/AppWindow/ResetDir", "F6",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(_window_action_resetdir)},
+
+    {WINDOW_ACTION_SELECTDIR,
+     "<Actions>/AppWindow/SelectDir", "",
      ETK_MENU_ITEM, N_("Select..."),
      N_("Select directory..."),
      NULL,
-     G_CALLBACK(_window_action_select)},
+     G_CALLBACK(_window_action_selectdir)},
 
     {WINDOW_ACTION_COPY,
      "<Actions>/AppWindow/Copy", "F7",
@@ -277,7 +286,7 @@ static void window_init(VnrWindow *window)
     g_assert(window->filelist == NULL);
 
     window->filelist = NULL;
-    window->movedir = NULL;
+    window->destdir = NULL;
     window->mode = WINDOW_MODE_NORMAL;
     window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
     window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
@@ -309,7 +318,7 @@ static void window_init(VnrWindow *window)
     gtk_menu_set_accel_group(GTK_MENU(menu), window->accel_group);
 
     etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                  WINDOW_ACTION_OPENFILE,
+                                  WINDOW_ACTION_OPEN,
                                   _window_actions,
                                   G_OBJECT(window));
 
@@ -327,7 +336,7 @@ static void window_init(VnrWindow *window)
     etk_menu_append_separator(GTK_MENU_SHELL(menu));
 
     item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
-                                         WINDOW_ACTION_SELECT,
+                                         WINDOW_ACTION_SELECTDIR,
                                          _window_actions,
                                          G_OBJECT(window));
     window->list_image = etk_widget_list_add(window->list_image, item);
@@ -657,8 +666,9 @@ static void window_dispose(GObject *object)
 static void window_finalize(GObject *object)
 {
     VnrWindow *window = VNR_WINDOW(object);
-    if (window->movedir)
-        g_free(window->movedir);
+
+    if (window->destdir)
+        g_free(window->destdir);
 
     window->filelist = vnr_list_free(window->filelist);
 
@@ -1479,7 +1489,22 @@ gboolean window_last(VnrWindow *window)
     return TRUE;
 }
 
-static void _window_action_select(VnrWindow *window, GtkWidget *widget)
+static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget)
+{
+    g_return_if_fail(window != NULL);
+    (void) widget;
+
+    if (window_list_get_current(window) == NULL
+        || window->mode != WINDOW_MODE_NORMAL)
+        return;
+
+    if (window->destdir)
+        g_free(window->destdir);
+
+    window->destdir = NULL;
+}
+
+static void _window_action_selectdir(VnrWindow *window, GtkWidget *widget)
 {
     g_return_if_fail(window != NULL);
     (void) widget;
@@ -1489,9 +1514,6 @@ static void _window_action_select(VnrWindow *window, GtkWidget *widget)
         return;
 
     _window_select_directory(window);
-
-    if (window->movedir == NULL)
-        return;
 }
 
 static gboolean _window_select_directory(VnrWindow *window)
@@ -1505,13 +1527,11 @@ static gboolean _window_select_directory(VnrWindow *window)
     if (!list)
         return false;
 
-    if (window->movedir)
-    {
-        g_free(window->movedir);
-        window->movedir = NULL;
-    }
+    if (window->destdir)
+        g_free(window->destdir);
 
-    window->movedir = g_strdup((const char*) list->data);
+    window->destdir = g_strdup((const gchar*) list->data);
+
     g_slist_free_full(list, g_free);
 
     return true;
@@ -1565,10 +1585,10 @@ static void _window_action_copy(VnrWindow *window, GtkWidget *widget)
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
-    if (window->movedir == NULL)
+    if (window->destdir == NULL)
         _window_select_directory(window);
 
-    if (window->movedir == NULL)
+    if (window->destdir == NULL)
         return;
 
     _window_copy(window);
@@ -1579,11 +1599,12 @@ static void _window_copy(VnrWindow *window)
     g_return_if_fail(window != NULL);
 
     VnrFile *current = window_list_get_current(window);
-    if (!current || window->mode != WINDOW_MODE_NORMAL)
+
+    if (!current || !window->destdir || window->mode != WINDOW_MODE_NORMAL)
         return;
 
     const gchar *display_name = current->display_name;
-    gchar *newpath = g_build_filename(window->movedir, display_name, NULL);
+    gchar *newpath = g_build_filename(window->destdir, display_name, NULL);
 
     if (g_strcmp0(current->path, newpath) == 0)
         goto cleanup;
@@ -1613,10 +1634,10 @@ static void _window_action_move(VnrWindow *window, GtkWidget *widget)
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
-    if (window->movedir == NULL)
+    if (window->destdir == NULL)
         _window_select_directory(window);
 
-    if (window->movedir == NULL)
+    if (window->destdir == NULL)
         return;
 
     _window_move(window);
@@ -1627,11 +1648,11 @@ static void _window_move(VnrWindow *window)
     g_return_if_fail(window != NULL);
 
     VnrFile *current = window_list_get_current(window);
-    if (!current || window->mode != WINDOW_MODE_NORMAL)
+    if (!current || !window->destdir || window->mode != WINDOW_MODE_NORMAL)
         return;
 
     const gchar *display_name = current->display_name;
-    gchar *newpath = g_build_filename(window->movedir, display_name, NULL);
+    gchar *newpath = g_build_filename(window->destdir, display_name, NULL);
 
     if (g_strcmp0(current->path, newpath) == 0)
         goto cleanup;

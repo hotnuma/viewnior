@@ -44,7 +44,7 @@ struct _VnrWindow
 
     // Data
     GList *filelist;
-    gchar *movedir;
+    gchar *destdir;
     WindowMode mode;
     GtkAccelGroup *accel_group;
     VnrPrefs *prefs;
