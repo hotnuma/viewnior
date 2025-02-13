@@ -93,9 +93,7 @@ static void set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
 
 static void vnr_properties_dialog_class_init(VnrPropertiesDialogClass *klass) {}
 
-GtkWidget* vnr_properties_dialog_new(VnrWindow *vnr_win,
-                                     GtkAction *next_action,
-                                     GtkAction *prev_action)
+GtkWidget* vnr_properties_dialog_new(VnrWindow *vnr_win)
 {
     VnrPropertiesDialog *dialog;
 
@@ -104,8 +102,10 @@ GtkWidget* vnr_properties_dialog_new(VnrWindow *vnr_win,
     dialog->thumbnail = NULL;
     dialog->vnr_win = vnr_win;
 
-    gtk_activatable_set_related_action(GTK_ACTIVATABLE(dialog->next_button), next_action);
-    gtk_activatable_set_related_action(GTK_ACTIVATABLE(dialog->prev_button), prev_action);
+    //gtk_activatable_set_related_action(GTK_ACTIVATABLE(dialog->next_button),
+    //                                   next_action);
+    //gtk_activatable_set_related_action(GTK_ACTIVATABLE(dialog->prev_button),
+    //                                   prev_action);
 
     gtk_button_set_label(GTK_BUTTON(dialog->next_button), _("_Next"));
     gtk_button_set_label(GTK_BUTTON(dialog->prev_button), _("_Previous"));

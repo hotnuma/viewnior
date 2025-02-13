@@ -1,20 +1,6 @@
 
 #if 0
 
-/*
-FileOpen
-FileOpenDir
-FileOpenWith
-FileSelectDirectory
-FileRename
-FileMove
-FileDelete
-FileProperties
-EditPreferences
-
-HelpAbout
-*/
-
 g_signal_connect(action,
                  "activate",
                  G_CALLBACK(_on_open_with_launch_application),
@@ -123,7 +109,6 @@ const gchar* _ui_definition =
     "</ui>";
 // clang-format on
 
-
 static const GtkActionEntry _action_entries_static_image[] =
 {
     {"ImageRotateCW", "object-rotate-right",
@@ -212,7 +197,6 @@ static const GtkToggleActionEntry _toggle_entries_image[] =
      G_CALLBACK(_action_resize)},
 };
 
-
 static const GtkToggleActionEntry _toggle_entries_window[] =
 {
     {"ViewScrollbar", NULL,
@@ -262,4 +246,5 @@ static const GtkToggleActionEntry _toggle_entries_window[] =
      G_CALLBACK(_action_zoom_out)},
 
 #endif
+
 

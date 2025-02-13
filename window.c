@@ -89,12 +89,14 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           gint response_id,
                                           VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
+static void _action_resize(VnrWindow *window, GtkWidget *widget);
 static void _window_update_openwith_menu(VnrWindow *window);
 static void _on_openwith(VnrWindow *window, gpointer user_data);
 
 // Actions --------------------------------------------------------------------
 
 static gboolean _window_next_image_src(VnrWindow *window);
+static void _window_action_reload(VnrWindow *window, GtkWidget *widget);
 static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget);
 static void _window_action_selectdir(VnrWindow *window, GtkWidget *widget);
 static gboolean _window_select_directory(VnrWindow *window);
@@ -118,6 +120,7 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
 static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
+static void _action_crop(VnrWindow *window, GtkWidget *widget);
 static void _window_action_save_image(VnrWindow *window, GtkWidget *widget);
 
 // Set wallpaper --------------------------------------------------------------
@@ -154,17 +157,13 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
 //static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 //                                 VnrWindow *window);
 
-// ----------------------------------------------------------------------------
-
-static void _action_resize(GtkToggleAction *action, VnrWindow *window);
-static void _action_crop(GtkAction *action, VnrWindow *window);
-
 
 typedef enum
 {
     WINDOW_ACTION_OPEN = 1,
     WINDOW_ACTION_OPENDIR,
     WINDOW_ACTION_OPENWITH,
+    WINDOW_ACTION_RELOAD,
     WINDOW_ACTION_RESETDIR,
     WINDOW_ACTION_SELECTDIR,
     WINDOW_ACTION_COPY,
@@ -206,6 +205,13 @@ static EtkActionEntry _window_actions[] =
      N_("Open the selected image with a different application"),
      NULL,
      NULL},
+
+    {WINDOW_ACTION_RELOAD,
+     "<Actions>/AppWindow/Reload", "F5",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(_window_action_reload)},
 
     {WINDOW_ACTION_RESETDIR,
      "<Actions>/AppWindow/ResetDir", "F6",
@@ -290,6 +296,8 @@ static void window_class_init(VnrWindowClass *klass)
     GtkWidgetClass *gtkwidget_class = GTK_WIDGET_CLASS(klass);
     gtkwidget_class->key_press_event = _window_on_key_press;
     gtkwidget_class->drag_data_received = _window_drag_data_received;
+    
+    etk_actions_translate(_window_actions);
 }
 
 static void window_init(VnrWindow *window)
@@ -437,12 +445,7 @@ static void window_init(VnrWindow *window)
     window->sl_timeout = window->prefs->slideshow_timeout;
 
     // Care for Properties dialog
-    window->props_dlg = vnr_properties_dialog_new(
-            window,
-            NULL,
-            //gtk_action_group_get_action(window->actions_collection, "GoNext"),
-            NULL);
-            //gtk_action_group_get_action(window->actions_collection, "GoPrevious"));
+    window->props_dlg = vnr_properties_dialog_new(window);
 
     window_preferences_apply(window);
 
@@ -810,7 +813,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         break;
 
     case 'c':
-        _action_crop(NULL, window);
+        _action_crop(window, NULL);
         break;
     }
 
@@ -1198,7 +1201,7 @@ gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
 
     if (window->prefs->auto_resize)
     {
-        _action_resize(NULL, window);
+        _action_resize(window, NULL);
     }
 
     if (gtk_widget_get_visible(window->props_dlg))
@@ -1230,6 +1233,31 @@ static void _window_update_fs_filename_label(VnrWindow *window)
         gtk_label_set_text(GTK_LABEL(window->fs_filename_label), buf);
 
     g_free(buf);
+}
+
+static void _action_resize(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    //if (action != NULL && !gtk_toggle_action_get_active(action))
+    //{
+    //    window->prefs->auto_resize = FALSE;
+    //    return;
+    //}
+
+    // width and Height of the pixbuf
+    gint img_w = window->current_image_width;
+    gint img_h = window->current_image_height;
+
+    if (img_w == 0 || img_h == 0)
+        return;
+
+    window->prefs->auto_resize = TRUE;
+    vnr_tools_fit_to_size(&img_w, &img_h, window->max_width, window->max_height);
+
+    // _window_get_top_widgets_height(window)
+
+    gtk_window_resize(GTK_WINDOW(window), img_w, img_h);
 }
 
 void window_file_close(VnrWindow *window)
@@ -1506,6 +1534,14 @@ gboolean window_last(VnrWindow *window)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
 
     return TRUE;
+}
+
+static void _window_action_reload(VnrWindow *window, GtkWidget *widget)
+{
+    g_return_if_fail(window != NULL);
+    (void) widget;
+
+    window_file_load(window, FALSE);
 }
 
 static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget)
@@ -2022,6 +2058,65 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
                                           _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
                                           FALSE, "gtk-save",
                                           G_CALLBACK(_window_action_save_image));
+}
+
+static void _action_crop(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    //if (!gtk_action_group_get_sensitive(window->actions_static_image))
+    //    return;
+
+    if (!window->can_edit)
+        return;
+
+    VnrCrop *crop = (VnrCrop*) vnr_crop_new(window);
+
+    if (!vnr_crop_run(crop))
+    {
+        g_object_unref(crop);
+        return;
+    }
+
+    GdkPixbuf *cropped;
+    GdkPixbuf *original;
+
+    original = uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view));
+
+    cropped = gdk_pixbuf_new(gdk_pixbuf_get_colorspace(original),
+                             gdk_pixbuf_get_has_alpha(original),
+                             gdk_pixbuf_get_bits_per_sample(original),
+                             crop->area.width, crop->area.height);
+
+    gdk_pixbuf_copy_area((const GdkPixbuf *)original, crop->area.x, crop->area.y,
+                         crop->area.width, crop->area.height, cropped, 0, 0);
+
+    uni_anim_view_set_static(UNI_ANIM_VIEW(window->view), cropped);
+
+    g_object_unref(cropped);
+
+    window->modifications |= 8;
+
+    window->current_image_width = crop->area.width;
+    window->current_image_height = crop->area.height;
+
+    //gtk_action_group_set_sensitive(window->action_save, TRUE);
+
+    if (window->writable_format_name == NULL)
+        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
+                              TRUE,
+                              _("Image modifications cannot be saved.\nWriting in this format is not supported."),
+                              FALSE);
+    else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
+        _window_action_save_image(window, NULL);
+    else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
+        vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
+                                          FALSE,
+                                          _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
+                                          FALSE, "gtk-save",
+                                          G_CALLBACK(_window_action_save_image));
+
+    g_object_unref(crop);
 }
 
 static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
@@ -2612,89 +2707,5 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 
 
 // ----------------------------------------------------------------------------
-
-static void _action_resize(GtkToggleAction *action, VnrWindow *window)
-{
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
-    if (action != NULL && !gtk_toggle_action_get_active(action))
-    {
-        window->prefs->auto_resize = FALSE;
-        return;
-    }
-
-    G_GNUC_END_IGNORE_DEPRECATIONS
-
-    gint img_h, img_w; /* Width and Height of the pixbuf */
-
-    img_w = window->current_image_width;
-    img_h = window->current_image_height;
-
-    if (img_w == 0 || img_h == 0)
-        return;
-
-    window->prefs->auto_resize = TRUE;
-
-    vnr_tools_fit_to_size(&img_w, &img_h, window->max_width, window->max_height);
-    gtk_window_resize(GTK_WINDOW(window),
-                      img_w,
-                      img_h /*+ _window_get_top_widgets_height(window)*/);
-}
-
-static void _action_crop(GtkAction *action, VnrWindow *window)
-{
-    VnrCrop *crop;
-
-//    if (!gtk_action_group_get_sensitive(window->actions_static_image))
-//        return;
-
-    crop = (VnrCrop *)vnr_crop_new(window);
-
-    if (!vnr_crop_run(crop))
-    {
-        g_object_unref(crop);
-        return;
-    }
-
-    GdkPixbuf *cropped;
-    GdkPixbuf *original;
-
-    original = uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view));
-
-    cropped = gdk_pixbuf_new(gdk_pixbuf_get_colorspace(original),
-                             gdk_pixbuf_get_has_alpha(original),
-                             gdk_pixbuf_get_bits_per_sample(original),
-                             crop->area.width, crop->area.height);
-
-    gdk_pixbuf_copy_area((const GdkPixbuf *)original, crop->area.x, crop->area.y,
-                         crop->area.width, crop->area.height, cropped, 0, 0);
-
-    uni_anim_view_set_static(UNI_ANIM_VIEW(window->view), cropped);
-
-    g_object_unref(cropped);
-
-    window->modifications |= 8;
-
-    window->current_image_width = crop->area.width;
-    window->current_image_height = crop->area.height;
-
-    //gtk_action_group_set_sensitive(window->action_save, TRUE);
-
-    if (window->writable_format_name == NULL)
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                              TRUE,
-                              _("Image modifications cannot be saved.\nWriting in this format is not supported."),
-                              FALSE);
-    else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
-        _window_action_save_image(window, NULL);
-    else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
-        vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
-                                          FALSE,
-                                          _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, "gtk-save",
-                                          G_CALLBACK(_window_action_save_image));
-
-    g_object_unref(crop);
-}
 
 
