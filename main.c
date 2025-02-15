@@ -72,8 +72,9 @@ int main(int argc, char **argv)
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), PIXMAP_DIR);
 
     GtkWindow *window = window_new();
+
     gtk_window_set_default_size(window, 480, 300);
-    gtk_window_set_position(window, GTK_WIN_POS_CENTER);
+    //gtk_window_set_position(window, GTK_WIN_POS_CENTER);
 
     GSList *uri_list = vnr_tools_get_list_from_array(files);
     VnrWindow *vnrwindow = VNR_WINDOW(window);
