@@ -92,10 +92,12 @@ struct _VnrPrefs
 {
     GObject __parent__;
 
+    gboolean start_maximized;
+    gint window_width;
+    gint window_height;
+
     VnrPrefsZoom zoom;
-
     VnrPrefsDesktop desktop;
-
     VnrPrefsWheel behavior_wheel;
     VnrPrefsClick behavior_click;
     VnrPrefsModify behavior_modify;
@@ -105,17 +107,16 @@ struct _VnrPrefs
     gboolean confirm_delete;
     gboolean reload_on_save;
     gboolean show_scrollbar;
-    gboolean start_maximized;
     gboolean start_slideshow;
     gboolean start_fullscreen;
     gboolean auto_resize;
     gboolean dark_background;
-    int slideshow_timeout;
-    int jpeg_quality;
-    int png_compression;
+    gint slideshow_timeout;
+    gint jpeg_quality;
+    gint png_compression;
 
     //GtkWidget *dialog;
-    GtkWidget *vnr_win;
+    GtkWidget *window;
 
     GtkSpinButton *slideshow_timeout_widget;
 };

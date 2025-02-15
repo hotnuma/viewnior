@@ -41,12 +41,22 @@ G_DEFINE_TYPE(VnrPrefs, vnr_prefs, G_TYPE_OBJECT)
     }
 
 
-static void toggle_show_hidden_cb(GtkToggleButton *togglebutton, gpointer user_data);
-static void toggle_dark_background_cb(GtkToggleButton *togglebutton, gpointer user_data);
-static void toggle_fit_on_fullscreen_cb(GtkToggleButton *togglebutton, gpointer user_data);
-static void toggle_smooth_images_cb(GtkToggleButton *togglebutton, gpointer user_data);
-static void toggle_confirm_delete_cb(GtkToggleButton *togglebutton, gpointer user_data);
-static void toggle_reload_on_save_cb(GtkToggleButton *togglebutton, gpointer user_data);
+static void vnr_prefs_set_default(VnrPrefs *prefs);
+static GtkWidget* _prefs_build(VnrPrefs *prefs);
+static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error);
+
+static void toggle_show_hidden_cb(GtkToggleButton *togglebutton,
+                                  gpointer user_data);
+static void toggle_dark_background_cb(GtkToggleButton *togglebutton,
+                                      gpointer user_data);
+static void toggle_fit_on_fullscreen_cb(GtkToggleButton *togglebutton,
+                                        gpointer user_data);
+static void toggle_smooth_images_cb(GtkToggleButton *togglebutton,
+                                    gpointer user_data);
+static void toggle_confirm_delete_cb(GtkToggleButton *togglebutton,
+                                     gpointer user_data);
+static void toggle_reload_on_save_cb(GtkToggleButton *togglebutton,
+                                     gpointer user_data);
 static void change_zoom_mode_cb(GtkComboBox *widget, gpointer user_data);
 static void change_desktop_env_cb(GtkComboBox *widget, gpointer user_data);
 static void change_jpeg_quality_cb(GtkRange *range, gpointer user_data);
@@ -55,23 +65,19 @@ static void change_action_wheel_cb(GtkComboBox *widget, gpointer user_data);
 static void change_action_click_cb(GtkComboBox *widget, gpointer user_data);
 static void change_action_modify_cb(GtkComboBox *widget, gpointer user_data);
 static void change_spin_value_cb(GtkSpinButton *spinbutton, gpointer user_data);
-static gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
-static void vnr_prefs_set_default(VnrPrefs *prefs);
-static GtkWidget* _prefs_build(VnrPrefs *prefs);
-static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error);
+static gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event,
+                             gpointer user_data);
 
 
 // Creation -------------------------------------------------------------------
 
-GObject* vnr_prefs_new(GtkWidget *vnr_win)
+GObject* vnr_prefs_new(GtkWidget *window)
 {
-    VnrPrefs *prefs;
+    VnrPrefs *prefs = g_object_new(VNR_TYPE_PREFS, NULL);
 
-    prefs = g_object_new(VNR_TYPE_PREFS, NULL);
+    prefs->window = window;
 
-    prefs->vnr_win = vnr_win;
-
-    return (GObject *)prefs;
+    return (GObject*) prefs;
 }
 
 static void vnr_prefs_class_init(VnrPrefsClass *klass)
@@ -82,18 +88,22 @@ static void vnr_prefs_init(VnrPrefs *prefs)
 {
     GError *error = NULL;
 
-    if (!vnr_prefs_load(prefs, &error))
-    {
-        g_warning("Error loading config file: %s. All preferences are set"
-                  " to their default values. Saving ...",
-                  error->message);
-        vnr_prefs_set_default(prefs);
-        vnr_prefs_save(prefs);
-    }
+    if (vnr_prefs_load(prefs, &error))
+        return;
+
+    g_warning("Error loading config file: %s. All preferences are set"
+              " to their default values. Saving ...",
+              error->message);
+    vnr_prefs_set_default(prefs);
+    vnr_prefs_save(prefs);
 }
 
 static void vnr_prefs_set_default(VnrPrefs *prefs)
 {
+    prefs->start_maximized = false;
+    prefs->window_width = 480;
+    prefs->window_height = 300;
+
     prefs->zoom = VNR_PREFS_ZOOM_SMART;
     prefs->show_hidden = FALSE;
     prefs->dark_background = FALSE;
@@ -108,7 +118,6 @@ static void vnr_prefs_set_default(VnrPrefs *prefs)
     prefs->png_compression = 9;
     prefs->reload_on_save = FALSE;
     prefs->show_scrollbar = TRUE;
-    prefs->start_maximized = FALSE;
     prefs->start_slideshow = FALSE;
     prefs->start_fullscreen = FALSE;
     prefs->auto_resize = FALSE;
@@ -317,6 +326,10 @@ static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error)
         return FALSE;
     }
 
+    VNR_PREF_LOAD_KEY(start_maximized, boolean, "start-maximized", FALSE);
+    VNR_PREF_LOAD_KEY(window_width, integer, "window-width", 480);
+    VNR_PREF_LOAD_KEY(window_height, integer, "window-height", 300);
+
     VNR_PREF_LOAD_KEY(zoom, integer, "zoom-mode", VNR_PREFS_ZOOM_SMART);
     VNR_PREF_LOAD_KEY(fit_on_fullscreen, boolean, "fit-on-fullscreen", TRUE);
     VNR_PREF_LOAD_KEY(show_hidden, boolean, "show-hidden", FALSE);
@@ -325,7 +338,6 @@ static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error)
     VNR_PREF_LOAD_KEY(confirm_delete, boolean, "confirm-delete", TRUE);
     VNR_PREF_LOAD_KEY(reload_on_save, boolean, "reload-on-save", FALSE);
     VNR_PREF_LOAD_KEY(show_scrollbar, boolean, "show-scrollbar", TRUE);
-    VNR_PREF_LOAD_KEY(start_maximized, boolean, "start-maximized", FALSE);
     VNR_PREF_LOAD_KEY(slideshow_timeout, integer, "slideshow-timeout", 5);
     VNR_PREF_LOAD_KEY(auto_resize, boolean, "auto-resize", FALSE);
     VNR_PREF_LOAD_KEY(behavior_wheel, integer, "behavior-wheel", VNR_PREFS_WHEEL_ZOOM);
@@ -346,23 +358,44 @@ gboolean vnr_prefs_save(VnrPrefs *prefs)
     const gchar *path = g_build_filename(dir, "viewnior.conf", NULL);
 
     GKeyFile *conf = g_key_file_new();
-    g_key_file_set_integer(conf, "prefs", "zoom-mode", prefs->zoom);
-    g_key_file_set_boolean(conf, "prefs", "fit-on-fullscreen", prefs->fit_on_fullscreen);
-    g_key_file_set_boolean(conf, "prefs", "show-hidden", prefs->show_hidden);
-    g_key_file_set_boolean(conf, "prefs", "dark-background", prefs->dark_background);
-    g_key_file_set_boolean(conf, "prefs", "smooth-images", prefs->smooth_images);
-    g_key_file_set_boolean(conf, "prefs", "confirm-delete", prefs->confirm_delete);
-    g_key_file_set_boolean(conf, "prefs", "reload-on-save", prefs->reload_on_save);
-    g_key_file_set_boolean(conf, "prefs", "show-scrollbar", prefs->show_scrollbar);
-    g_key_file_set_boolean(conf, "prefs", "start-maximized", prefs->start_maximized);
-    g_key_file_set_integer(conf, "prefs", "slideshow-timeout", prefs->slideshow_timeout);
-    g_key_file_set_boolean(conf, "prefs", "auto-resize", prefs->auto_resize);
-    g_key_file_set_integer(conf, "prefs", "behavior-wheel", prefs->behavior_wheel);
-    g_key_file_set_integer(conf, "prefs", "behavior-click", prefs->behavior_click);
-    g_key_file_set_integer(conf, "prefs", "behavior-modify", prefs->behavior_modify);
-    g_key_file_set_integer(conf, "prefs", "jpeg-quality", prefs->jpeg_quality);
-    g_key_file_set_integer(conf, "prefs", "png-compression", prefs->png_compression);
-    g_key_file_set_integer(conf, "prefs", "desktop", prefs->desktop);
+    g_key_file_set_boolean(conf, "prefs", "start-maximized",
+                           prefs->start_maximized);
+    g_key_file_set_integer(conf, "prefs", "window-width",
+                           prefs->window_width);
+    g_key_file_set_integer(conf, "prefs", "window-height",
+                           prefs->window_height);
+    g_key_file_set_integer(conf, "prefs", "zoom-mode",
+                           prefs->zoom);
+    g_key_file_set_boolean(conf, "prefs", "fit-on-fullscreen",
+                           prefs->fit_on_fullscreen);
+    g_key_file_set_boolean(conf, "prefs", "show-hidden",
+                           prefs->show_hidden);
+    g_key_file_set_boolean(conf, "prefs", "dark-background",
+                           prefs->dark_background);
+    g_key_file_set_boolean(conf, "prefs", "smooth-images",
+                           prefs->smooth_images);
+    g_key_file_set_boolean(conf, "prefs", "confirm-delete",
+                           prefs->confirm_delete);
+    g_key_file_set_boolean(conf, "prefs", "reload-on-save",
+                           prefs->reload_on_save);
+    g_key_file_set_boolean(conf, "prefs", "show-scrollbar",
+                           prefs->show_scrollbar);
+    g_key_file_set_integer(conf, "prefs", "slideshow-timeout",
+                           prefs->slideshow_timeout);
+    g_key_file_set_boolean(conf, "prefs", "auto-resize",
+                           prefs->auto_resize);
+    g_key_file_set_integer(conf, "prefs", "behavior-wheel",
+                           prefs->behavior_wheel);
+    g_key_file_set_integer(conf, "prefs", "behavior-click",
+                           prefs->behavior_click);
+    g_key_file_set_integer(conf, "prefs", "behavior-modify",
+                           prefs->behavior_modify);
+    g_key_file_set_integer(conf, "prefs", "jpeg-quality",
+                           prefs->jpeg_quality);
+    g_key_file_set_integer(conf, "prefs", "png-compression",
+                           prefs->png_compression);
+    g_key_file_set_integer(conf, "prefs", "desktop",
+                           prefs->desktop);
 
     if (g_mkdir_with_parents(dir, 0700) != 0)
         g_warning("Error creating config file's parent directory (%s)\n", dir);
@@ -427,7 +460,7 @@ static void toggle_dark_background_cb(GtkToggleButton *togglebutton, gpointer us
 {
     VNR_PREFS(user_data)->dark_background = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
-    window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
+    window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->window));
 }
 
 static void toggle_fit_on_fullscreen_cb(GtkToggleButton *togglebutton, gpointer user_data)
@@ -440,7 +473,7 @@ static void toggle_smooth_images_cb(GtkToggleButton *togglebutton, gpointer user
 {
     VNR_PREFS(user_data)->smooth_images = gtk_toggle_button_get_active(togglebutton);
     vnr_prefs_save(VNR_PREFS(user_data));
-    window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
+    window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->window));
 }
 
 static void toggle_confirm_delete_cb(GtkToggleButton *togglebutton, gpointer user_data)
@@ -503,7 +536,7 @@ static void change_spin_value_cb(GtkSpinButton *spinbutton, gpointer user_data)
 
     VNR_PREFS(user_data)->slideshow_timeout = new_value;
     vnr_prefs_save(VNR_PREFS(user_data));
-    window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->vnr_win));
+    window_preferences_apply(VNR_WINDOW(VNR_PREFS(user_data)->window));
 }
 
 static gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)

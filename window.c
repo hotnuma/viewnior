@@ -66,7 +66,9 @@ static void _window_drag_data_received(GtkWidget *widget,
 
 // Window destruction ---------------------------------------------------------
 
-static void _window_on_destroy(GtkWidget *widget, gpointer user_data);
+static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
+                                  gpointer data);
+static void _window_on_destroy(VnrWindow *window, gpointer user_data);
 static void _window_save_accel_map();
 static void window_dispose(GObject *object);
 static void window_finalize(GObject *object);
@@ -451,8 +453,11 @@ static void window_init(VnrWindow *window)
 
     _window_set_drag(window);
 
-    g_signal_connect(G_OBJECT(window), "destroy",
-                     G_CALLBACK(_window_on_destroy), NULL);
+    g_signal_connect_swapped(G_OBJECT(window), "delete-event",
+                     G_CALLBACK(_window_on_delete), window);
+
+    g_signal_connect_swapped(G_OBJECT(window), "destroy",
+                     G_CALLBACK(_window_on_destroy), window);
 
     g_signal_connect(G_OBJECT(window), "realize",
                      G_CALLBACK(_window_on_realize), NULL);
@@ -656,10 +661,45 @@ static void _window_drag_data_received(GtkWidget *widget,
 
 // Window destruction ---------------------------------------------------------
 
-static void _window_on_destroy(GtkWidget *widget, gpointer user_data)
+static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
+                                  gpointer user_data)
 {
+    (void) event;
+    (void) user_data;
+    GtkWidget *widget = GTK_WIDGET(window);
+    VnrPrefs *prefs = window->prefs;
+
+    if (gtk_widget_get_visible(widget))
+    {
+        GdkWindowState state = gdk_window_get_state(
+                                    gtk_widget_get_window(widget));
+
+        prefs->start_maximized =
+            ((state & (GDK_WINDOW_STATE_MAXIMIZED
+                       | GDK_WINDOW_STATE_FULLSCREEN)) != 0);
+
+        if (!prefs->start_maximized)
+        {
+            gtk_window_get_size(GTK_WINDOW(window),
+                                &prefs->window_width,
+                                &prefs->window_height);
+
+            //printf("w : %d, h : %d\n",
+            //       prefs->window_width, prefs->window_height);
+        }
+    }
+
+    return false;
+}
+
+static void _window_on_destroy(VnrWindow *window, gpointer user_data)
+{
+    (void) user_data;
+
     _window_save_accel_map();
-    vnr_prefs_save(VNR_WINDOW(widget)->prefs);
+
+    vnr_prefs_save(window->prefs);
+
     gtk_main_quit();
 }
 
@@ -831,9 +871,11 @@ static gboolean _window_on_change_state(GtkWidget *widget,
                                         GdkEventWindowState *event,
                                         gpointer user_data)
 {
+    (void) user_data;
+
     if (event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED)
     {
-        /* Detect maximized state only */
+        // Detect maximized state only
         if (event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED)
         {
             VNR_WINDOW(widget)->prefs->start_maximized = TRUE;
