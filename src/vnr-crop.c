@@ -87,8 +87,7 @@ vnr_crop_check_sub_x(VnrCrop *crop)
     }
 }
 
-static void
-vnr_crop_update_spin_button_values(VnrCrop *crop)
+static void vnr_crop_update_spin_button_values(VnrCrop *crop)
 {
     gtk_spin_button_set_value(crop->spin_height, crop->sub_height / crop->zoom);
     gtk_spin_button_set_value(crop->spin_width, crop->sub_width / crop->zoom);
@@ -97,15 +96,11 @@ vnr_crop_update_spin_button_values(VnrCrop *crop)
     gtk_spin_button_set_value(crop->spin_y, crop->sub_y / crop->zoom);
 }
 
-static GtkWidget *
-vnr_crop_build_dialog(VnrCrop *crop)
+static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
 {
-    GtkBuilder *builder;
-    GtkWidget *window;
-    GdkPixbuf *original;
-    GdkPixbuf *preview;
     GError *error = NULL;
 
+    GtkBuilder *builder;
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, CROP_UI_PATH, &error);
 
@@ -116,9 +111,11 @@ vnr_crop_build_dialog(VnrCrop *crop)
         return NULL;
     }
 
+    GtkWidget *window;
     window = GTK_WIDGET(gtk_builder_get_object(builder, "crop-dialog"));
     gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(crop->vnr_win));
 
+    GdkPixbuf *original;
     original = uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(crop->vnr_win->view));
 
     gdouble width, height;
@@ -128,19 +125,29 @@ vnr_crop_build_dialog(VnrCrop *crop)
     height = crop->vnr_win->current_image_height;
 
     {
-        GdkScreen *screen;
-        GdkRectangle monitor;
 
+        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(crop->vnr_win));
+        GdkRectangle geometry;
+
+#if 0
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-        screen = gtk_window_get_screen(GTK_WINDOW(crop->vnr_win));
-        gdk_screen_get_monitor_geometry(screen,
-                                        gdk_screen_get_monitor_at_window(screen,
-                                                                         gtk_widget_get_window(GTK_WIDGET(crop->vnr_win))),
-                                        &monitor);
+        gdk_screen_get_monitor_geometry(
+                        screen,
+                        gdk_screen_get_monitor_at_window(screen,
+                        gtk_widget_get_window(GTK_WIDGET(crop->vnr_win))),
+                        &geometry);
         G_GNUC_END_IGNORE_DEPRECATIONS
+#endif
 
-        max_width = monitor.width * 0.9 - 100;
-        max_height = monitor.height * 0.9 - 200;
+        GdkDisplay *display = gdk_screen_get_display(screen);
+        GdkMonitor *monitor = gdk_display_get_monitor_at_window(
+                            display,
+                            gtk_widget_get_window(GTK_WIDGET(crop->vnr_win)));
+
+        gdk_monitor_get_geometry(monitor, &geometry);
+
+        max_width = geometry.width * 0.9 - 100;
+        max_height = geometry.height * 0.9 - 200;
     }
 
     vnr_tools_fit_to_size_double(&width, &height, max_width, max_height);
@@ -148,6 +155,7 @@ vnr_crop_build_dialog(VnrCrop *crop)
     crop->height = height;
     crop->zoom = (width / crop->vnr_win->current_image_width + height / crop->vnr_win->current_image_height) / 2;
 
+    GdkPixbuf *preview;
     preview = gdk_pixbuf_new(gdk_pixbuf_get_colorspace(original),
                              gdk_pixbuf_get_has_alpha(original),
                              gdk_pixbuf_get_bits_per_sample(original),

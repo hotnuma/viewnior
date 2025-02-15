@@ -494,20 +494,31 @@ static void _window_on_realize(VnrWindow *window, gpointer user_data)
     else
     {
         GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
+        GdkRectangle geometry;
 
+#if 0
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-        GdkRectangle monitor;
         gdk_screen_get_monitor_geometry(
                             screen,
                             gdk_screen_get_monitor_at_window(screen,
                             gtk_widget_get_window(widget)),
-                            &monitor);
+                            &geometry);
 
         G_GNUC_END_IGNORE_DEPRECATIONS
+#endif
 
-        window->max_width = monitor.width * 0.9 - 100;
-        window->max_height = monitor.height * 0.9 - 100;
+        GdkDisplay *display = gdk_screen_get_display(screen);
+        GdkMonitor *monitor = gdk_display_get_monitor_at_window(
+                            display,
+                            gtk_widget_get_window(widget));
+
+        gdk_monitor_get_geometry(monitor, &geometry);
+
+        window->max_width = geometry.width * 0.9 - 100;
+        window->max_height = geometry.height * 0.9 - 100;
+
+        //printf("w = %d, h = %d\n", geometry.width, geometry.height);
 
         window_file_load(window, false /*TRUE*/);
     }
