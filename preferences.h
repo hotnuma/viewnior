@@ -92,6 +92,7 @@ struct _VnrPrefs
 {
     GObject __parent__;
 
+    GtkWidget *window;
     gboolean start_maximized;
     gint window_width;
     gint window_height;
@@ -114,9 +115,6 @@ struct _VnrPrefs
     gint slideshow_timeout;
     gint jpeg_quality;
     gint png_compression;
-
-    //GtkWidget *dialog;
-    GtkWidget *window;
 
     GtkSpinButton *slideshow_timeout_widget;
 };

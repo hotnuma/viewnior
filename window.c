@@ -46,7 +46,7 @@ G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 GtkWindow* window_new();
 static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
-static void _window_on_realize(GtkWidget *widget, gpointer user_data);
+static void _window_on_realize(VnrWindow *window, gpointer user_data);
 static void _window_load_accel_map();
 
 // DnD ------------------------------------------------------------------------
@@ -455,8 +455,8 @@ static void window_init(VnrWindow *window)
     g_signal_connect_swapped(G_OBJECT(window), "delete-event",
                      G_CALLBACK(_window_on_delete), window);
 
-    g_signal_connect(G_OBJECT(window), "realize",
-                     G_CALLBACK(_window_on_realize), NULL);
+    g_signal_connect_swapped(G_OBJECT(window), "realize",
+                     G_CALLBACK(_window_on_realize), window);
 
     g_signal_connect(G_OBJECT(window), "window-state-event",
                      G_CALLBACK(_window_on_change_state), NULL);
@@ -470,24 +470,30 @@ static void window_init(VnrWindow *window)
     _window_load_accel_map();
 }
 
-static void _window_on_realize(GtkWidget *widget, gpointer user_data)
+static void _window_on_realize(VnrWindow *window, gpointer user_data)
 {
+    GtkWidget *widget = GTK_WIDGET(window);
+
     g_signal_handlers_disconnect_by_func(widget,
                                          _window_on_realize,
                                          user_data);
 
-    VnrWindow *window = VNR_WINDOW(widget);
-
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
         return;
 
-    if (window->prefs->start_maximized)
+    VnrPrefs *prefs = window->prefs;
+
+    gtk_window_set_default_size(GTK_WINDOW(window),
+                                prefs->window_width,
+                                prefs->window_height);
+
+    if (prefs->start_maximized)
     {
         window_file_load(window, FALSE);
     }
     else
     {
-        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(widget));
+        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
 
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
@@ -503,7 +509,7 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
         window->max_width = monitor.width * 0.9 - 100;
         window->max_height = monitor.height * 0.9 - 100;
 
-        window_file_load(window, TRUE);
+        window_file_load(window, false /*TRUE*/);
     }
 
     VnrFile *current = window_list_get_current(window);
@@ -511,11 +517,11 @@ static void _window_on_realize(GtkWidget *widget, gpointer user_data)
     if (!current)
         return;
 
-    if (window->prefs->start_fullscreen)
+    if (prefs->start_fullscreen)
     {
         _window_fullscreen(window);
     }
-    else if (window->prefs->start_slideshow)
+    else if (prefs->start_slideshow)
     {
         _window_fullscreen(window);
         window->mode = WINDOW_MODE_NORMAL;
