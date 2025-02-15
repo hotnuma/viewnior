@@ -68,7 +68,6 @@ static void _window_drag_data_received(GtkWidget *widget,
 
 static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
                                   gpointer data);
-static void _window_on_destroy(VnrWindow *window, gpointer user_data);
 static void _window_save_accel_map();
 static void window_dispose(GObject *object);
 static void window_finalize(GObject *object);
@@ -456,9 +455,6 @@ static void window_init(VnrWindow *window)
     g_signal_connect_swapped(G_OBJECT(window), "delete-event",
                      G_CALLBACK(_window_on_delete), window);
 
-    g_signal_connect_swapped(G_OBJECT(window), "destroy",
-                     G_CALLBACK(_window_on_destroy), window);
-
     g_signal_connect(G_OBJECT(window), "realize",
                      G_CALLBACK(_window_on_realize), NULL);
 
@@ -683,24 +679,15 @@ static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
             gtk_window_get_size(GTK_WINDOW(window),
                                 &prefs->window_width,
                                 &prefs->window_height);
-
-            //printf("w : %d, h : %d\n",
-            //       prefs->window_width, prefs->window_height);
         }
     }
 
-    return false;
-}
-
-static void _window_on_destroy(VnrWindow *window, gpointer user_data)
-{
-    (void) user_data;
-
     _window_save_accel_map();
-
     vnr_prefs_save(window->prefs);
 
     gtk_main_quit();
+
+    return false;
 }
 
 static void _window_save_accel_map()
