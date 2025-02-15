@@ -1,3 +1,279 @@
-
-g_time_val_add
-
+window.c:539:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+window.c-540-
+window.c-541-        gtk_widget_override_background_color(window->view,
+window.c-542-                                             GTK_STATE_FLAG_NORMAL,
+window.c-543-                                             &color);
+window.c-544-
+--
+window.c:2324:            G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+window.c-2325-            tmp = g_strdup_printf(
+window.c-2326-                "/backdrop/screen%d/monitor0/workspace0/last-image",
+window.c-2327-                gdk_screen_get_number(
+window.c-2328-                    gtk_widget_get_screen(GTK_WIDGET(window))));
+window.c-2329-            G_GNUC_END_IGNORE_DEPRECATIONS
+--
+window.c:2494:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+window.c-2495-    gtk_widget_override_background_color(window->view,
+window.c-2496-                                         GTK_STATE_FLAG_NORMAL,
+window.c-2497-                                         &color);
+window.c-2498-    G_GNUC_END_IGNORE_DEPRECATIONS
+window.c-2499-
+--
+window.c:2546:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+window.c-2547-        gtk_widget_override_background_color(window->view,
+window.c-2548-                                             GTK_STATE_FLAG_NORMAL,
+window.c-2549-                                             &color);
+window.c-2550-        G_GNUC_END_IGNORE_DEPRECATIONS
+window.c-2551-    }
+--
+window.c:2554:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+window.c-2555-        gtk_widget_override_background_color(window->view,
+window.c-2556-                                             GTK_STATE_FLAG_NORMAL, NULL);
+window.c-2557-        G_GNUC_END_IGNORE_DEPRECATIONS
+window.c-2558-    }
+window.c-2559-
+--
+window.c:2660:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+window.c-2661-    GtkWidget *widget = gtk_button_new_from_stock("gtk-leave-fullscreen");
+window.c-2662-    G_GNUC_END_IGNORE_DEPRECATIONS
+window.c-2663-
+window.c-2664-    g_signal_connect(widget, "clicked",
+window.c-2665-                     G_CALLBACK(_on_fullscreen_leave), window);
+--
+0temp.c:5:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+0temp.c-6-        gdk_screen_get_monitor_geometry(
+0temp.c-7-                        screen,
+0temp.c-8-                        gdk_screen_get_monitor_at_window(screen,
+0temp.c-9-                        gtk_widget_get_window(GTK_WIDGET(crop->vnr_win))),
+0temp.c-10-                        &geometry);
+--
+0temp.c:16:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+0temp.c-17-
+0temp.c-18-        gdk_screen_get_monitor_geometry(
+0temp.c-19-                            screen,
+0temp.c-20-                            gdk_screen_get_monitor_at_window(screen,
+0temp.c-21-                            gtk_widget_get_window(widget)),
+--
+preferences.c:252:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+preferences.c-253-    GtkTable *behavior_table =
+preferences.c-254-        GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
+preferences.c-255-    G_GNUC_END_IGNORE_DEPRECATIONS
+preferences.c-256-
+preferences.c-257-    action_wheel = (GtkComboBoxText *)gtk_combo_box_text_new();
+--
+preferences.c:263:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+preferences.c-264-    gtk_table_attach(behavior_table,
+preferences.c-265-                     GTK_WIDGET(action_wheel), 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
+preferences.c-266-    G_GNUC_END_IGNORE_DEPRECATIONS
+preferences.c-267-
+preferences.c-268-    gtk_widget_show(GTK_WIDGET(action_wheel));
+--
+preferences.c:278:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+preferences.c-279-    gtk_table_attach(behavior_table,
+preferences.c-280-                     GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
+preferences.c-281-    G_GNUC_END_IGNORE_DEPRECATIONS
+preferences.c-282-
+preferences.c-283-    gtk_widget_show(GTK_WIDGET(action_click));
+--
+preferences.c:292:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+preferences.c-293-    gtk_table_attach(behavior_table,
+preferences.c-294-                     GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
+preferences.c-295-    G_GNUC_END_IGNORE_DEPRECATIONS
+preferences.c-296-
+preferences.c-297-    gtk_widget_show(GTK_WIDGET(action_modify));
+--
+src/vnr-properties-dialog.c:66:G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/vnr-properties-dialog.c-67-
+src/vnr-properties-dialog.c-68-static void set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
+src/vnr-properties-dialog.c-69-{
+src/vnr-properties-dialog.c-70-    if (dialog->thumbnail != NULL)
+src/vnr-properties-dialog.c-71-    {
+--
+src/vnr-crop.c:53:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/vnr-crop.c-54-        cr = gdk_cairo_create(gtk_widget_get_window(crop->image));
+src/vnr-crop.c-55-        G_GNUC_END_IGNORE_DEPRECATIONS
+src/vnr-crop.c-56-
+src/vnr-crop.c-57-        cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+src/vnr-crop.c-58-        cairo_set_line_width(cr, 3);
+--
+src/uni-anim-view.h:59:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-anim-view.h-60-    GTimeVal time;
+src/uni-anim-view.h-61-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-anim-view.h-62-
+src/uni-anim-view.h-63-    int delay;
+src/uni-anim-view.h-64-};
+--
+src/uni-scroll-win.c:53:G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-54-G_DEFINE_TYPE(UniScrollWin, uni_scroll_win, GTK_TYPE_TABLE)
+src/uni-scroll-win.c-55-G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-56-
+src/uni-scroll-win.c-57-/*************************************************************/
+src/uni-scroll-win.c-58-/***** Static stuff ******************************************/
+--
+src/uni-scroll-win.c:96:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-97-    window->hscroll = gtk_hscrollbar_new(hadj);
+src/uni-scroll-win.c-98-    window->vscroll = gtk_vscrollbar_new(vadj);
+src/uni-scroll-win.c-99-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-100-
+src/uni-scroll-win.c-101-    // We want to be notified when the adjustments change.
+--
+src/uni-scroll-win.c:112:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-113-    gtk_widget_push_composite_child();
+src/uni-scroll-win.c-114-    gtk_table_attach(GTK_TABLE(window), GTK_WIDGET(view), 0, 1, 0, 1,
+src/uni-scroll-win.c-115-                     GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+src/uni-scroll-win.c-116-    gtk_table_attach(GTK_TABLE(window), window->vscroll, 1, 2, 0, 1,
+src/uni-scroll-win.c-117-                     GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+--
+src/uni-scroll-win.c:202:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-203-    gtk_container_set_resize_mode(GTK_CONTAINER(window), GTK_RESIZE_IMMEDIATE);
+src/uni-scroll-win.c-204-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-scroll-win.c-205-}
+src/uni-scroll-win.c-206-
+src/uni-scroll-win.c-207-static void
+--
+src/uni-anim-view.c:62:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-anim-view.c-63-    g_time_val_add(&aview->time, delay_us);
+src/uni-anim-view.c-64-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-anim-view.c-65-
+src/uni-anim-view.c-66-    gboolean next = gdk_pixbuf_animation_iter_advance(aview->iter,
+src/uni-anim-view.c-67-                                                      &aview->time);
+--
+src/uni-anim-view.c:262:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-anim-view.c-263-    g_get_current_time(&aview->time);
+src/uni-anim-view.c-264-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-anim-view.c-265-
+src/uni-anim-view.c-266-    aview->iter = gdk_pixbuf_animation_get_iter(aview->anim, &aview->time);
+src/uni-anim-view.c-267-
+--
+src/uni-dragger.c:45:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-dragger.c-46-    gdk_pointer_grab(window, FALSE, mask, NULL, tool->grab_cursor, time);
+src/uni-dragger.c-47-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-dragger.c-48-}
+src/uni-dragger.c-49-
+src/uni-dragger.c-50-static void
+--
+src/uni-dragger.c:80:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-dragger.c-81-    gdk_pointer_ungrab(ev->time);
+src/uni-dragger.c-82-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-dragger.c-83-
+src/uni-dragger.c-84-    tool->pressed = FALSE;
+src/uni-dragger.c-85-    tool->dragging = FALSE;
+--
+src/uni-dragger.c:116:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-dragger.c-117-        gtk_drag_begin(GTK_WIDGET(tool->view),
+src/uni-dragger.c-118-                       gtk_target_list_new(target_table, G_N_ELEMENTS(target_table)),
+src/uni-dragger.c-119-                       GDK_ACTION_COPY,
+src/uni-dragger.c-120-                       1,
+src/uni-dragger.c-121-                       (GdkEvent *)ev);
+--
+src/uni-dragger.c:213:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-dragger.c-214-    tool->grab_cursor = gdk_cursor_new(GDK_FLEUR);
+src/uni-dragger.c-215-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-dragger.c-216-}
+src/uni-dragger.c-217-
+src/uni-dragger.c-218-/**
+--
+src/uni-image-view.c:163:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-164-    gtk_adjustment_changed(view->priv->hadjustment);
+src/uni-image-view.c-165-    gtk_adjustment_changed(view->priv->vadjustment);
+src/uni-image-view.c-166-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-image-view.c-167-
+src/uni-image-view.c-168-    g_signal_handlers_unblock_by_data(G_OBJECT(view->priv->hadjustment), view);
+--
+src/uni-image-view.c:257:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-258-    gtk_style_context_get_background_color(context, state, &rgba);
+src/uni-image-view.c-259-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-image-view.c-260-
+src/uni-image-view.c-261-    gdk_cairo_set_source_rgba(cr, &rgba);
+src/uni-image-view.c-262-
+--
+src/uni-image-view.c:372:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-373-    cairo_t *cr = gdk_cairo_create(window);
+src/uni-image-view.c-374-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-image-view.c-375-
+src/uni-image-view.c-376-    GdkPixbuf *win = gdk_pixbuf_get_from_window(window, src_x, src_y, alloc.width - abs(delta_x), alloc.height - abs(delta_y));
+src/uni-image-view.c-377-    gdk_cairo_set_source_pixbuf(cr, win, dest_x, dest_y);
+--
+src/uni-image-view.c:525:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-526-    gtk_style_context_set_background(context, window);
+src/uni-image-view.c-527-    view->void_cursor = gdk_cursor_new(GDK_ARROW);
+src/uni-image-view.c-528-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-image-view.c-529-}
+src/uni-image-view.c-530-
+--
+src/uni-image-view.c:536:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-537-    gdk_cursor_unref(view->void_cursor);
+src/uni-image-view.c-538-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-image-view.c-539-
+src/uni-image-view.c-540-    GTK_WIDGET_CLASS(uni_image_view_parent_class)->unrealize(widget);
+src/uni-image-view.c-541-}
+--
+src/uni-image-view.c:622:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-623-
+src/uni-image-view.c-624-        gtk_menu_popup(
+src/uni-image-view.c-625-            GTK_MENU(VNR_WINDOW(gtk_widget_get_toplevel(widget))->popup_menu),
+src/uni-image-view.c-626-            NULL,
+src/uni-image-view.c-627-            NULL,
+--
+src/uni-image-view.c:1131:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-image-view.c-1132-    g_type_class_add_private(object_class, sizeof(UniImageViewPrivate));
+src/uni-image-view.c-1133-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-image-view.c-1134-}
+src/uni-image-view.c-1135-
+src/uni-image-view.c-1136-/**
+--
+src/vnr-message-area.c:41:G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/vnr-message-area.c-42-
+src/vnr-message-area.c-43-static void
+src/vnr-message-area.c-44-vnr_message_area_initialize(VnrMessageArea *msg_area)
+src/vnr-message-area.c-45-{
+src/vnr-message-area.c-46-    msg_area->with_button = FALSE;
+--
+src/uni-nav.c:141:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-142-    x = CLAMP(x, 0, gdk_screen_width() - pw.width);
+src/uni-nav.c-143-    y = CLAMP(y, 0, gdk_screen_height() - pw.height);
+src/uni-nav.c-144-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-nav.c-145-
+src/uni-nav.c-146-    gtk_window_move(GTK_WINDOW(nav), x, y);
+--
+src/uni-nav.c:211:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-212-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
+src/uni-nav.c-213-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-nav.c-214-
+src/uni-nav.c-215-    uni_nav_draw_rectangle(nav, cr, TRUE);
+src/uni-nav.c-216-    cairo_destroy(cr);
+--
+src/uni-nav.c:226:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-227-    gdk_window_get_pointer(gtk_widget_get_window(widget), &mx, &my, NULL);
+src/uni-nav.c-228-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-nav.c-229-
+src/uni-nav.c-230-    /* Make coordinates relative to window. */
+src/uni-nav.c-231-    mx -= 4;
+--
+src/uni-nav.c:253:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-254-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
+src/uni-nav.c-255-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-nav.c-256-
+src/uni-nav.c-257-    uni_nav_draw_rectangle(nav, cr, TRUE);
+src/uni-nav.c-258-    cairo_destroy(cr);
+--
+src/uni-nav.c:295:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-296-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(nav->preview));
+src/uni-nav.c-297-    G_GNUC_END_IGNORE_DEPRECATIONS
+src/uni-nav.c-298-
+src/uni-nav.c-299-    uni_nav_draw_rectangle(nav, cr, TRUE);
+src/uni-nav.c-300-    cairo_destroy(cr);
+--
+src/uni-nav.c:431:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-432-
+src/uni-nav.c-433-    GdkCursor *cursor = gdk_cursor_new(GDK_FLEUR);
+src/uni-nav.c-434-    int mask = (GDK_POINTER_MOTION_MASK
+src/uni-nav.c-435-                | GDK_POINTER_MOTION_HINT_MASK
+src/uni-nav.c-436-                | GDK_BUTTON_RELEASE_MASK);
+--
+src/uni-nav.c:452:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+src/uni-nav.c-453-
+src/uni-nav.c-454-    gdk_pointer_ungrab(GDK_CURRENT_TIME);
+src/uni-nav.c-455-
+src/uni-nav.c-456-    // Release keyboard focus
+src/uni-nav.c-457-    gdk_keyboard_ungrab(GDK_CURRENT_TIME);

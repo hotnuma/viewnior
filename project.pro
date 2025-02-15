@@ -60,6 +60,7 @@ SOURCES = \
 DISTFILES = \
     Notes.md \
     Readme.md \
+    deprecations.txt \
     install.sh \
     meson.build \
     meson_post_install.py \

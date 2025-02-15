@@ -495,19 +495,6 @@ static void _window_on_realize(VnrWindow *window, gpointer user_data)
     {
         GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
         GdkRectangle geometry;
-
-#if 0
-        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
-        gdk_screen_get_monitor_geometry(
-                            screen,
-                            gdk_screen_get_monitor_at_window(screen,
-                            gtk_widget_get_window(widget)),
-                            &geometry);
-
-        G_GNUC_END_IGNORE_DEPRECATIONS
-#endif
-
         GdkDisplay *display = gdk_screen_get_display(screen);
         GdkMonitor *monitor = gdk_display_get_monitor_at_window(
                             display,

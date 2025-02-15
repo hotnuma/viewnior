@@ -128,17 +128,6 @@ static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
 
         GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(crop->vnr_win));
         GdkRectangle geometry;
-
-#if 0
-        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-        gdk_screen_get_monitor_geometry(
-                        screen,
-                        gdk_screen_get_monitor_at_window(screen,
-                        gtk_widget_get_window(GTK_WIDGET(crop->vnr_win))),
-                        &geometry);
-        G_GNUC_END_IGNORE_DEPRECATIONS
-#endif
-
         GdkDisplay *display = gdk_screen_get_display(screen);
         GdkMonitor *monitor = gdk_display_get_monitor_at_window(
                             display,
