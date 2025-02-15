@@ -30,14 +30,16 @@
 G_BEGIN_DECLS
 
 typedef struct _VnrPrefs VnrPrefs;
-typedef struct _VnrPrefsClass VnrPrefsClass;
 
 #define VNR_TYPE_PREFS (vnr_prefs_get_type())
-#define VNR_PREFS(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_PREFS, VnrPrefs))
-#define VNR_PREFS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_PREFS, VnrPrefsClass))
-#define VNR_IS_PREFS(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_PREFS))
-#define VNR_IS_PREFS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_PREFS))
-#define VNR_PREFS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_PREFS, VnrPrefsClass))
+G_DECLARE_FINAL_TYPE(VnrPrefs, vnr_prefs, VNR, PREFS, GObject)
+
+//typedef struct _VnrPrefsClass VnrPrefsClass;
+//#define VNR_PREFS(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_PREFS, VnrPrefs))
+//#define VNR_PREFS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_PREFS, VnrPrefsClass))
+//#define VNR_IS_PREFS(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_PREFS))
+//#define VNR_IS_PREFS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_PREFS))
+//#define VNR_PREFS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_PREFS, VnrPrefsClass))
 
 typedef enum
 {
@@ -88,7 +90,7 @@ typedef enum
 
 struct _VnrPrefs
 {
-    GObject parent;
+    GObject __parent__;
 
     VnrPrefsZoom zoom;
 
@@ -112,7 +114,7 @@ struct _VnrPrefs
     int jpeg_quality;
     int png_compression;
 
-    GtkWidget *dialog;
+    //GtkWidget *dialog;
     GtkWidget *vnr_win;
 
     GtkSpinButton *slideshow_timeout_widget;

@@ -427,8 +427,6 @@ static void vnr_prefs_init(VnrPrefs *prefs)
         vnr_prefs_set_default(prefs);
         vnr_prefs_save(prefs);
     }
-
-    prefs->dialog = NULL;
 }
 
 
@@ -436,14 +434,12 @@ static void vnr_prefs_init(VnrPrefs *prefs)
 
 void vnr_prefs_show_dialog(VnrPrefs *prefs)
 {
-    if (prefs->dialog == NULL)
-    {
-        prefs->dialog = _prefs_build(prefs);
-        if (prefs->dialog == NULL)
-            return;
-    }
+    GtkWidget *dialog = _prefs_build(prefs);
 
-    gtk_window_present(GTK_WINDOW(prefs->dialog));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gtk_widget_destroy(dialog);
+
 }
 
 gboolean vnr_prefs_save(VnrPrefs *prefs)
@@ -497,10 +493,8 @@ gboolean vnr_prefs_save(VnrPrefs *prefs)
 
 void vnr_prefs_set_slideshow_timeout(VnrPrefs *prefs, int value)
 {
-    if (prefs->dialog != NULL)
-    {
-        gtk_spin_button_set_value(prefs->slideshow_timeout_widget, (gdouble) value);
-    }
+    gtk_spin_button_set_value(prefs->slideshow_timeout_widget,
+                              (gdouble) value);
 }
 
 void vnr_prefs_set_show_scrollbar(VnrPrefs *prefs, gboolean show_scrollbar)
