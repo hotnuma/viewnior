@@ -90,6 +90,9 @@ GtkWindow* window_new();
 
 void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);
+
+void window_action_prev(VnrWindow *window, GtkWidget *widget);
+void window_action_next(VnrWindow *window, GtkWidget *widget);
 gboolean window_prev(VnrWindow *window);
 gboolean window_next(VnrWindow *window, gboolean rem_timeout);
 gboolean window_first(VnrWindow *window);

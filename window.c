@@ -1426,6 +1426,20 @@ static void _on_openwith(VnrWindow *window, gpointer user_data)
 
 // ----------------------------------------------------------------------------
 
+void window_action_prev(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    window_prev(window);
+}
+
+void window_action_next(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    window_next(window, true);
+}
+
 gboolean window_prev(VnrWindow *window)
 {
     GList *prev;
@@ -2739,8 +2753,5 @@ static void _on_toggle_show_next(GtkToggleButton *togglebutton,
 }
 
 #endif
-
-
-// ----------------------------------------------------------------------------
 
 

@@ -17,20 +17,19 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <time.h>
-#include <locale.h>
 #include "vnr-properties-dialog.h"
-#include "file.h"
+
 #include "vnr-tools.h"
 #include "uni-exiv2.hpp"
+#include "file.h"
+#include <locale.h>
+#include <time.h>
 
 G_DEFINE_TYPE(VnrPropertiesDialog, vnr_properties_dialog, GTK_TYPE_DIALOG)
 
 static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog);
 
-
-static gboolean
-key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+static gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
     if (event->keyval == GDK_KEY_Escape)
     {
@@ -93,25 +92,33 @@ static void set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
 
 static void vnr_properties_dialog_class_init(VnrPropertiesDialogClass *klass) {}
 
-GtkWidget* vnr_properties_dialog_new(VnrWindow *vnr_win)
+GtkWidget* vnr_properties_dialog_new(VnrWindow *window)
 {
-    VnrPropertiesDialog *dialog;
-
-    dialog = g_object_new(VNR_TYPE_PROPERTIES_DIALOG, NULL);
+    VnrPropertiesDialog *dialog = g_object_new(VNR_TYPE_PROPERTIES_DIALOG, NULL);
 
     dialog->thumbnail = NULL;
-    dialog->vnr_win = vnr_win;
+    dialog->window = window;
+
+    g_signal_connect_swapped(dialog->prev_button,
+                             "clicked",
+                             G_CALLBACK(window_action_prev),
+                             window);
+
+    g_signal_connect_swapped(dialog->next_button,
+                             "clicked",
+                             G_CALLBACK(window_action_next),
+                             window);
 
     //gtk_activatable_set_related_action(GTK_ACTIVATABLE(dialog->next_button),
     //                                   next_action);
     //gtk_activatable_set_related_action(GTK_ACTIVATABLE(dialog->prev_button),
     //                                   prev_action);
 
-    gtk_button_set_label(GTK_BUTTON(dialog->next_button), _("_Next"));
     gtk_button_set_label(GTK_BUTTON(dialog->prev_button), _("_Previous"));
+    gtk_button_set_label(GTK_BUTTON(dialog->next_button), _("_Next"));
     gtk_widget_grab_focus(dialog->close_button);
 
-    return (GtkWidget *)dialog;
+    return (GtkWidget*) dialog;
 }
 
 static void
@@ -258,7 +265,7 @@ vnr_properties_dialog_init(VnrPropertiesDialog *dialog)
 
 void vnr_properties_dialog_update(VnrPropertiesDialog *dialog)
 {
-    VnrFile *current = window_list_get_current(dialog->vnr_win);
+    VnrFile *current = window_list_get_current(dialog->window);
     if (!current)
         return;
 
@@ -351,7 +358,7 @@ static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
 {
     vnr_properties_dialog_clear_metadata(dialog);
 
-    VnrFile *current = window_list_get_current(dialog->vnr_win);
+    VnrFile *current = window_list_get_current(dialog->window);
     if (!current)
         return;
 
@@ -360,7 +367,7 @@ static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
 
 void vnr_properties_dialog_update_image(VnrPropertiesDialog *dialog)
 {
-    VnrFile *current = window_list_get_current(dialog->vnr_win);
+    VnrFile *current = window_list_get_current(dialog->window);
     if (!current)
         return;
 
@@ -375,11 +382,11 @@ void vnr_properties_dialog_update_image(VnrPropertiesDialog *dialog)
 
     gtk_label_set_text(GTK_LABEL(dialog->modified_label), date_modified);
 
-    set_new_pixbuf(dialog, uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(dialog->vnr_win->view)));
+    set_new_pixbuf(dialog, uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(dialog->window->view)));
     gtk_image_set_from_pixbuf(GTK_IMAGE(dialog->image), dialog->thumbnail);
 
-    width_str = g_strdup_printf("%i px", dialog->vnr_win->current_image_width);
-    height_str = g_strdup_printf("%i px", dialog->vnr_win->current_image_height);
+    width_str = g_strdup_printf("%i px", dialog->window->current_image_width);
+    height_str = g_strdup_printf("%i px", dialog->window->current_image_height);
 
     gtk_label_set_text(GTK_LABEL(dialog->width_label), width_str);
     gtk_label_set_text(GTK_LABEL(dialog->height_label), height_str);

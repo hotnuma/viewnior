@@ -64,7 +64,7 @@ struct _VnrPropertiesDialog
 
     GdkPixbuf *thumbnail;
 
-    VnrWindow *vnr_win;
+    VnrWindow *window;
 };
 
 struct _VnrPropertiesDialogClass
