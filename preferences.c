@@ -256,8 +256,10 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
         GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
     G_GNUC_END_IGNORE_DEPRECATIONS
 #else
+
     GtkGrid *behavior_grid =
         GTK_GRID(gtk_builder_get_object(builder, "behavior_grid"));
+
 #endif
 
     action_wheel = (GtkComboBoxText *)gtk_combo_box_text_new();
@@ -273,10 +275,12 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
                      1, 2, 0, 1, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 #else
+
     gtk_grid_attach(behavior_grid,
                     GTK_WIDGET(action_wheel),
                     1, 0,
                     1, 1);
+
 #endif
 
     gtk_widget_show(GTK_WIDGET(action_wheel));
@@ -295,10 +299,12 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
                      GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 #else
+
     gtk_grid_attach(behavior_grid,
-                    GTK_WIDGET(action_wheel),
+                    GTK_WIDGET(action_click),
                     1, 1,
                     1, 1);
+
 #endif
 
     gtk_widget_show(GTK_WIDGET(action_click));
@@ -316,10 +322,12 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
                      GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 #else
+
     gtk_grid_attach(behavior_grid,
-                    GTK_WIDGET(action_wheel),
+                    GTK_WIDGET(action_modify),
                     1, 2,
                     1, 1);
+
 #endif
 
     gtk_widget_show(GTK_WIDGET(action_modify));
