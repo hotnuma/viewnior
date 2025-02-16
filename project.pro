@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = viewnior
 CONFIG = c99 link_pkgconfig
 DEFINES = _GNU_SOURCE
-INCLUDEPATH = src
+INCLUDEPATH = . src
 PKGCONFIG =
 
 PKGCONFIG += gtk+-3.0

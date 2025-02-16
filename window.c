@@ -434,8 +434,9 @@ static void window_init(VnrWindow *window)
 
     window->view = uni_anim_view_new();
     gtk_widget_set_can_focus(window->view, TRUE);
-    window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
 
+    // scroll view
+    window->scroll_view = uni_scroll_win_new(UNI_IMAGE_VIEW(window->view));
     gtk_box_pack_end(GTK_BOX(window->layout_box),
                      window->scroll_view, TRUE, TRUE, 0);
     gtk_widget_show_all(GTK_WIDGET(window->scroll_view));

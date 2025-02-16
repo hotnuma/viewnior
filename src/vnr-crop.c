@@ -26,6 +26,9 @@
 
 G_DEFINE_TYPE(VnrCrop, vnr_crop, G_TYPE_OBJECT)
 
+static void vnr_crop_dispose(GObject *gobject);
+static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop);
+
 static void spin_x_cb(GtkSpinButton *spinbutton, VnrCrop *crop);
 static void spin_width_cb(GtkSpinButton *spinbutton, VnrCrop *crop);
 static void spin_y_cb(GtkSpinButton *spinbutton, VnrCrop *crop);
@@ -41,59 +44,81 @@ static gboolean drawable_motion_cb(GtkWidget *widget,
                                    GdkEventMotion *event, VnrCrop *crop);
 
 
-/*************************************************************/
-/***** Private actions ***************************************/
-/*************************************************************/
-static void
-vnr_crop_draw_rectangle(VnrCrop *crop)
+// Creation -------------------------------------------------------------------
+
+GObject* vnr_crop_new(VnrWindow *vnr_win)
 {
-    cairo_t *cr;
-    if (crop->do_redraw)
+    VnrCrop *crop = g_object_new(VNR_TYPE_CROP, NULL);
+
+    crop->window = vnr_win;
+
+    return (GObject*) crop;
+}
+
+static void vnr_crop_class_init(VnrCropClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->dispose = vnr_crop_dispose;
+}
+
+static void vnr_crop_init(VnrCrop *crop)
+{
+    crop->drawing_rectangle = FALSE;
+    crop->do_redraw = TRUE;
+
+    crop->sub_x = -1;
+    crop->sub_y = -1;
+    crop->sub_height = -1;
+    crop->sub_width = -1;
+    crop->height = -1;
+    crop->width = -1;
+
+    crop->image = NULL;
+    crop->spin_x = NULL;
+    crop->spin_y = NULL;
+    crop->spin_width = NULL;
+    crop->spin_height = NULL;
+    crop->preview_pixbuf = NULL;
+}
+
+static void vnr_crop_dispose(GObject *gobject)
+{
+    VnrCrop *self = VNR_CROP(gobject);
+
+    if (self->preview_pixbuf != NULL)
+        g_object_unref(self->preview_pixbuf);
+
+    G_OBJECT_CLASS(vnr_crop_parent_class)->dispose(gobject);
+}
+
+gboolean vnr_crop_run(VnrCrop *crop)
+{
+    GtkWidget *dialog;
+    gint crop_dialog_response;
+
+    dialog = vnr_crop_build_dialog(crop);
+
+    if (dialog == NULL)
+        return FALSE;
+
+    crop_dialog_response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    crop->area.x = gtk_spin_button_get_value_as_int(crop->spin_x);
+    crop->area.y = gtk_spin_button_get_value_as_int(crop->spin_y);
+    crop->area.width = gtk_spin_button_get_value_as_int(crop->spin_width);
+    crop->area.height = gtk_spin_button_get_value_as_int(crop->spin_height);
+
+    gtk_widget_destroy(dialog);
+
+    if (crop->area.x == 0 && crop->area.y == 0 && crop->area.width == crop->window->current_image_width && crop->area.height == crop->window->current_image_height)
     {
-        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-        cr = gdk_cairo_create(gtk_widget_get_window(crop->image));
-        G_GNUC_END_IGNORE_DEPRECATIONS
-
-        cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
-        cairo_set_line_width(cr, 3);
-        cairo_rectangle(cr, (int)crop->sub_x + 0.5, (int)crop->sub_y + 0.5, (int)crop->sub_width, (int)crop->sub_height);
-        cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
-        cairo_stroke(cr);
-        cairo_destroy(cr);
+        return FALSE;
     }
-}
-
-static inline void
-vnr_crop_clear_rectangle(VnrCrop *crop)
-{
-    vnr_crop_draw_rectangle(crop);
-}
-
-static void
-vnr_crop_check_sub_y(VnrCrop *crop)
-{
-    if (gtk_spin_button_get_value(crop->spin_height) + gtk_spin_button_get_value(crop->spin_y) == crop->vnr_win->current_image_height)
+    else
     {
-        crop->sub_y = (int)crop->height - (int)crop->sub_height;
+        return (crop_dialog_response == GTK_RESPONSE_ACCEPT);
     }
-}
-
-static void
-vnr_crop_check_sub_x(VnrCrop *crop)
-{
-    if (gtk_spin_button_get_value(crop->spin_width) + gtk_spin_button_get_value(crop->spin_x) == crop->vnr_win->current_image_width)
-    {
-        crop->sub_x = (int)crop->width - (int)crop->sub_width;
-    }
-}
-
-static void vnr_crop_update_spin_button_values(VnrCrop *crop)
-{
-    gtk_spin_button_set_value(crop->spin_height, crop->sub_height / crop->zoom);
-    gtk_spin_button_set_value(crop->spin_width, crop->sub_width / crop->zoom);
-
-    gtk_spin_button_set_value(crop->spin_x, crop->sub_x / crop->zoom);
-    gtk_spin_button_set_value(crop->spin_y, crop->sub_y / crop->zoom);
 }
 
 static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
@@ -113,25 +138,25 @@ static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
 
     GtkWidget *window;
     window = GTK_WIDGET(gtk_builder_get_object(builder, "crop-dialog"));
-    gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(crop->vnr_win));
+    gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(crop->window));
 
     GdkPixbuf *original;
-    original = uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(crop->vnr_win->view));
+    original = uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(crop->window->view));
 
     gdouble width, height;
     gint max_width, max_height;
 
-    width = crop->vnr_win->current_image_width;
-    height = crop->vnr_win->current_image_height;
+    width = crop->window->current_image_width;
+    height = crop->window->current_image_height;
 
     {
 
-        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(crop->vnr_win));
+        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(crop->window));
         GdkRectangle geometry;
         GdkDisplay *display = gdk_screen_get_display(screen);
         GdkMonitor *monitor = gdk_display_get_monitor_at_window(
                             display,
-                            gtk_widget_get_window(GTK_WIDGET(crop->vnr_win)));
+                            gtk_widget_get_window(GTK_WIDGET(crop->window)));
 
         gdk_monitor_get_geometry(monitor, &geometry);
 
@@ -142,7 +167,7 @@ static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
     vnr_tools_fit_to_size_double(&width, &height, max_width, max_height);
     crop->width = width;
     crop->height = height;
-    crop->zoom = (width / crop->vnr_win->current_image_width + height / crop->vnr_win->current_image_height) / 2;
+    crop->zoom = (width / crop->window->current_image_width + height / crop->window->current_image_height) / 2;
 
     GdkPixbuf *preview;
     preview = gdk_pixbuf_new(gdk_pixbuf_get_colorspace(original),
@@ -158,22 +183,22 @@ static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
     gtk_widget_set_size_request(crop->image, width, height);
 
     crop->spin_x = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "spin-x"));
-    gtk_spin_button_set_range(crop->spin_x, 0, crop->vnr_win->current_image_width - 1);
+    gtk_spin_button_set_range(crop->spin_x, 0, crop->window->current_image_width - 1);
     gtk_spin_button_set_increments(crop->spin_x, 1, 10);
 
     crop->spin_y = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "spin-y"));
-    gtk_spin_button_set_range(crop->spin_y, 0, crop->vnr_win->current_image_height - 1);
+    gtk_spin_button_set_range(crop->spin_y, 0, crop->window->current_image_height - 1);
     gtk_spin_button_set_increments(crop->spin_y, 1, 10);
 
     crop->spin_width = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "spin-width"));
-    gtk_spin_button_set_range(crop->spin_width, 1, crop->vnr_win->current_image_width);
+    gtk_spin_button_set_range(crop->spin_width, 1, crop->window->current_image_width);
     gtk_spin_button_set_increments(crop->spin_width, 1, 10);
-    gtk_spin_button_set_value(crop->spin_width, crop->vnr_win->current_image_width);
+    gtk_spin_button_set_value(crop->spin_width, crop->window->current_image_width);
 
     crop->spin_height = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "spin-height"));
-    gtk_spin_button_set_range(crop->spin_height, 1, crop->vnr_win->current_image_height);
+    gtk_spin_button_set_range(crop->spin_height, 1, crop->window->current_image_height);
     gtk_spin_button_set_increments(crop->spin_height, 1, 10);
-    gtk_spin_button_set_value(crop->spin_height, crop->vnr_win->current_image_height);
+    gtk_spin_button_set_value(crop->spin_height, crop->window->current_image_height);
 
     gtk_widget_set_events(crop->image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_MOTION_MASK);
 
@@ -200,11 +225,62 @@ static GtkWidget* vnr_crop_build_dialog(VnrCrop *crop)
     return window;
 }
 
-/*************************************************************/
-/***** Private signal handlers *******************************/
-/*************************************************************/
-static void
-spin_x_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
+
+// Private actions ------------------------------------------------------------
+
+static void vnr_crop_draw_rectangle(VnrCrop *crop)
+{
+    cairo_t *cr;
+
+    if (crop->do_redraw)
+    {
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+        cr = gdk_cairo_create(gtk_widget_get_window(crop->image));
+        G_GNUC_END_IGNORE_DEPRECATIONS
+
+        cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
+        cairo_set_line_width(cr, 3);
+        cairo_rectangle(cr, (int)crop->sub_x + 0.5, (int)crop->sub_y + 0.5, (int)crop->sub_width, (int)crop->sub_height);
+        cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+        cairo_stroke(cr);
+        cairo_destroy(cr);
+    }
+}
+
+static inline void vnr_crop_clear_rectangle(VnrCrop *crop)
+{
+    vnr_crop_draw_rectangle(crop);
+}
+
+static void vnr_crop_check_sub_y(VnrCrop *crop)
+{
+    if (gtk_spin_button_get_value(crop->spin_height) + gtk_spin_button_get_value(crop->spin_y) == crop->window->current_image_height)
+    {
+        crop->sub_y = (int)crop->height - (int)crop->sub_height;
+    }
+}
+
+static void vnr_crop_check_sub_x(VnrCrop *crop)
+{
+    if (gtk_spin_button_get_value(crop->spin_width) + gtk_spin_button_get_value(crop->spin_x) == crop->window->current_image_width)
+    {
+        crop->sub_x = (int)crop->width - (int)crop->sub_width;
+    }
+}
+
+static void vnr_crop_update_spin_button_values(VnrCrop *crop)
+{
+    gtk_spin_button_set_value(crop->spin_height, crop->sub_height / crop->zoom);
+    gtk_spin_button_set_value(crop->spin_width, crop->sub_width / crop->zoom);
+
+    gtk_spin_button_set_value(crop->spin_x, crop->sub_x / crop->zoom);
+    gtk_spin_button_set_value(crop->spin_y, crop->sub_y / crop->zoom);
+}
+
+
+// Private signal handlers ----------------------------------------------------
+
+static void spin_x_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
 {
     if (crop->drawing_rectangle)
         return;
@@ -214,7 +290,7 @@ spin_x_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
     gboolean old_do_redraw = crop->do_redraw;
     crop->do_redraw = FALSE;
     gtk_spin_button_set_range(crop->spin_width, 1,
-                              crop->vnr_win->current_image_width - gtk_spin_button_get_value(spinbutton));
+                              crop->window->current_image_width - gtk_spin_button_get_value(spinbutton));
     crop->do_redraw = old_do_redraw;
 
     crop->sub_x = gtk_spin_button_get_value(spinbutton) * crop->zoom;
@@ -224,8 +300,7 @@ spin_x_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
     vnr_crop_draw_rectangle(crop);
 }
 
-static void
-spin_width_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
+static void spin_width_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
 {
     if (crop->drawing_rectangle)
         return;
@@ -240,8 +315,7 @@ spin_width_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
     vnr_crop_draw_rectangle(crop);
 }
 
-static void
-spin_y_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
+static void spin_y_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
 {
     if (crop->drawing_rectangle)
         return;
@@ -251,7 +325,7 @@ spin_y_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
     gboolean old_do_redraw = crop->do_redraw;
     crop->do_redraw = FALSE;
     gtk_spin_button_set_range(crop->spin_height, 1,
-                              crop->vnr_win->current_image_height - gtk_spin_button_get_value(spinbutton));
+                              crop->window->current_image_height - gtk_spin_button_get_value(spinbutton));
     crop->do_redraw = old_do_redraw;
 
     crop->sub_y = gtk_spin_button_get_value(spinbutton) * crop->zoom;
@@ -261,8 +335,7 @@ spin_y_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
     vnr_crop_draw_rectangle(crop);
 }
 
-static void
-spin_height_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
+static void spin_height_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
 {
     if (crop->drawing_rectangle)
         return;
@@ -277,9 +350,10 @@ spin_height_cb(GtkSpinButton *spinbutton, VnrCrop *crop)
     vnr_crop_draw_rectangle(crop);
 }
 
-static gboolean
-drawable_expose_cb(GtkWidget *widget, cairo_t *cr, VnrCrop *crop)
+static gboolean drawable_expose_cb(GtkWidget *widget, cairo_t *cr, VnrCrop *crop)
 {
+    (void) widget;
+
     cairo_save(cr);
     gdk_cairo_set_source_pixbuf(cr, crop->preview_pixbuf, 0, 0);
     cairo_paint(cr);
@@ -297,9 +371,11 @@ drawable_expose_cb(GtkWidget *widget, cairo_t *cr, VnrCrop *crop)
     return FALSE;
 }
 
-static gboolean
-drawable_button_press_cb(GtkWidget *widget, GdkEventButton *event, VnrCrop *crop)
+static gboolean drawable_button_press_cb(GtkWidget *widget,
+                                         GdkEventButton *event, VnrCrop *crop)
 {
+    (void) widget;
+
     if (event->button == 1)
     {
         crop->drawing_rectangle = TRUE;
@@ -310,9 +386,11 @@ drawable_button_press_cb(GtkWidget *widget, GdkEventButton *event, VnrCrop *crop
     return FALSE;
 }
 
-static gboolean
-drawable_button_release_cb(GtkWidget *widget, GdkEventButton *event, VnrCrop *crop)
+static gboolean drawable_button_release_cb(GtkWidget *widget,
+                                           GdkEventButton *event, VnrCrop *crop)
 {
+    (void) widget;
+
     if (event->button == 1)
     {
         crop->drawing_rectangle = FALSE;
@@ -324,12 +402,15 @@ drawable_button_release_cb(GtkWidget *widget, GdkEventButton *event, VnrCrop *cr
 
         vnr_crop_update_spin_button_values(crop);
     }
+
     return FALSE;
 }
 
-static gboolean
-drawable_motion_cb(GtkWidget *widget, GdkEventMotion *event, VnrCrop *crop)
+static gboolean drawable_motion_cb(GtkWidget *widget,
+                                   GdkEventMotion *event, VnrCrop *crop)
 {
+    (void) widget;
+
     if (!crop->drawing_rectangle)
         return FALSE;
 
@@ -385,94 +466,6 @@ drawable_motion_cb(GtkWidget *widget, GdkEventMotion *event, VnrCrop *crop)
     vnr_crop_draw_rectangle(crop);
 
     return FALSE;
-}
-
-/*************************************************************/
-/***** Stuff that deals with the type ************************/
-/*************************************************************/
-static void
-vnr_crop_dispose(GObject *gobject)
-{
-    VnrCrop *self = VNR_CROP(gobject);
-
-    if (self->preview_pixbuf != NULL)
-        g_object_unref(self->preview_pixbuf);
-
-    G_OBJECT_CLASS(vnr_crop_parent_class)->dispose(gobject);
-}
-
-static void
-vnr_crop_class_init(VnrCropClass *klass)
-{
-    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-
-    gobject_class->dispose = vnr_crop_dispose;
-}
-
-GObject *
-vnr_crop_new(VnrWindow *vnr_win)
-{
-    VnrCrop *crop;
-
-    crop = g_object_new(VNR_TYPE_CROP, NULL);
-
-    crop->vnr_win = vnr_win;
-
-    return (GObject *)crop;
-}
-
-static void
-vnr_crop_init(VnrCrop *crop)
-{
-    crop->drawing_rectangle = FALSE;
-    crop->do_redraw = TRUE;
-
-    crop->sub_x = -1;
-    crop->sub_y = -1;
-    crop->sub_height = -1;
-    crop->sub_width = -1;
-    crop->height = -1;
-    crop->width = -1;
-
-    crop->image = NULL;
-    crop->spin_x = NULL;
-    crop->spin_y = NULL;
-    crop->spin_width = NULL;
-    crop->spin_height = NULL;
-    crop->preview_pixbuf = NULL;
-}
-
-/*************************************************************/
-/***** Actions ***********************************************/
-/*************************************************************/
-gboolean
-vnr_crop_run(VnrCrop *crop)
-{
-    GtkWidget *dialog;
-    gint crop_dialog_response;
-
-    dialog = vnr_crop_build_dialog(crop);
-
-    if (dialog == NULL)
-        return FALSE;
-
-    crop_dialog_response = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    crop->area.x = gtk_spin_button_get_value_as_int(crop->spin_x);
-    crop->area.y = gtk_spin_button_get_value_as_int(crop->spin_y);
-    crop->area.width = gtk_spin_button_get_value_as_int(crop->spin_width);
-    crop->area.height = gtk_spin_button_get_value_as_int(crop->spin_height);
-
-    gtk_widget_destroy(dialog);
-
-    if (crop->area.x == 0 && crop->area.y == 0 && crop->area.width == crop->vnr_win->current_image_width && crop->area.height == crop->vnr_win->current_image_height)
-    {
-        return FALSE;
-    }
-    else
-    {
-        return (crop_dialog_response == GTK_RESPONSE_ACCEPT);
-    }
 }
 
 

@@ -17,8 +17,8 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VNR_CROP_H_
-#define __VNR_CROP_H_
+#ifndef VNR_CROP_H
+#define VNR_CROP_H
 
 #include <gtk/gtk.h>
 #include "window.h"
@@ -26,20 +26,22 @@
 G_BEGIN_DECLS
 
 typedef struct _VnrCrop VnrCrop;
-typedef struct _VnrCropClass VnrCropClass;
 
 #define VNR_TYPE_CROP (vnr_crop_get_type())
-#define VNR_CROP(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_CROP, VnrCrop))
-#define VNR_CROP_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_CROP, VnrCropClass))
-#define VNR_IS_CROP(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_CROP))
-#define VNR_IS_CROP_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_CROP))
-#define VNR_CROP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_CROP, VnrCropClass))
+G_DECLARE_FINAL_TYPE(VnrCrop, vnr_crop, VNR, CROP, GObject)
+
+//typedef struct _VnrCropClass VnrCropClass;
+//#define VNR_CROP(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), VNR_TYPE_CROP, VnrCrop))
+//#define VNR_CROP_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), VNR_TYPE_CROP, VnrCropClass))
+//#define VNR_IS_CROP(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), VNR_TYPE_CROP))
+//#define VNR_IS_CROP_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), VNR_TYPE_CROP))
+//#define VNR_CROP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), VNR_TYPE_CROP, VnrCropClass))
 
 struct _VnrCrop
 {
-    GObject parent;
+    GObject __parent__;
 
-    VnrWindow *vnr_win;
+    VnrWindow *window;
 
     GdkPixbuf *preview_pixbuf;
 
@@ -71,11 +73,13 @@ struct _VnrCropClass
     GObjectClass parent_class;
 };
 
-GType vnr_crop_get_type(void) G_GNUC_CONST;
+GType vnr_crop_get_type() G_GNUC_CONST;
 
-GObject *vnr_crop_new(VnrWindow *vnr_win);
+GObject* vnr_crop_new(VnrWindow *vnr_win);
 gboolean vnr_crop_run(VnrCrop *crop);
 
 G_END_DECLS
 
-#endif /* __VNR_CROP_H_ */
+#endif // VNR_CROP_H
+
+
