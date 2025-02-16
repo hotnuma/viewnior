@@ -250,7 +250,7 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
 
     /* Behavior combo boxes */
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    GtkTable *behavior_table =
+    GtkTable *behavior_grid =
         GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
     G_GNUC_END_IGNORE_DEPRECATIONS
 
@@ -261,7 +261,7 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_wheel), prefs->behavior_wheel);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_table,
+    gtk_table_attach(behavior_grid,
                      GTK_WIDGET(action_wheel), 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 
@@ -276,7 +276,7 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_click), prefs->behavior_click);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_table,
+    gtk_table_attach(behavior_grid,
                      GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 
@@ -290,7 +290,7 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_modify), prefs->behavior_modify);
 
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_table,
+    gtk_table_attach(behavior_grid,
                      GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
     G_GNUC_END_IGNORE_DEPRECATIONS
 
