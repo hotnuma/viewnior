@@ -40,48 +40,6 @@ window.c-2663-
 window.c-2664-    g_signal_connect(widget, "clicked",
 window.c-2665-                     G_CALLBACK(_on_fullscreen_leave), window);
 --
-0temp.c:5:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-0temp.c-6-        gdk_screen_get_monitor_geometry(
-0temp.c-7-                        screen,
-0temp.c-8-                        gdk_screen_get_monitor_at_window(screen,
-0temp.c-9-                        gtk_widget_get_window(GTK_WIDGET(crop->vnr_win))),
-0temp.c-10-                        &geometry);
---
-0temp.c:16:        G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-0temp.c-17-
-0temp.c-18-        gdk_screen_get_monitor_geometry(
-0temp.c-19-                            screen,
-0temp.c-20-                            gdk_screen_get_monitor_at_window(screen,
-0temp.c-21-                            gtk_widget_get_window(widget)),
---
-preferences.c:252:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-preferences.c-253-    GtkTable *behavior_table =
-preferences.c-254-        GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
-preferences.c-255-    G_GNUC_END_IGNORE_DEPRECATIONS
-preferences.c-256-
-preferences.c-257-    action_wheel = (GtkComboBoxText *)gtk_combo_box_text_new();
---
-preferences.c:263:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-preferences.c-264-    gtk_table_attach(behavior_table,
-preferences.c-265-                     GTK_WIDGET(action_wheel), 1, 2, 0, 1, GTK_FILL, 0, 0, 0);
-preferences.c-266-    G_GNUC_END_IGNORE_DEPRECATIONS
-preferences.c-267-
-preferences.c-268-    gtk_widget_show(GTK_WIDGET(action_wheel));
---
-preferences.c:278:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-preferences.c-279-    gtk_table_attach(behavior_table,
-preferences.c-280-                     GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
-preferences.c-281-    G_GNUC_END_IGNORE_DEPRECATIONS
-preferences.c-282-
-preferences.c-283-    gtk_widget_show(GTK_WIDGET(action_click));
---
-preferences.c:292:    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-preferences.c-293-    gtk_table_attach(behavior_table,
-preferences.c-294-                     GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
-preferences.c-295-    G_GNUC_END_IGNORE_DEPRECATIONS
-preferences.c-296-
-preferences.c-297-    gtk_widget_show(GTK_WIDGET(action_modify));
---
 src/vnr-properties-dialog.c:66:G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 src/vnr-properties-dialog.c-67-
 src/vnr-properties-dialog.c-68-static void set_new_pixbuf(VnrPropertiesDialog *dialog, GdkPixbuf *original)
