@@ -121,7 +121,7 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
 static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
-static void _action_crop(VnrWindow *window, GtkWidget *widget);
+static void _window_action_crop(VnrWindow *window, GtkWidget *widget);
 static void _window_action_save_image(VnrWindow *window, GtkWidget *widget);
 
 // Set wallpaper --------------------------------------------------------------
@@ -170,6 +170,7 @@ typedef enum
     WINDOW_ACTION_COPY,
     WINDOW_ACTION_MOVE,
     WINDOW_ACTION_RENAME,
+    WINDOW_ACTION_CROP,
     WINDOW_ACTION_DELETE,
     WINDOW_ACTION_SETWALLPAPER,
     WINDOW_ACTION_PROPERTIES,
@@ -248,6 +249,13 @@ static EtkActionEntry _window_actions[] =
      N_("Rename the current file"),
      NULL,
      G_CALLBACK(_window_action_rename)},
+
+    {WINDOW_ACTION_CROP,
+     "<Actions>/AppWindow/Crop", "F4",
+     ETK_MENU_ITEM, N_("Crop"),
+     N_("Crop image"),
+     NULL,
+     G_CALLBACK(_window_action_crop)},
 
     {WINDOW_ACTION_DELETE,
      "<Actions>/AppWindow/Delete", "Delete",
@@ -375,6 +383,12 @@ static void window_init(VnrWindow *window)
 
     item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
                                          WINDOW_ACTION_RENAME,
+                                         _window_actions,
+                                         G_OBJECT(window));
+    window->list_image = etk_widget_list_add(window->list_image, item);
+
+    item = etk_menu_item_new_from_action(GTK_MENU_SHELL(menu),
+                                         WINDOW_ACTION_CROP,
                                          _window_actions,
                                          G_OBJECT(window));
     window->list_image = etk_widget_list_add(window->list_image, item);
@@ -846,7 +860,7 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
         break;
 
     case 'c':
-        _action_crop(window, NULL);
+        _window_action_crop(window, NULL);
         break;
     }
 
@@ -2109,12 +2123,9 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
                                           G_CALLBACK(_window_action_save_image));
 }
 
-static void _action_crop(VnrWindow *window, GtkWidget *widget)
+static void _window_action_crop(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
-
-    //if (!gtk_action_group_get_sensitive(window->actions_static_image))
-    //    return;
 
     if (!window->can_edit)
         return;
