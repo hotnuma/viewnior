@@ -230,17 +230,20 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     /* Desktop combo box */
     desktop_box = GTK_BOX(gtk_builder_get_object(builder, "desktop_box"));
 
-    desktop_env = (GtkComboBoxText *)gtk_combo_box_text_new();
+    desktop_env = (GtkComboBoxText*) gtk_combo_box_text_new();
+
+    gtk_combo_box_text_append_text(desktop_env, _("Autodetect"));
+    gtk_combo_box_text_append_text(desktop_env, "Cinnamon");
+    gtk_combo_box_text_append_text(desktop_env, "FluxBox");
     gtk_combo_box_text_append_text(desktop_env, "GNOME 2");
     gtk_combo_box_text_append_text(desktop_env, "GNOME 3");
-    gtk_combo_box_text_append_text(desktop_env, "XFCE");
+    gtk_combo_box_text_append_text(desktop_env, "hsetroot");
     gtk_combo_box_text_append_text(desktop_env, "LXDE");
-    gtk_combo_box_text_append_text(desktop_env, "PUPPY");
-    gtk_combo_box_text_append_text(desktop_env, "FluxBox");
-    gtk_combo_box_text_append_text(desktop_env, "Nitrogen");
     gtk_combo_box_text_append_text(desktop_env, "MATE");
-    gtk_combo_box_text_append_text(desktop_env, "Cinnamon");
-    gtk_combo_box_text_append_text(desktop_env, _("Autodetect"));
+    gtk_combo_box_text_append_text(desktop_env, "Nitrogen");
+    gtk_combo_box_text_append_text(desktop_env, "PUPPY");
+    gtk_combo_box_text_append_text(desktop_env, "XFCE");
+
     gtk_combo_box_set_active(GTK_COMBO_BOX(desktop_env), prefs->desktop);
 
     gtk_box_pack_end(desktop_box, GTK_WIDGET(desktop_env), FALSE, FALSE, 0);
@@ -249,18 +252,8 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     g_signal_connect(G_OBJECT(desktop_env), "changed", G_CALLBACK(change_desktop_env_cb), prefs);
 
     // Behavior combo boxes
-
-#ifdef WITH_TABLE
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    GtkTable *behavior_grid =
-        GTK_TABLE(gtk_builder_get_object(builder, "behavior_table"));
-    G_GNUC_END_IGNORE_DEPRECATIONS
-#else
-
     GtkGrid *behavior_grid =
         GTK_GRID(gtk_builder_get_object(builder, "behavior_grid"));
-
-#endif
 
     action_wheel = (GtkComboBoxText *)gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(action_wheel, _("Navigate images"));
@@ -268,20 +261,10 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_text_append_text(action_wheel, _("Scroll image up/down"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_wheel), prefs->behavior_wheel);
 
-#ifdef WITH_TABLE
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_grid,
-                     GTK_WIDGET(action_wheel),
-                     1, 2, 0, 1, GTK_FILL, 0, 0, 0);
-    G_GNUC_END_IGNORE_DEPRECATIONS
-#else
-
     gtk_grid_attach(behavior_grid,
                     GTK_WIDGET(action_wheel),
                     1, 0,
                     1, 1);
-
-#endif
 
     gtk_widget_show(GTK_WIDGET(action_wheel));
     g_signal_connect(G_OBJECT(action_wheel), "changed",
@@ -293,19 +276,10 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_text_append_text(action_click, _("Navigate images"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_click), prefs->behavior_click);
 
-#ifdef WITH_TABLE
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_grid,
-                     GTK_WIDGET(action_click), 1, 2, 1, 2, GTK_FILL, 0, 0, 0);
-    G_GNUC_END_IGNORE_DEPRECATIONS
-#else
-
     gtk_grid_attach(behavior_grid,
                     GTK_WIDGET(action_click),
                     1, 1,
                     1, 1);
-
-#endif
 
     gtk_widget_show(GTK_WIDGET(action_click));
     g_signal_connect(G_OBJECT(action_click), "changed", G_CALLBACK(change_action_click_cb), prefs);
@@ -316,19 +290,10 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
     gtk_combo_box_text_append_text(action_modify, _("Ignore changes"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(action_modify), prefs->behavior_modify);
 
-#ifdef WITH_TABLE
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_table_attach(behavior_grid,
-                     GTK_WIDGET(action_modify), 1, 2, 2, 3, GTK_FILL, 0, 0, 0);
-    G_GNUC_END_IGNORE_DEPRECATIONS
-#else
-
     gtk_grid_attach(behavior_grid,
                     GTK_WIDGET(action_modify),
                     1, 2,
                     1, 1);
-
-#endif
 
     gtk_widget_show(GTK_WIDGET(action_modify));
     g_signal_connect(G_OBJECT(action_modify), "changed", G_CALLBACK(change_action_modify_cb), prefs);

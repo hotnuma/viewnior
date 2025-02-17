@@ -9,8 +9,6 @@
 #define false FALSE
 #define true TRUE
 
-//#define WITH_TABLE
-
 #mesondefine VERSION
 #mesondefine PACKAGE
 #mesondefine PACKAGE_VERSION
