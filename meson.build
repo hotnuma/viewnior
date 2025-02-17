@@ -53,7 +53,7 @@ app_includes = [
 
 subdir('po')
 subdir('data')
-subdir('man')
+#subdir('man')
 
 app_sources = [
     'src/uni-anim-view.c',

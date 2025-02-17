@@ -1,36 +1,81 @@
 
 #if 0
 
-g_signal_connect(action,
-                 "activate",
-                 G_CALLBACK(_on_open_with_launch_application),
-                 window);
-gtk_action_group_add_action(window->actions_open_with, action);
-g_object_unref(action);
+static void _action_normal_size(GtkAction *action, gpointer user_data)
+{
+    uni_image_view_set_zoom(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view), 1);
+    uni_image_view_set_fitting(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view),
+                               UNI_FITTING_NONE);
+}
 
-gtk_ui_manager_add_ui(window->ui_manager,
-                      window->open_with_menu_id,
-                      "/MainMenu/File/FileOpenWith/AppEntries",
-                      name,
-                      name,
-                      GTK_UI_MANAGER_MENUITEM,
-                      FALSE);
+static void _action_fit(GtkAction *action, gpointer user_data)
+{
+    uni_image_view_set_fitting(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view), UNI_FITTING_FULL);
+}
 
-gtk_ui_manager_add_ui(window->ui_manager,
-                      window->open_with_menu_id,
-                      "/MainMenu/FileOpenWith/AppEntries",
-                      name,
-                      name,
-                      GTK_UI_MANAGER_MENUITEM,
-                      FALSE);
+static void _action_scrollbar(GtkAction *action, VnrWindow *window)
+{
+    gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
+    vnr_prefs_set_show_scrollbar(window->prefs, show);
+    uni_scroll_win_set_show_scrollbar(UNI_SCROLL_WIN(window->scroll_view), show);
+}
 
-gtk_ui_manager_add_ui(window->ui_manager,
-                      window->open_with_menu_id,
-                      "/PopupMenu/FileOpenWith/AppEntries",
-                      name,
-                      name,
-                      GTK_UI_MANAGER_MENUITEM,
-                      FALSE);
+static void _action_first(GtkAction *action, gpointer user_data)
+{
+    window_first(VNR_WINDOW(user_data));
+}
+
+static void _action_last(GtkAction *action, gpointer user_data)
+{
+    window_last(VNR_WINDOW(user_data));
+}
+
+static void _action_zoom_in(GtkAction *action, gpointer user_data)
+{
+    uni_image_view_zoom_in(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view));
+}
+
+static void _action_zoom_out(GtkAction *action, gpointer user_data)
+{
+    uni_image_view_zoom_out(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view));
+}
+
+static void _action_about(GtkAction *action, VnrWindow *window)
+{
+    static const char *authors[] =
+    {
+        "Programming &amp; icon design",
+        "\tSiyan Panayotov",
+        "\nRefer to source code from GtkImageView",
+        NULL
+    };
+
+    char *license =
+        ("Viewnior is free software: you can redistribute it and/or modify "
+         "it under the terms of the GNU General Public License as published by "
+         "the Free Software Foundation, either version 3 of the License, or "
+         "(at your option) any later version.\n\n"
+         "Viewnior is distributed in the hope that it will be useful, "
+         "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+         "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+         "GNU General Public License for more details.\n\n"
+         "You should have received a copy of the GNU General Public License "
+         "along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.\n");
+
+    gtk_show_about_dialog(
+                GTK_WINDOW(window),
+                "program-name", "Viewnior",
+                "version", VERSION,
+                "copyright", "Copyright \xc2\xa9 2009-2018 Siyan Panayotov",
+                "comments", _("Elegant Image Viewer"),
+                "authors", authors,
+                "logo-icon-name", "viewnior",
+                "wrap-license", TRUE,
+                "license", license,
+                "website", "https://github.com/hotnuma/viewnior",
+                "translator-credits", _("translator-credits"),
+                NULL);
+}
 
 static const GtkActionEntry _action_entries_window[] =
 {
@@ -244,6 +289,38 @@ static const GtkToggleActionEntry _toggle_entries_window[] =
      N_("Zoom _Out"), NULL,
      N_("Shrink the image"),
      G_CALLBACK(_action_zoom_out)},
+
+g_signal_connect(action,
+                 "activate",
+                 G_CALLBACK(_on_open_with_launch_application),
+                 window);
+gtk_action_group_add_action(window->actions_open_with, action);
+g_object_unref(action);
+
+gtk_ui_manager_add_ui(window->ui_manager,
+                      window->open_with_menu_id,
+                      "/MainMenu/File/FileOpenWith/AppEntries",
+                      name,
+                      name,
+                      GTK_UI_MANAGER_MENUITEM,
+                      FALSE);
+
+gtk_ui_manager_add_ui(window->ui_manager,
+                      window->open_with_menu_id,
+                      "/MainMenu/FileOpenWith/AppEntries",
+                      name,
+                      name,
+                      GTK_UI_MANAGER_MENUITEM,
+                      FALSE);
+
+gtk_ui_manager_add_ui(window->ui_manager,
+                      window->open_with_menu_id,
+                      "/PopupMenu/FileOpenWith/AppEntries",
+                      name,
+                      name,
+                      GTK_UI_MANAGER_MENUITEM,
+                      FALSE);
+
 
 #endif
 

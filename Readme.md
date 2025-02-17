@@ -21,16 +21,14 @@ This is Viewnior, an image viewer program. Created to be simple, fast and elegan
 
 Most of the Viewnior's sources handling image viewing are adopted from the GtkImageView library by Björn Lindqvist. The files were cleaned up and modified, so that unused functionalities were removed (GtkImageToolSelector, GtkImageToolPainter, GtkZooms). Prefixes were changed from gtk_ to uni_ for clarity.
 
-## Requirements
+## Installation
 
 This package requires the following modules to be installed: GTK+, glib, gio, exiv2, shared-mime-info.
 
 ```
 sudo apt install build-essential git meson ninja-build \
-libgtk-3-dev libexiv2-dev
+libgtk-3-dev libgdk-pixbuf-2.0-dev libexiv2-dev
 ```
-
-## Installation
 
 ```
 git clone https://github.com/hotnuma/viewnior.git
@@ -44,4 +42,6 @@ This program is released under the terms of the [GNU General Public License](htt
 
 object-rotate-left.png, object-rotate-right.png are taken from Elementary icon theme by ~DanRabbit (under GPL). object-flip-horizontal.png, object-flip-vertical.png are taken from Gnome icon theme (under GPL).
 
-*Last Edited - 26 January 2025*
+*Last Edited - 17 February 2025*
+
+
