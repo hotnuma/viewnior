@@ -123,6 +123,8 @@ static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
 static void _window_action_crop(VnrWindow *window, GtkWidget *widget);
 static void _window_action_save_image(VnrWindow *window, GtkWidget *widget);
+static void _window_action_zoom_normal(VnrWindow *window, GtkWidget *widget);
+static void _window_action_zoom_fit(VnrWindow *window, GtkWidget *widget);
 
 // Set wallpaper --------------------------------------------------------------
 
@@ -151,13 +153,14 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
                                      GdkEventCrossing *ev,
                                      VnrWindow *window);
 
-//static GtkWidget* _window_get_fs_toolitem(VnrWindow *window);
-//static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
-//static void _on_spin_value_change(GtkSpinButton *spinbutton,
-//                                  VnrWindow *window);
-//static void _on_toggle_show_next(GtkToggleButton *togglebutton,
-//                                 VnrWindow *window);
-
+#if 0
+static GtkWidget* _window_get_fs_toolitem(VnrWindow *window);
+static void _on_fullscreen_leave(GtkButton *button, VnrWindow *window);
+static void _on_spin_value_change(GtkSpinButton *spinbutton,
+                                  VnrWindow *window);
+static void _on_toggle_show_next(GtkToggleButton *togglebutton,
+                                 VnrWindow *window);
+#endif
 
 typedef enum
 {
@@ -175,8 +178,8 @@ typedef enum
     WINDOW_ACTION_SETWALLPAPER,
     WINDOW_ACTION_PROPERTIES,
     WINDOW_ACTION_PREFERENCES,
-    WINDOW_ACTION_ITEM2,
-    WINDOW_ACTION_ITEM3,
+    WINDOW_ACTION_ZOOM_NORMAAL,
+    WINDOW_ACTION_ZOOM_FIT,
     WINDOW_ACTION_ITEM4,
     WINDOW_ACTION_ITEM5,
     WINDOW_ACTION_ITEM6,
@@ -195,7 +198,7 @@ static EtkActionEntry _window_actions[] =
      G_CALLBACK(_window_action_openfile)},
 
     {WINDOW_ACTION_OPENDIR,
-     "<Actions>/AppWindow/OpenDir", "<Control>F",
+     "<Actions>/AppWindow/OpenDir", "<Control>D",
      ETK_MENU_ITEM_IMAGE, N_("Open _Folder..."),
      N_("Open a Folder"),
      "gtk-directory",
@@ -284,6 +287,20 @@ static EtkActionEntry _window_actions[] =
      N_("User preferences for Viewnior"),
      NULL,
      G_CALLBACK(_window_action_preferences)},
+
+    {WINDOW_ACTION_ZOOM_NORMAAL,
+     "<Actions>/AppWindow/ZoomNormal", "<Control>N",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(_window_action_zoom_normal)},
+
+    {WINDOW_ACTION_ZOOM_FIT,
+     "<Actions>/AppWindow/ZoomFit", "<Control>F",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(_window_action_zoom_fit)},
 
     {0},
 };
@@ -2250,6 +2267,22 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
 
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update(VNR_PROPERTIES_DIALOG(window->props_dlg));
+}
+
+static void _window_action_zoom_normal(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    uni_image_view_set_zoom(UNI_IMAGE_VIEW(window->view), 1);
+    uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view),
+                               UNI_FITTING_NONE);
+}
+
+static void _window_action_zoom_fit(VnrWindow *window, GtkWidget *widget)
+{
+    (void) widget;
+
+    uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view), UNI_FITTING_FULL);
 }
 
 

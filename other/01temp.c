@@ -1,18 +1,6 @@
 
 #if 0
 
-static void _action_normal_size(GtkAction *action, gpointer user_data)
-{
-    uni_image_view_set_zoom(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view), 1);
-    uni_image_view_set_fitting(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view),
-                               UNI_FITTING_NONE);
-}
-
-static void _action_fit(GtkAction *action, gpointer user_data)
-{
-    uni_image_view_set_fitting(UNI_IMAGE_VIEW(VNR_WINDOW(user_data)->view), UNI_FITTING_FULL);
-}
-
 static void _action_scrollbar(GtkAction *action, VnrWindow *window)
 {
     gboolean show = gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action));
