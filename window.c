@@ -858,17 +858,13 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
     case 'v':
         _window_flip_pixbuf(window, FALSE);
         break;
-
-    case 'c':
-        _window_action_crop(window, NULL);
-        break;
     }
 
     if (result == FALSE
         && GTK_WIDGET_CLASS(window_parent_class)->key_press_event)
     {
         result =
-        (*GTK_WIDGET_CLASS(window_parent_class)->key_press_event) (widget, event);
+        GTK_WIDGET_CLASS(window_parent_class)->key_press_event(widget, event);
     }
 
     return result;
