@@ -61,7 +61,7 @@ GTK+, glib, gio, exiv2, shared-mime-info.
 
 ```
 sudo apt install build-essential git meson ninja-build \
-libgtk-3-dev libgdk-pixbuf-2.0-dev libexiv2-dev
+shared-mime-info libgtk-3-dev libgdk-pixbuf-2.0-dev libexiv2-dev
 ```
 
 ```
