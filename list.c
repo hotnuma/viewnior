@@ -2,8 +2,8 @@
 #include "config.h"
 
 
-static GList* _parse_directory(gchar *path, gboolean sort,
-                               gboolean include_hidden);
+static GList* _vnr_list_new_parse(gchar *path, gboolean sort,
+                                  gboolean include_hidden);
 static gint _list_compare_func(gconstpointer a,
                                    gconstpointer b,
                                    gpointer);
@@ -14,7 +14,7 @@ static GList* _vnr_list_delete_link(GList *list);
 GList* vnr_list_new(gchar *filepath, gboolean include_hidden, GError **error)
 {
     gchar *dir = g_path_get_dirname(filepath);
-    GList *result = _parse_directory(dir, TRUE, include_hidden);
+    GList *result = _vnr_list_new_parse(dir, TRUE, include_hidden);
     g_free(dir);
 
     if (!result)
@@ -54,7 +54,7 @@ GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden,
 
     if (filetype == G_FILE_TYPE_DIRECTORY)
     {
-        filelist = _parse_directory(filepath, TRUE, include_hidden);
+        filelist = _vnr_list_new_parse(filepath, TRUE, include_hidden);
     }
     else
     {
@@ -67,7 +67,7 @@ GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden,
     return filelist;
 }
 
-static GList* _parse_directory(gchar *path, gboolean sort,
+static GList* _vnr_list_new_parse(gchar *path, gboolean sort,
                                gboolean include_hidden)
 {
     GFile *gfile = g_file_new_for_path(path);

@@ -86,7 +86,7 @@ struct _VnrWindow
 GType window_get_type() G_GNUC_CONST;
 
 // Constructor
-GtkWindow* window_new();
+VnrWindow* window_new();
 
 void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);

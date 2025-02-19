@@ -71,13 +71,13 @@ int main(int argc, char **argv)
 
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), PIXMAP_DIR);
 
-    GtkWindow *window = window_new();
+    VnrWindow *window = window_new();
+    GtkWindow *gtkwindow = GTK_WINDOW(window);
 
-    gtk_window_set_default_size(window, 480, 300);
+    gtk_window_set_default_size(gtkwindow, 480, 300);
     //gtk_window_set_position(window, GTK_WIN_POS_CENTER);
 
     GSList *uri_list = vnr_tools_get_list_from_array(files);
-    VnrWindow *vnrwindow = VNR_WINDOW(window);
 
     GList *file_list = NULL;
 
@@ -86,52 +86,52 @@ int main(int argc, char **argv)
         if (g_slist_length(uri_list) == 1)
         {
             file_list = vnr_list_new_for_path(uri_list->data,
-                                vnrwindow->prefs->show_hidden,
+                                window->prefs->show_hidden,
                                 &error);
         }
         else
         {
             file_list = vnr_list_new_multiple(uri_list,
-                              vnrwindow->prefs->show_hidden,
+                              window->prefs->show_hidden,
                               &error);
         }
 
         if (error != NULL && file_list != NULL)
         {
-            window_slideshow_deny(vnrwindow);
-            vnr_message_area_show(VNR_MESSAGE_AREA(vnrwindow->msg_area),
+            window_slideshow_deny(window);
+            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                                   TRUE, error->message, TRUE);
 
-            window_list_set(vnrwindow, file_list); // TRUE);
+            window_list_set(window, file_list); // TRUE);
         }
         else if (error != NULL)
         {
-            window_slideshow_deny(vnrwindow);
-            vnr_message_area_show(VNR_MESSAGE_AREA(vnrwindow->msg_area),
+            window_slideshow_deny(window);
+            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                                   TRUE, error->message, TRUE);
         }
         else if (file_list == NULL)
         {
-            window_slideshow_deny(vnrwindow);
-            vnr_message_area_show(VNR_MESSAGE_AREA(vnrwindow->msg_area),
+            window_slideshow_deny(window);
+            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                                   TRUE, _("The given locations contain no images."),
                                   TRUE);
         }
         else
         {
-            window_list_set(vnrwindow, file_list); // TRUE);
+            window_list_set(window, file_list); // TRUE);
         }
     }
 
-    vnrwindow->prefs->start_slideshow = slideshow;
-    vnrwindow->prefs->start_fullscreen = fullscreen;
+    window->prefs->start_slideshow = slideshow;
+    window->prefs->start_fullscreen = fullscreen;
 
-    if (vnrwindow->prefs->start_maximized)
+    if (window->prefs->start_maximized)
     {
-        gtk_window_maximize(window);
+        gtk_window_maximize(gtkwindow);
     }
 
-    gtk_widget_show(GTK_WIDGET(window));
+    gtk_widget_show(GTK_WIDGET(gtkwindow));
 
     gtk_main();
 

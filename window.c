@@ -43,7 +43,6 @@ G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 
 // Window creation ------------------------------------------------------------
 
-GtkWindow* window_new();
 static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
 static void _window_on_realize(VnrWindow *window, gpointer user_data);
@@ -308,9 +307,9 @@ static EtkActionEntry _window_actions[] =
 
 // Window creation ------------------------------------------------------------
 
-GtkWindow* window_new()
+VnrWindow* window_new()
 {
-    return (GtkWindow*) g_object_new(VNR_TYPE_WINDOW, NULL);
+    return (VnrWindow*) g_object_new(VNR_TYPE_WINDOW, NULL);
 }
 
 static void window_class_init(VnrWindowClass *klass)
@@ -1752,7 +1751,8 @@ static void _window_copy(VnrWindow *window)
         {
             //printf("%s\n", outpath);
 
-            VnrFile *newfile = vnr_file_new_for_path(outpath, false);
+            VnrFile *newfile = vnr_file_new_for_path(outpath,
+                                                     window->prefs->show_hidden);
 
             if (!vnr_list_insert(window->filelist, newfile))
                 g_object_unref(newfile);
