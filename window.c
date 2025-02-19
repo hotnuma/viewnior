@@ -1716,11 +1716,11 @@ static void _window_action_copy(VnrWindow *window, GtkWidget *widget)
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
-    if (window->destdir == NULL)
-        _window_select_directory(window);
+    //if (window->destdir == NULL)
+    //    _window_select_directory(window);
 
-    if (window->destdir == NULL)
-        return;
+    //if (window->destdir == NULL)
+    //    return;
 
     _window_copy(window);
 }
@@ -1731,27 +1731,39 @@ static void _window_copy(VnrWindow *window)
 
     VnrFile *current = window_list_get_current(window);
 
-    if (!current || !window->destdir || window->mode != WINDOW_MODE_NORMAL)
+    if (!current || window->mode != WINDOW_MODE_NORMAL)
         return;
 
     const gchar *display_name = current->display_name;
+
+    if (!window->destdir)
+    {
+        gchar *dirname = g_path_get_dirname(current->path);
+        g_assert(dirname != NULL);
+
+        gchar *newpath = g_build_filename(dirname, display_name, NULL);
+        g_free(dirname);
+
+        gchar *outpath;
+        vnr_file_copy(current, newpath, &outpath);
+        g_free(newpath);
+
+        if (outpath)
+        {
+            // need to reload the list
+
+            printf("%s\n", outpath);
+
+            g_free(outpath);
+        }
+
+        return;
+    }
+
     gchar *newpath = g_build_filename(window->destdir, display_name, NULL);
 
-    if (g_strcmp0(current->path, newpath) == 0)
-        goto cleanup;
-
-    //gboolean ret =
-
-    vnr_file_copy(current, newpath);
-
-    //if (ret)
-    //{
-    //    _window_delete_item(window);
-    //    window_file_close(window);
-    //    window_file_load(window, FALSE);
-    //}
-
-cleanup:
+    if (g_strcmp0(current->path, newpath) != 0)
+        vnr_file_copy(current, newpath, NULL);
 
     g_free(newpath);
 }
@@ -1818,6 +1830,7 @@ static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
         return;
 
     vnr_list_sort(window->filelist);
+
     _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
 }
 

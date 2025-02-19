@@ -24,6 +24,11 @@
 
 G_BEGIN_DECLS
 
+
+// Mime types -----------------------------------------------------------------
+
+gboolean mime_type_is_supported(const char *mime_type);
+
 // VnrFile -------------------------------------------------------------------
 
 #define VNR_TYPE_FILE (vnr_file_get_type())
@@ -44,9 +49,10 @@ struct _VnrFile
 GType vnr_file_get_type() G_GNUC_CONST;
 
 VnrFile* vnr_file_new();
+VnrFile* vnr_new_for_path(const gchar *filepath, gboolean include_hidden);
 void vnr_file_set_display_name(VnrFile *vnr_file, const gchar *display_name);
-gboolean vnr_file_copy(VnrFile *file, const gchar *fullpath);
-gboolean vnr_file_rename(VnrFile *file, const gchar *fullpath);
+gboolean vnr_file_copy(VnrFile *file, const gchar *filepath, gchar **newpath);
+gboolean vnr_file_rename(VnrFile *file, const gchar *filepath);
 
 G_END_DECLS
 

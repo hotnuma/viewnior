@@ -23,6 +23,16 @@ window.c
 
         G_GNUC_END_IGNORE_DEPRECATIONS
 
+file_copy
+g_autoptr(GFile) src = g_file_new_for_path(file->path);
+g_autoptr(GFile) dest = g_file_new_for_path(fullpath);
+
+gboolean ret = g_file_copy(src,
+                           dest,
+                           G_FILE_COPY_ALL_METADATA,
+                           NULL, NULL, NULL,
+                           NULL);
+
 
 #endif
 
