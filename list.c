@@ -1,7 +1,6 @@
 #include "list.h"
 #include "config.h"
 
-#include "file.h"
 
 static GList* _parse_directory(gchar *path, gboolean sort,
                                gboolean include_hidden);
@@ -86,7 +85,7 @@ static GList* _parse_directory(gchar *path, gboolean sort,
 
     GFileInfo *fileinfo = g_file_enumerator_next_file(_file_enum, NULL, NULL);
 
-    GList *filelist = NULL;
+    GList *list = NULL;
 
     while (fileinfo != NULL)
     {
@@ -114,7 +113,7 @@ static GList* _parse_directory(gchar *path, gboolean sort,
             vnrfile->path = g_strjoin(G_DIR_SEPARATOR_S, path,
                                        vnrfile->display_name, NULL);
 
-            filelist = g_list_prepend(filelist, vnrfile);
+            list = g_list_prepend(list, vnrfile);
         }
 
         g_object_unref(fileinfo);
@@ -126,12 +125,31 @@ static GList* _parse_directory(gchar *path, gboolean sort,
     g_object_unref(_file_enum);
 
     if (sort)
-        filelist = vnr_list_sort(filelist);
+        list = vnr_list_sort(list);
 
-        //filelist = g_list_sort_with_data(filelist,
-        //                                 _list_compare_func, NULL);
+    return list;
+}
 
-    return filelist;
+GList* vnr_list_insert(GList *list, VnrFile *newfile)
+{
+    GList *first = g_list_first(list);
+    GList *l = first;
+
+    while (l)
+    {
+        VnrFile *file = VNR_FILE(l->data);
+
+        if (g_strcmp0(file->path, newfile->path) == 0)
+            return NULL;
+
+        l = l->next;
+    }
+
+    return g_list_insert_sorted_with_data(
+                                    first,
+                                    newfile,
+                                    _list_compare_func,
+                                    NULL);
 }
 
 GList* vnr_list_sort(GList *list)

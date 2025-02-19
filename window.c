@@ -1750,9 +1750,12 @@ static void _window_copy(VnrWindow *window)
 
         if (outpath)
         {
-            // need to reload the list
+            //printf("%s\n", outpath);
 
-            printf("%s\n", outpath);
+            VnrFile *newfile = vnr_file_new_for_path(outpath, false);
+
+            if (!vnr_list_insert(window->filelist, newfile))
+                g_object_unref(newfile);
 
             g_free(outpath);
         }

@@ -302,7 +302,7 @@ VnrFile* vnr_file_new()
     return VNR_FILE(g_object_new(VNR_TYPE_FILE, NULL));
 }
 
-VnrFile* vnr_new_for_path(const gchar *filepath, gboolean include_hidden)
+VnrFile* vnr_file_new_for_path(const gchar *filepath, gboolean include_hidden)
 {
     if (!filepath)
         return NULL;

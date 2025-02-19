@@ -49,7 +49,7 @@ struct _VnrFile
 GType vnr_file_get_type() G_GNUC_CONST;
 
 VnrFile* vnr_file_new();
-VnrFile* vnr_new_for_path(const gchar *filepath, gboolean include_hidden);
+VnrFile* vnr_file_new_for_path(const gchar *filepath, gboolean include_hidden);
 void vnr_file_set_display_name(VnrFile *vnr_file, const gchar *display_name);
 gboolean vnr_file_copy(VnrFile *file, const gchar *filepath, gchar **newpath);
 gboolean vnr_file_rename(VnrFile *file, const gchar *filepath);
