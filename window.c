@@ -179,8 +179,8 @@ typedef enum
     WINDOW_ACTION_PREFERENCES,
     WINDOW_ACTION_ZOOM_NORMAAL,
     WINDOW_ACTION_ZOOM_FIT,
-    WINDOW_ACTION_ITEM4,
-    WINDOW_ACTION_ITEM5,
+    WINDOW_ACTION_SLIDESHOW,
+    WINDOW_ACTION_FULLSCREEN,
     WINDOW_ACTION_ITEM6,
     WINDOW_ACTION_ITEM7,
     WINDOW_ACTION_ITEM8,
@@ -300,6 +300,20 @@ static EtkActionEntry _window_actions[] =
      NULL,
      NULL,
      G_CALLBACK(_window_action_zoom_fit)},
+
+    {WINDOW_ACTION_SLIDESHOW,
+     "<Actions>/AppWindow/Slideshow", "F10",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(_window_action_slideshow)},
+
+    {WINDOW_ACTION_FULLSCREEN,
+     "<Actions>/AppWindow/Fullscreen", "F11",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(window_fullscreen_toggle)},
 
     {0},
 };
@@ -854,16 +868,6 @@ static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event)
 
     case GDK_KEY_End:
         window_last(window);
-        result = TRUE;
-        break;
-
-    case GDK_KEY_F10:
-        _window_action_slideshow(window);
-        result = TRUE;
-        break;
-
-    case GDK_KEY_F11:
-        window_fullscreen_toggle(window);
         result = TRUE;
         break;
 

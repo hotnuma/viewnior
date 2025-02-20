@@ -1,5 +1,6 @@
 
 #if 0
+
 vnr-crop.c
 
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS
@@ -10,8 +11,8 @@ vnr-crop.c
                         &geometry);
         G_GNUC_END_IGNORE_DEPRECATIONS
 
-window.c
 
+window.c
 
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
@@ -23,7 +24,9 @@ window.c
 
         G_GNUC_END_IGNORE_DEPRECATIONS
 
+
 file_copy
+
 g_autoptr(GFile) src = g_file_new_for_path(file->path);
 g_autoptr(GFile) dest = g_file_new_for_path(fullpath);
 
@@ -32,6 +35,18 @@ gboolean ret = g_file_copy(src,
                            G_FILE_COPY_ALL_METADATA,
                            NULL, NULL, NULL,
                            NULL);
+
+keycodes
+
+case GDK_KEY_F10:
+    _window_action_slideshow(window);
+    result = TRUE;
+    break;
+
+case GDK_KEY_F11:
+    window_fullscreen_toggle(window);
+    result = TRUE;
+    break;
 
 
 #endif
