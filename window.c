@@ -328,35 +328,24 @@ VnrWindow* window_new()
 
 static void window_class_init(VnrWindowClass *klass)
 {
-    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    gobject_class->dispose = window_dispose;
-    gobject_class->finalize = window_finalize;
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->dispose = window_dispose;
+    object_class->finalize = window_finalize;
 
-    GtkWidgetClass *gtkwidget_class = GTK_WIDGET_CLASS(klass);
-    gtkwidget_class->key_press_event = _window_on_key_press;
-    gtkwidget_class->drag_data_received = _window_drag_data_received;
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->key_press_event = _window_on_key_press;
+    widget_class->drag_data_received = _window_drag_data_received;
     
     etk_actions_translate(_window_actions);
 }
 
 static void window_init(VnrWindow *window)
 {
-    g_assert(window->filelist == NULL);
-
-    window->filelist = NULL;
-    window->destdir = NULL;
     window->mode = WINDOW_MODE_NORMAL;
-    window->accel_group = etk_actions_init(GTK_WINDOW(window), _window_actions);
+    window->accel_group = etk_actions_init(GTK_WINDOW(window),
+                                           _window_actions);
     window->prefs = (VnrPrefs*) vnr_prefs_new(GTK_WIDGET(window));
-    window->can_edit = false;
-    window->list_image = NULL;
 
-    window->writable_format_name = NULL;
-    window->cursor_is_hidden = FALSE;
-    window->disable_autohide = FALSE;
-
-    window->fs_toolitem = NULL;
-    window->fs_source = NULL;
     window->sl_timeout = 5;
     window->can_slideshow = TRUE;
 
@@ -1194,16 +1183,15 @@ gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
     GdkPixbufAnimation *pixbuf =
             gdk_pixbuf_animation_new_from_file(current->path, &error);
 
-    GdkPixbufFormat *format;
-    UniFittingMode last_fit_mode;
-
     if (error != NULL)
     {
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                               TRUE, error->message, TRUE);
 
         if (gtk_widget_get_visible(window->props_dlg))
-            vnr_properties_dialog_clear(VNR_PROPERTIES_DIALOG(window->props_dlg));
+            vnr_properties_dialog_clear(
+                        VNR_PROPERTIES_DIALOG(window->props_dlg));
+
         return FALSE;
     }
 
@@ -1216,41 +1204,48 @@ gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
     //gtk_action_group_set_sensitive(window->actions_image, TRUE);
     //gtk_action_group_set_sensitive(window->action_wallpaper, TRUE);
 
-    format = gdk_pixbuf_get_file_info(current->path, NULL, NULL);
+    GdkPixbufFormat *format = gdk_pixbuf_get_file_info(current->path,
+                                                       NULL, NULL);
 
     g_free(window->writable_format_name);
+
     if (gdk_pixbuf_format_is_writable(format))
         window->writable_format_name = gdk_pixbuf_format_get_name(format);
     else
         window->writable_format_name = NULL;
 
     vnr_tools_apply_embedded_orientation(&pixbuf);
+
     window->current_image_width = gdk_pixbuf_animation_get_width(pixbuf);
     window->current_image_height = gdk_pixbuf_animation_get_height(pixbuf);
+
     window->modifications = 0;
 
     if (fit_to_screen)
     {
-        gint img_h, img_w; /* Width and Height of the pixbuf */
+        // Width and Height of the pixbuf
 
-        img_w = window->current_image_width;
-        img_h = window->current_image_height;
+        gint img_w = window->current_image_width;
+        gint img_h = window->current_image_height;
 
-        vnr_tools_fit_to_size(&img_w, &img_h, window->max_width, window->max_height);
+        vnr_tools_fit_to_size(&img_w, &img_h,
+                              window->max_width, window->max_height);
 
         gtk_window_resize(GTK_WINDOW(window),
                           img_w,
                           img_h /*+ _window_get_top_widgets_height(window)*/);
     }
 
-    last_fit_mode = UNI_IMAGE_VIEW(window->view)->fitting;
+    UniFittingMode last_fit_mode = UNI_IMAGE_VIEW(window->view)->fitting;
 
     // returns true if the image is static
-    window->can_edit = uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), pixbuf);
+    window->can_edit = uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view),
+                                              pixbuf);
 
     if (window->mode != WINDOW_MODE_NORMAL && window->prefs->fit_on_fullscreen)
     {
-        uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view), VNR_PREFS_ZOOM_FIT);
+        uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
+                                     VNR_PREFS_ZOOM_FIT);
     }
     else if (window->prefs->zoom == VNR_PREFS_ZOOM_LAST_USED)
     {
@@ -1259,7 +1254,8 @@ gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen)
     }
     else
     {
-        uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view), window->prefs->zoom);
+        uni_image_view_set_zoom_mode(UNI_IMAGE_VIEW(window->view),
+                                     window->prefs->zoom);
     }
 
     if (window->prefs->auto_resize)

@@ -1,5 +1,6 @@
-
 #if 0
+
+// ----------------------------------------------------------------------------
 
 vnr-crop.c
 
@@ -11,6 +12,7 @@ vnr-crop.c
                         &geometry);
         G_GNUC_END_IGNORE_DEPRECATIONS
 
+// ----------------------------------------------------------------------------
 
 window.c
 
@@ -24,6 +26,7 @@ window.c
 
         G_GNUC_END_IGNORE_DEPRECATIONS
 
+// ----------------------------------------------------------------------------
 
 file_copy
 
@@ -35,6 +38,8 @@ gboolean ret = g_file_copy(src,
                            G_FILE_COPY_ALL_METADATA,
                            NULL, NULL, NULL,
                            NULL);
+
+// ----------------------------------------------------------------------------
 
 keycodes
 
@@ -48,6 +53,20 @@ case GDK_KEY_F11:
     result = TRUE;
     break;
 
+// ----------------------------------------------------------------------------
+
+window_init
+
+g_assert(window->filelist == NULL);
+window->filelist = NULL;
+window->destdir = NULL;
+window->can_edit = false;
+window->list_image = NULL;
+window->writable_format_name = NULL;
+window->cursor_is_hidden = FALSE;
+window->disable_autohide = FALSE;
+window->fs_toolitem = NULL;
+window->fs_source = NULL;
 
 #endif
 

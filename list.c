@@ -239,8 +239,6 @@ GList* vnr_list_new_multiple(GSList *uri_list,
         uri_list = g_slist_next(uri_list);
     }
 
-    //file_list = g_list_sort_with_data(file_list, _list_compare_func, NULL);
-
     file_list = vnr_list_sort(file_list);
 
     return file_list;
