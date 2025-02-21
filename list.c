@@ -34,6 +34,14 @@ GList* vnr_list_new(gchar *filepath, gboolean include_hidden, GError **error)
     return result;
 }
 
+static gint _file_compare_func(VnrFile *file, char *uri)
+{
+    if (g_strcmp0(uri, file->path) == 0)
+        return 0;
+    else
+        return 1;
+}
+
 GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden,
                              GError **error)
 {
@@ -130,6 +138,47 @@ static GList* _vnr_list_new_parse(gchar *path, gboolean sort,
     return list;
 }
 
+GList* vnr_list_new_multiple(GSList *uri_list,
+                             gboolean include_hidden,
+                             GError **error)
+{
+    (void) error;
+
+    GList *file_list = NULL;
+
+    while (uri_list != NULL)
+    {
+        VnrFile *vnrfile = vnr_file_new_for_path(uri_list->data,
+                                                 include_hidden);
+        if (vnrfile)
+            file_list = g_list_prepend(file_list, vnrfile);
+
+        uri_list = g_slist_next(uri_list);
+
+    }
+
+    file_list = vnr_list_sort(file_list);
+
+    return file_list;
+}
+
+gint vnr_list_get_position(GList *list, gint *total)
+{
+    gint after = 0;
+    gint before = 0;
+
+    for (GList *it = list; it != NULL; it = it->next)
+        ++after;
+
+    for (GList *it = list; it != NULL; it = it->prev)
+        ++before;
+
+    if (total)
+        *total = before + after - 1;
+
+    return before;
+}
+
 GList* vnr_list_insert(GList *list, VnrFile *newfile)
 {
     GList *first = g_list_first(list);
@@ -163,103 +212,6 @@ static gint _list_compare_func(gconstpointer a, gconstpointer b, gpointer)
                      VNR_FILE((void *) b)->display_name_collate);
 }
 
-static gint _file_compare_func(VnrFile *file, char *uri)
-{
-    if (g_strcmp0(uri, file->path) == 0)
-        return 0;
-    else
-        return 1;
-}
-
-GList* vnr_list_new_multiple(GSList *uri_list,
-                             gboolean include_hidden,
-                             GError **error)
-{
-    GList *file_list = NULL;
-
-    while (uri_list != NULL)
-    {
-        gchar *filepath = uri_list->data;
-
-        GFile *file = g_file_new_for_path(filepath);
-
-        GFileInfo *fileinfo = g_file_query_info(
-                                file,
-                                G_FILE_ATTRIBUTE_STANDARD_TYPE ","
-                                G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
-                                G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
-                                G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
-                                G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
-                                G_FILE_ATTRIBUTE_TIME_MODIFIED,
-                                0, NULL, error);
-
-        if (fileinfo == NULL)
-        {
-            g_clear_error(error);
-            g_object_unref(file);
-
-            uri_list = g_slist_next(uri_list);
-            continue;
-        }
-
-        GFileType filetype = g_file_info_get_file_type(fileinfo);
-
-        if (filetype != G_FILE_TYPE_DIRECTORY)
-        {
-            VnrFile *vnrfile = vnr_file_new();
-            const char *mimetype = g_file_info_get_content_type(fileinfo);
-
-            if (mimetype == NULL)
-            {
-                mimetype = g_file_info_get_attribute_string(
-                            fileinfo,
-                            G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE);
-            }
-
-            if (mime_type_is_supported(mimetype)
-                && (include_hidden || !g_file_info_get_is_hidden(fileinfo)))
-            {
-                vnr_file_set_display_name(
-                                    vnrfile,
-                                    (char*) g_file_info_get_display_name(fileinfo));
-
-                vnrfile->mtime = g_file_info_get_attribute_uint64(
-                                    fileinfo,
-                                    G_FILE_ATTRIBUTE_TIME_MODIFIED);
-
-                vnrfile->path = g_strdup(filepath);
-
-                file_list = g_list_prepend(file_list, vnrfile);
-            }
-        }
-
-        g_object_unref(file);
-        g_object_unref(fileinfo);
-
-        uri_list = g_slist_next(uri_list);
-    }
-
-    file_list = vnr_list_sort(file_list);
-
-    return file_list;
-}
-
-gint vnr_list_get_position(GList *list, gint *total)
-{
-    gint after = 0;
-    gint before = 0;
-
-    for (GList *it = list; it != NULL; it = it->next)
-        ++after;
-
-    for (GList *it = list; it != NULL; it = it->prev)
-        ++before;
-
-    if (total)
-        *total = before + after - 1;
-
-    return before;
-}
 
 // Private functions ---------------------------------------------------------
 

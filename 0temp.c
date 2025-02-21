@@ -68,6 +68,69 @@ window->disable_autohide = FALSE;
 window->fs_toolitem = NULL;
 window->fs_source = NULL;
 
+// ----------------------------------------------------------------------------
+
+vnf_list_new_multiple
+
+gchar *filepath = uri_list->data;
+
+GFile *file = g_file_new_for_path(filepath);
+
+GFileInfo *fileinfo = g_file_query_info(
+                        file,
+                        G_FILE_ATTRIBUTE_STANDARD_TYPE ","
+                        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                        G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
+                        G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
+                        G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
+                        G_FILE_ATTRIBUTE_TIME_MODIFIED,
+                        0, NULL, error);
+
+if (fileinfo == NULL)
+{
+    g_clear_error(error);
+    g_object_unref(file);
+
+    uri_list = g_slist_next(uri_list);
+    continue;
+}
+
+GFileType filetype = g_file_info_get_file_type(fileinfo);
+
+if (filetype != G_FILE_TYPE_DIRECTORY)
+{
+    VnrFile *vnrfile = vnr_file_new();
+    const char *mimetype = g_file_info_get_content_type(fileinfo);
+
+    if (mimetype == NULL)
+    {
+        mimetype = g_file_info_get_attribute_string(
+                    fileinfo,
+                    G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE);
+    }
+
+    if (mime_type_is_supported(mimetype)
+        && (include_hidden || !g_file_info_get_is_hidden(fileinfo)))
+    {
+        vnr_file_set_display_name(
+                            vnrfile,
+                            (char*) g_file_info_get_display_name(fileinfo));
+
+        vnrfile->mtime = g_file_info_get_attribute_uint64(
+                            fileinfo,
+                            G_FILE_ATTRIBUTE_TIME_MODIFIED);
+
+        vnrfile->path = g_strdup(filepath);
+
+        file_list = g_list_prepend(file_list, vnrfile);
+    }
+}
+
+g_object_unref(file);
+g_object_unref(fileinfo);
+
+uri_list = g_slist_next(uri_list);
+
 #endif
 
 
