@@ -30,28 +30,28 @@ Most of the Viewnior's sources handling image viewing are adopted from the GtkIm
 | :---------------------- | :---------------------- |
 | Open                    | Ctrl+O                  |
 | Open Dir                | Ctrl+D                  |
-| Reload                  | F5                      |
-| Reset Dir               | F6                      |
-| Copy                    | F7                      |
-| Move                    | F8                      |
+| Properties              | Ctrl+Return             |
+| Quit                    | Esc / Q                 |
 | Rename                  | F2                      |
 | Crop                    | F4                      |
+| Reload                  | F5                      |
+| Reset Directory         | F6                      |
+| Copy                    | F7                      |
+| Move                    | F8                      |
 | Delete                  | Del                     |
 | Set Wallpaper           | F9                      |
-| Properties              | Ctrl+Return             |
-| Zoom Normal             | Ctrl+N                  |
-| Zoom Fit                | Ctrl+F                  |
-| Rotate Left             | Ctrl+Left               |
-| Rotate Right            | Ctrl+Right              |
-| Flip Horizontal         | Ctrl+Up / H             |
-| Flip Vertical           | Ctrl+Down / V           |
-| Quit                    | Esc / Q                 |
+| Slideshow               | F10                     |
+| Fullscreen              | F11                     |
 | Prev Image              | Left / Back             |
 | Next Image              | Right / Space           |
 | First Image             | Home                    |
 | Last Image              | End                     |
-| Slideshow               | F10                     |
-| Fullscreen              | F11                     |
+| Flip Horizontal         | Ctrl+Up / H             |
+| Flip Vertical           | Ctrl+Down / V           |
+| Rotate Left             | Ctrl+Left               |
+| Rotate Right            | Ctrl+Right              |
+| Zoom Normal             | Ctrl+N                  |
+| Zoom Fit                | Ctrl+F                  |
 
 
 #### Installation
