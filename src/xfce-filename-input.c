@@ -261,8 +261,7 @@ xfce_filename_input_set_property(GObject *object,
     }
 }
 
-static void
-xfce_filename_input_finalize(GObject *object)
+static void xfce_filename_input_finalize(GObject *object)
 {
     XfceFilenameInput *filename_input = XFCE_FILENAME_INPUT(object);
 

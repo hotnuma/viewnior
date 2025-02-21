@@ -299,7 +299,7 @@ void vnr_properties_dialog_update(VnrPropertiesDialog *dialog)
     gtk_label_set_text(GTK_LABEL(dialog->size_label), filesize_str);
 
     g_free(filesize_str);
-    g_free((gchar *)filetype);
+    g_free((gchar*) filetype);
     g_free(filetype_desc);
 }
 

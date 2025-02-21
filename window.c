@@ -619,12 +619,12 @@ void window_preferences_apply(VnrWindow *window)
 
 static void _window_load_accel_map()
 {
-    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                        "accel_map", NULL);
+    //gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
+    //                                    "accel_map", NULL);
 
     //gtk_accel_map_load(accelfile);
 
-    g_free(accelfile);
+    //g_free(accelfile);
 }
 
 
@@ -742,11 +742,11 @@ static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
 
 static void _window_save_accel_map()
 {
-    gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
-                                        "accel_map", NULL);
+    //gchar *accelfile = g_build_filename(g_get_user_config_dir(), PACKAGE,
+    //                                    "accel_map", NULL);
     //gtk_accel_map_save(accelfile);
 
-    g_free(accelfile);
+    //g_free(accelfile);
 }
 
 static void window_dispose(GObject *object)
@@ -766,8 +766,7 @@ static void window_finalize(GObject *object)
 {
     VnrWindow *window = VNR_WINDOW(object);
 
-    if (window->destdir)
-        g_free(window->destdir);
+    g_free(window->destdir);
 
     window->filelist = vnr_list_free(window->filelist);
 
@@ -1051,11 +1050,10 @@ static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data)
             g_object_unref(pixbuf);
         }
     }
+
     gtk_file_chooser_set_preview_widget_active(file_chooser, has_preview);
-    if (filename != NULL)
-    {
-        g_free(filename);
-    }
+
+    g_free(filename);
 }
 
 static gboolean _file_size_is_small(char *filename)
@@ -1632,8 +1630,7 @@ static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget)
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
-    if (window->destdir)
-        g_free(window->destdir);
+    g_free(window->destdir);
 
     window->destdir = NULL;
 }
@@ -1661,8 +1658,7 @@ static gboolean _window_select_directory(VnrWindow *window)
     if (!list)
         return false;
 
-    if (window->destdir)
-        g_free(window->destdir);
+    g_free(window->destdir);
 
     window->destdir = g_strdup((const gchar*) list->data);
 

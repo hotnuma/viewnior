@@ -310,15 +310,16 @@ static GtkWidget* _prefs_build(VnrPrefs *prefs)
 
 static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error)
 {
-    GKeyFile *conf = g_key_file_new();
-    GError *read_error = NULL;
-    GError *load_file_error = NULL;
-    const gchar *path;
+    const gchar *path = g_build_filename(g_get_user_config_dir(),
+                                         PACKAGE,
+                                         "viewnior.conf",
+                                         NULL);
 
-    path = g_build_filename(g_get_user_config_dir(), PACKAGE, "viewnior.conf", NULL);
+    GKeyFile *conf = g_key_file_new();
+    GError *load_file_error = NULL;
     g_key_file_load_from_file(conf, path, G_KEY_FILE_NONE, &load_file_error);
 
-    g_free((char *)path);
+    g_free((char*) path);
 
     if (load_file_error != NULL)
     {
@@ -326,6 +327,9 @@ static gboolean vnr_prefs_load(VnrPrefs *prefs, GError **error)
         g_key_file_free(conf);
         return FALSE;
     }
+
+    GError *read_error = NULL;
+    (void) read_error;
 
     VNR_PREF_LOAD_KEY(start_maximized, boolean, "start-maximized", FALSE);
     VNR_PREF_LOAD_KEY(window_width, integer, "window-width", 480);
@@ -417,8 +421,8 @@ gboolean vnr_prefs_save(VnrPrefs *prefs)
     }
 
     g_key_file_free(conf);
-    g_free((char *)dir);
-    g_free((char *)path);
+    g_free((char*) dir);
+    g_free((char*) path);
 
     return TRUE;
 }

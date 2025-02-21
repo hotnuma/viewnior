@@ -295,7 +295,31 @@ out_error:
 
 G_DEFINE_TYPE(VnrFile, vnr_file, G_TYPE_OBJECT)
 
+static void vnr_file_finalize(GObject *object);
 static gboolean _vnr_file_set_path(VnrFile *file, const gchar *filepath);
+
+static void vnr_file_class_init(VnrFileClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    object_class->finalize = vnr_file_finalize;
+}
+
+static void vnr_file_init(VnrFile *file)
+{
+    //g_assert(file->display_name == NULL);
+    //file->display_name = NULL;
+}
+
+static void vnr_file_finalize(GObject *object)
+{
+    VnrFile *file = VNR_FILE(object);
+
+    g_free(file->display_name);
+    g_free(file->display_name_collate);
+    g_free(file->path);
+
+    G_OBJECT_CLASS(vnr_file_parent_class)->finalize(object);
+}
 
 VnrFile* vnr_file_new()
 {
@@ -372,26 +396,13 @@ VnrFile* vnr_file_new_for_path(const gchar *filepath, gboolean include_hidden)
     return vnrfile;
 }
 
-static void vnr_file_class_init(VnrFileClass *klass)
-{
-}
-
-static void vnr_file_init(VnrFile *file)
-{
-    file->display_name = NULL;
-}
-
 void vnr_file_set_display_name(VnrFile *vnr_file,
                                        const gchar *display_name)
 {
-    if (vnr_file->display_name)
-        g_free(vnr_file->display_name);
-
+    g_free(vnr_file->display_name);
     vnr_file->display_name = g_strdup(display_name);
 
-    if (vnr_file->display_name_collate)
-        g_free(vnr_file->display_name_collate);
-
+    g_free(vnr_file->display_name_collate);
     vnr_file->display_name_collate =
             g_utf8_collate_key_for_filename(display_name, -1);
 }
@@ -449,16 +460,13 @@ static gboolean _vnr_file_set_path(VnrFile *file, const gchar *filepath)
         return false;
     }
 
-    if (file->path)
-        g_free(file->path);
+    g_free(file->path);
     file->path = g_strdup(filepath);
 
-    if (file->display_name)
-        g_free(file->display_name);
+    g_free(file->display_name);
     file->display_name = g_strdup(g_file_info_get_display_name(fileinfo));
 
-    if (file->display_name_collate)
-        g_free(file->display_name_collate);
+    g_free(file->display_name_collate);
     file->display_name_collate =
             g_utf8_collate_key_for_filename(file->display_name, -1);
 

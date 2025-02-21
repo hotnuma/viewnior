@@ -133,8 +133,7 @@ vnr_tools_get_list_from_array(gchar **files)
 
 /* modified version of eog's
  * eog_util_parse_uri_string_list_to_file_list */
-GSList *
-vnr_tools_parse_uri_string_list_to_file_list(const gchar *uri_list)
+GSList* vnr_tools_parse_uri_string_list_to_file_list(const gchar *uri_list)
 {
     GSList *file_list = NULL;
     gsize i = 0;
