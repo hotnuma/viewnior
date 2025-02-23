@@ -994,9 +994,34 @@ void window_list_set_current(VnrWindow *window, GList *list)
 
     window->monitor = NULL;
 
-    //if (list)
-    //    window->monitor = create file monitor....
+    if (list)
+    {
+        VnrFile *vnrfile = VNR_FILE(list->data);
 
+        GFile *gfile = g_file_new_for_path(vnrfile->path);
+
+        if (!gfile)
+            goto out;
+
+        GFileMonitor *monitor = g_file_monitor(gfile,
+                                 /*G_FILE_MONITOR_WATCH_MOUNTS
+                                 |*/ G_FILE_MONITOR_WATCH_MOVES,
+                                 NULL, NULL);
+        if (!monitor)
+        {
+            g_object_unref(gfile);
+            goto out;
+        }
+
+        window->monitor = monitor;
+        g_signal_connect(monitor, "changed",
+                         G_CALLBACK(_monitor_on_change), window);
+        g_file_monitor_set_rate_limit(monitor, 2000);
+
+        g_object_unref(gfile);
+    }
+
+ out:
     window->filelist = list;
 }
 
@@ -1346,7 +1371,7 @@ static void _monitor_on_change(GFileMonitor *monitor,
         if (!window->need_reload)
         {
             window->need_reload = true;
-            g_idle_add((GSourceFunc) _window_on_idle_reload, NULL);
+            g_idle_add((GSourceFunc) _window_on_idle_reload, window);
         }
         break;
 
