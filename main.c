@@ -96,32 +96,26 @@ int main(int argc, char **argv)
                               &error);
         }
 
-        if (error != NULL && file_list != NULL)
+        if (error != NULL)
         {
-            window_slideshow_deny(window);
-            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                                  TRUE, error->message, TRUE);
-
-            window_list_set(window, file_list); // TRUE);
-        }
-        else if (error != NULL)
-        {
-            window_slideshow_deny(window);
-            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                                  TRUE, error->message, TRUE);
-        }
-        else if (file_list == NULL)
-        {
-            window_slideshow_deny(window);
-            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                                  TRUE, _("The given locations contain no images."),
-                                  TRUE);
-        }
-        else
-        {
-            window_list_set(window, file_list); // TRUE);
+            if (!file_list)
+            {
+                vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
+                                      TRUE,
+                                      _("The given locations contain no images."),
+                                      TRUE);
+            }
+            else
+            {
+                vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
+                                      TRUE,
+                                      error->message,
+                                      TRUE);
+            }
         }
     }
+
+    window_list_set(window, file_list);
 
     window->prefs->start_slideshow = slideshow;
     window->prefs->start_fullscreen = fullscreen;

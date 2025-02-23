@@ -17,8 +17,8 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VNR_WINDOW_H__
-#define __VNR_WINDOW_H__
+#ifndef VNR_WINDOW_H
+#define VNR_WINDOW_H
 
 #include <etkwidgetlist.h>
 #include "preferences.h"
@@ -36,6 +36,7 @@ typedef enum
     WINDOW_MODE_NORMAL,
     WINDOW_MODE_FULLSCREEN,
     WINDOW_MODE_SLIDESHOW,
+
 } WindowMode;
 
 struct _VnrWindow
@@ -79,29 +80,30 @@ struct _VnrWindow
 
     // slideshow variables
     GtkWidget *sl_timeout_widget;
-    guint sl_source_tag;
+    guint sl_source_id;
     gint sl_timeout;
 };
 
 GType window_get_type() G_GNUC_CONST;
 
-// Constructor
+// creation
 VnrWindow* window_new();
 
 void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);
 
+// open / close
+void window_open_list(VnrWindow *window, GSList *uri_list);
+gboolean window_load_file(VnrWindow *window, gboolean fit_to_screen);
+void window_close_file(VnrWindow *window);
+
+// browse images
 void window_action_prev(VnrWindow *window, GtkWidget *widget);
 void window_action_next(VnrWindow *window, GtkWidget *widget);
 gboolean window_prev(VnrWindow *window);
-gboolean window_next(VnrWindow *window, gboolean rem_timeout);
+gboolean window_next(VnrWindow *window, gboolean reset_timer);
 gboolean window_first(VnrWindow *window);
 gboolean window_last(VnrWindow *window);
-
-// Open / Close
-gboolean window_file_load(VnrWindow *window, gboolean fit_to_screen);
-void window_open_list(VnrWindow *window, GSList *uri_list);
-void window_file_close(VnrWindow *window);
 
 void window_preferences_apply(VnrWindow *window);
 
@@ -110,6 +112,6 @@ void window_fullscreen_toggle(VnrWindow *window);
 
 G_END_DECLS
 
-#endif // __VNR_WINDOW_H__
+#endif // VNR_WINDOW_H
 
 

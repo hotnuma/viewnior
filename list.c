@@ -254,7 +254,7 @@ static GList* _vnr_list_delete_link(GList *list)
 
 GList* vnr_list_free(GList *list)
 {
-    if (list == NULL)
+    if (!list)
         return NULL;
 
     GList *first = g_list_first(list);
