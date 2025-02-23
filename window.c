@@ -1159,8 +1159,6 @@ void window_open_list(VnrWindow *window, GSList *uri_list)
         if (!window->cursor_is_hidden)
             vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-        //gdk_flush();
-
         window_file_close(window);
         window_file_load(window, FALSE);
 
@@ -1487,8 +1485,6 @@ gboolean window_prev(VnrWindow *window)
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    //gdk_flush();
-
     window_file_load(window, FALSE);
 
     if (!window->cursor_is_hidden)
@@ -1527,8 +1523,6 @@ gboolean window_next(VnrWindow *window, gboolean rem_timeout)
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
-
-    //gdk_flush();
 
     window_file_load(window, FALSE);
 
@@ -1575,8 +1569,6 @@ gboolean window_first(VnrWindow *window)
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    //gdk_flush();
-
     window_file_load(window, FALSE);
 
     if (!window->cursor_is_hidden)
@@ -1598,8 +1590,6 @@ gboolean window_last(VnrWindow *window)
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
-
-    //gdk_flush();
 
     window_file_load(window, FALSE);
 
@@ -1875,7 +1865,7 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
         gchar *warning = NULL;
         warning = _("If you delete an item, it will be permanently lost.");
 
-        /* I18N: The '%s' is replaced with the name of the file to be deleted. */
+        // I18N: The '%s' is replaced with the name of the file to be deleted.
         prompt = g_strdup_printf(_("Are you sure you want to\n"
                                  "permanently delete \"%s\"?"),
                                  current->display_name);
@@ -1923,8 +1913,6 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
             {
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     vnr_tools_set_cursor(GTK_WIDGET(dlg), GDK_WATCH, true);
-
-                //gdk_flush();
 
                 window_file_close(window);
                 window_file_load(window, FALSE);
@@ -2060,7 +2048,7 @@ static void _window_rotate_pixbuf(VnrWindow *window,
     if (gtk_widget_get_visible(window->props_dlg))
         vnr_properties_dialog_update_image(VNR_PROPERTIES_DIALOG(window->props_dlg));
 
-    /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
+    // Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical
     if ((window->modifications & (4)) ^ ((angle == GDK_PIXBUF_ROTATE_CLOCKWISE) << 2))
         window->modifications ^= 3;
 
@@ -2097,8 +2085,6 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    //gdk_flush();
-
     GdkPixbuf *result = gdk_pixbuf_flip(
                                 UNI_IMAGE_VIEW(window->view)->pixbuf,
                                 horizontal);
@@ -2121,7 +2107,7 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 
     g_object_unref(result);
 
-    /* Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical */
+    // Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical
     window->modifications ^= (window->modifications & 4) ? 1 + horizontal : 2 - horizontal;
 
     //gtk_action_group_set_sensitive(window->action_save,
@@ -2215,12 +2201,10 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    //gdk_flush();
-
     if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
 
-    /* Store exiv2 metadata to cache, so we can restore it afterwards */
+    // Store exiv2 metadata to cache, so we can restore it afterwards
     uni_read_exiv2_to_cache(current->path);
 
     GError *error = NULL;
