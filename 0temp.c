@@ -55,21 +55,6 @@ case GDK_KEY_F11:
 
 // ----------------------------------------------------------------------------
 
-window_init
-
-g_assert(window->filelist == NULL);
-window->filelist = NULL;
-window->destdir = NULL;
-window->can_edit = false;
-window->list_image = NULL;
-window->writable_format_name = NULL;
-window->cursor_is_hidden = FALSE;
-window->disable_autohide = FALSE;
-window->fs_toolitem = NULL;
-window->fs_source = NULL;
-
-// ----------------------------------------------------------------------------
-
 vnf_list_new_multiple
 
 gchar *filepath = uri_list->data;

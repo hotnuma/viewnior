@@ -41,14 +41,14 @@
 
 G_DEFINE_TYPE(VnrWindow, window, GTK_TYPE_WINDOW)
 
-// Window creation ------------------------------------------------------------
+// window creation ------------------------------------------------------------
 
 static void window_class_init(VnrWindowClass *klass);
 static void window_init(VnrWindow *window);
 static void _window_on_realize(VnrWindow *window, gpointer user_data);
 static void _window_load_accel_map();
 
-// DnD ------------------------------------------------------------------------
+// dnd ------------------------------------------------------------------------
 
 static void _window_set_drag(VnrWindow *window);
 static void _view_on_drag_begin(GtkWidget *widget,
@@ -63,7 +63,7 @@ static void _window_drag_data_received(GtkWidget *widget,
                                        GtkSelectionData *selection_data,
                                        guint info, guint time);
 
-// Window destruction ---------------------------------------------------------
+// window destruction ---------------------------------------------------------
 
 static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
                                   gpointer data);
@@ -71,7 +71,7 @@ static void _window_save_accel_map();
 static void window_dispose(GObject *object);
 static void window_finalize(GObject *object);
 
-// Window ---------------------------------------------------------------------
+// window ---------------------------------------------------------------------
 
 static gint _window_on_key_press(GtkWidget *widget, GdkEventKey *event);
 static gboolean _window_on_change_state(GtkWidget *widget,
@@ -79,7 +79,7 @@ static gboolean _window_on_change_state(GtkWidget *widget,
                                         gpointer user_data);
 static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 
-// Open / Close ---------------------------------------------------------------
+// open / close ---------------------------------------------------------------
 
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
@@ -89,11 +89,17 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           gint response_id,
                                           VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
+static void _monitor_on_change(GFileMonitor *monitor,
+                               GFile *event_file,
+                               GFile *other_file,
+                               GFileMonitorEvent event_type,
+                               gpointer user_data);
+static gboolean _window_on_idle_reload(VnrWindow *window);
 static void _action_resize(VnrWindow *window, GtkWidget *widget);
 static void _window_update_openwith_menu(VnrWindow *window);
 static void _on_openwith(VnrWindow *window, gpointer user_data);
 
-// Actions --------------------------------------------------------------------
+// actions --------------------------------------------------------------------
 
 static gboolean _window_on_sl_timeout(VnrWindow *window);
 static void _window_action_reload(VnrWindow *window, GtkWidget *widget);
@@ -116,7 +122,7 @@ static void _window_show_cursor(VnrWindow *window);
 static void _window_action_properties(VnrWindow *window, GtkWidget *widget);
 static void _window_action_preferences(VnrWindow *window, GtkWidget *widget);
 
-// Private Actions ------------------------------------------------------------
+// private Actions ------------------------------------------------------------
 
 static void _window_rotate_pixbuf(VnrWindow *window, GdkPixbufRotation angle);
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal);
@@ -125,11 +131,11 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget);
 static void _window_action_zoom_normal(VnrWindow *window, GtkWidget *widget);
 static void _window_action_zoom_fit(VnrWindow *window, GtkWidget *widget);
 
-// Set wallpaper --------------------------------------------------------------
+// set wallpaper --------------------------------------------------------------
 
 static void _window_action_set_wallpaper(VnrWindow *window, GtkWidget *widget);
 
-// Slideshow ------------------------------------------------------------------
+// slideshow ------------------------------------------------------------------
 
 static void _window_action_slideshow(VnrWindow *window);
 static void _window_slideshow_stop(VnrWindow *window);
@@ -138,7 +144,7 @@ static void _window_slideshow_start(VnrWindow *window);
 static void _window_slideshow_allow(VnrWindow *window);
 void window_slideshow_deny(VnrWindow *window);
 
-// Fullscreen -----------------------------------------------------------------
+// fullscreen -----------------------------------------------------------------
 
 static void _window_fullscreen(VnrWindow *window);
 static void _window_unfullscreen(VnrWindow *window);
@@ -319,7 +325,7 @@ static EtkActionEntry _window_actions[] =
 };
 
 
-// Window creation ------------------------------------------------------------
+// window creation ------------------------------------------------------------
 
 VnrWindow* window_new()
 {
@@ -617,7 +623,7 @@ static void _window_load_accel_map()
 }
 
 
-// DnD ------------------------------------------------------------------------
+// dnd ------------------------------------------------------------------------
 
 static void _window_set_drag(VnrWindow *window)
 {
@@ -660,6 +666,8 @@ static void _window_drag_data_received(GtkWidget *widget,
                                        GtkSelectionData *selection_data,
                                        guint info, guint time)
 {
+    VnrWindow *window = VNR_WINDOW(widget);
+
     GSList *uri_list = NULL;
     GdkAtom target = gtk_selection_data_get_target(selection_data);
     GdkDragAction suggested_action;
@@ -671,19 +679,22 @@ static void _window_drag_data_received(GtkWidget *widget,
         return;
 
     suggested_action = gdk_drag_context_get_suggested_action(context);
-    if (suggested_action == GDK_ACTION_COPY || suggested_action == GDK_ACTION_ASK)
+    if (suggested_action == GDK_ACTION_COPY
+        || suggested_action == GDK_ACTION_ASK)
     {
         const guchar *data = gtk_selection_data_get_data(selection_data);
 
         uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *)data);
         if (uri_list == NULL)
         {
-            window_close_file(VNR_WINDOW(widget));
+            window_close_file(window);
 
-            //gtk_action_group_set_sensitive(VNR_WINDOW(widget)->actions_collection, FALSE);
+            //gtk_action_group_set_sensitive(
+            //      VNR_WINDOW(widget)->actions_collection, FALSE);
 
-            window_slideshow_deny(VNR_WINDOW(widget));
-            vnr_message_area_show(VNR_MESSAGE_AREA(VNR_WINDOW(widget)->msg_area), TRUE,
+            window_slideshow_deny(window);
+            vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
+                                  TRUE,
                                   _("The given locations contain no images."),
                                   TRUE);
             return;
@@ -694,7 +705,7 @@ static void _window_drag_data_received(GtkWidget *widget,
 }
 
 
-// Window destruction ---------------------------------------------------------
+// window destruction ---------------------------------------------------------
 
 static gboolean _window_on_delete(VnrWindow *window, GdkEvent *event,
                                   gpointer user_data)
@@ -757,7 +768,8 @@ static void window_finalize(GObject *object)
 
     g_free(window->destdir);
 
-    window->filelist = vnr_list_free(window->filelist);
+    vnr_list_free(window->filelist);
+    window_list_set_current(window, NULL);
 
     G_OBJECT_CLASS(window_parent_class)->finalize(object);
 }
@@ -941,7 +953,10 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 void window_list_set(VnrWindow *window, GList *list)
 {
     if (list != window->filelist)
-        window->filelist = vnr_list_free(window->filelist);
+    {
+        vnr_list_free(window->filelist);
+        window_list_set_current(window, NULL);
+    }
 
     if (list && g_list_length(g_list_first(list)) > 1)
     {
@@ -956,7 +971,7 @@ void window_list_set(VnrWindow *window, GList *list)
         window_slideshow_deny(window);
     }
 
-    window->filelist = list;
+    window_list_set_current(window, list);
 }
 
 VnrFile* window_list_get_current(VnrWindow *window)
@@ -965,6 +980,24 @@ VnrFile* window_list_get_current(VnrWindow *window)
         return NULL;
 
     return VNR_FILE(window->filelist->data);
+}
+
+void window_list_set_current(VnrWindow *window, GList *list)
+{
+    g_return_if_fail(window != NULL);
+
+    if (window->filelist == list)
+        return;
+
+    if (window->monitor)
+        g_object_unref(window->monitor);
+
+    window->monitor = NULL;
+
+    //if (list)
+    //    window->monitor = create file monitor....
+
+    window->filelist = list;
 }
 
 
@@ -1290,6 +1323,51 @@ static void _window_update_fs_filename_label(VnrWindow *window)
     g_free(buf);
 }
 
+static void _monitor_on_change(GFileMonitor *monitor,
+                               GFile *event_file,
+                               GFile *other_file,
+                               GFileMonitorEvent event_type,
+                               gpointer user_data)
+{
+    (void) monitor;
+    (void) other_file;
+
+    VnrWindow *window = VNR_WINDOW(user_data);
+    if (!window_list_get_current(window))
+        return;
+
+    switch (event_type)
+    {
+    case G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
+        char *path = g_file_get_path(event_file);
+        printf("changes: %s\n", path);
+        g_free(path);
+
+        if (!window->need_reload)
+        {
+            window->need_reload = true;
+            g_idle_add((GSourceFunc) _window_on_idle_reload, NULL);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+static gboolean _window_on_idle_reload(VnrWindow *window)
+{
+    g_return_val_if_fail(window != NULL, G_SOURCE_REMOVE);
+
+    printf("reload\n");
+
+    window->need_reload = false;
+
+    window_load_file(window, FALSE);
+
+    return G_SOURCE_REMOVE;
+}
+
 static void _action_resize(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
@@ -1474,7 +1552,7 @@ gboolean window_prev(VnrWindow *window)
     if (!prev)
         prev = g_list_last(window->filelist);
 
-    window->filelist = prev;
+    window_list_set_current(window, prev);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
@@ -1508,7 +1586,7 @@ gboolean window_next(VnrWindow *window, gboolean reset_timer)
     if (!next)
         next = g_list_first(window->filelist);
 
-    window->filelist = next;
+    window_list_set_current(window, next);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
@@ -1546,14 +1624,14 @@ static gboolean _window_on_sl_timeout(VnrWindow *window)
 
 gboolean window_first(VnrWindow *window)
 {
-    GList *prev = g_list_first(window->filelist);
+    GList *first = g_list_first(window->filelist);
 
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
     {
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
     }
 
-    window->filelist = prev;
+    window_list_set_current(window, first);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
@@ -1568,14 +1646,14 @@ gboolean window_first(VnrWindow *window)
 
 gboolean window_last(VnrWindow *window)
 {
-    GList *prev = g_list_last(window->filelist);
+    GList *last = g_list_last(window->filelist);
 
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
     {
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
     }
 
-    window->filelist = prev;
+    window_list_set_current(window, last);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
@@ -1934,7 +2012,9 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
 static gboolean _window_delete_item(VnrWindow *window)
 {
     GList *next = vnr_list_delete_item(window->filelist);
-    window->filelist = NULL; // ensure we won't free the list
+
+    // ensure we won't free the list
+    window_list_set_current(window, NULL);
 
     if (!next)
     {
@@ -2001,7 +2081,7 @@ static void _window_action_preferences(VnrWindow *window, GtkWidget *widget)
 }
 
 
-// Pixbuf ---------------------------------------------------------------------
+// pixbuf ---------------------------------------------------------------------
 
 static void _window_rotate_pixbuf(VnrWindow *window,
                                   GdkPixbufRotation angle)
@@ -2273,7 +2353,7 @@ static void _window_action_zoom_fit(VnrWindow *window, GtkWidget *widget)
 }
 
 
-// Set wallpaper --------------------------------------------------------------
+// set wallpaper --------------------------------------------------------------
 
 static void _window_action_set_wallpaper(VnrWindow *window, GtkWidget *widget)
 {
@@ -2390,7 +2470,7 @@ static void _window_action_set_wallpaper(VnrWindow *window, GtkWidget *widget)
 }
 
 
-// Slideshow ------------------------------------------------------------------
+// slideshow ------------------------------------------------------------------
 
 static void _window_action_slideshow(VnrWindow *window)
 {
@@ -2511,7 +2591,7 @@ void window_slideshow_deny(VnrWindow *window)
 }
 
 
-// Fullscreen -----------------------------------------------------------------
+// fullscreen -----------------------------------------------------------------
 
 void window_fullscreen_toggle(VnrWindow *window)
 {
@@ -2684,7 +2764,7 @@ static gboolean _on_leave_image_area(GtkWidget *widget,
 }
 
 
-// Toolitem -------------------------------------------------------------------
+// toolitem -------------------------------------------------------------------
 
 #if 0
 static GtkWidget* _window_get_fs_toolitem(VnrWindow *window)

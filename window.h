@@ -17,8 +17,8 @@
  * along with Viewnior.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VNR_WINDOW_H
-#define VNR_WINDOW_H
+#ifndef __VNR_WINDOW_H__
+#define __VNR_WINDOW_H__
 
 #include <etkwidgetlist.h>
 #include "preferences.h"
@@ -43,7 +43,7 @@ struct _VnrWindow
 {
     GtkWindow __parent__;
 
-    // Data
+    // data
     GList *filelist;
     gchar *destdir;
     WindowMode mode;
@@ -52,8 +52,19 @@ struct _VnrWindow
     GList *list_image;
     gboolean can_edit;
     gboolean can_slideshow;
+    gint max_width;
+    gint max_height;
+    gint current_image_height;
+    gint current_image_width;
+    gboolean cursor_is_hidden;
+    guint8 modifications;
+    gchar *writable_format_name;
 
-    // Widgets
+    // reload
+    GFileMonitor *monitor;
+    gboolean need_reload;
+
+    // widgets
     GtkWidget *layout_box;
     GtkWidget *msg_area;
     GtkWidget *view;
@@ -61,14 +72,6 @@ struct _VnrWindow
     GtkWidget *popup_menu;
     GtkWidget *openwith_item;
     GtkWidget *props_dlg;
-
-    gint max_width;
-    gint max_height;
-    gchar *writable_format_name;
-    gint current_image_height;
-    gint current_image_width;
-    guint8 modifications;
-    gboolean cursor_is_hidden;
 
     // fullscreen variables
     GtkWidget *fs_toolitem;
@@ -91,6 +94,7 @@ VnrWindow* window_new();
 
 void window_list_set(VnrWindow *window, GList *list);
 VnrFile *window_list_get_current(VnrWindow *window);
+void window_list_set_current(VnrWindow *window, GList *list);
 
 // open / close
 void window_open_list(VnrWindow *window, GSList *uri_list);
@@ -112,6 +116,6 @@ void window_fullscreen_toggle(VnrWindow *window);
 
 G_END_DECLS
 
-#endif // VNR_WINDOW_H
+#endif // __VNR_WINDOW_H__
 
 
