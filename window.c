@@ -940,7 +940,8 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
 
 void window_list_set(VnrWindow *window, GList *list)
 {
-    window->filelist = vnr_list_free(window->filelist);
+    if (list != window->filelist)
+        window->filelist = vnr_list_free(window->filelist);
 
     if (list && g_list_length(g_list_first(list)) > 1)
     {
@@ -1933,12 +1934,11 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
 static gboolean _window_delete_item(VnrWindow *window)
 {
     GList *next = vnr_list_delete_item(window->filelist);
-    window->filelist = NULL; // ensure we won't free it
+    window->filelist = NULL; // ensure we won't free the list
 
-    if (next == NULL)
+    if (!next)
     {
         window_close_file(window);
-
         //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
 
         window_list_set(window, NULL);

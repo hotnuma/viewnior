@@ -212,9 +212,6 @@ static gint _list_compare_func(gconstpointer a, gconstpointer b, gpointer)
                      VNR_FILE((void *) b)->display_name_collate);
 }
 
-
-// Private functions ---------------------------------------------------------
-
 GList* vnr_list_delete_item(GList *list)
 {
     GList *first = g_list_first(list);
@@ -246,8 +243,6 @@ static GList* _vnr_list_delete_link(GList *list)
     VnrFile *file = VNR_FILE(list->data);
     if (file)
         g_object_unref(file);
-
-    // the doc says it must point to the top of the list
 
     return g_list_delete_link(list, list);
 }
