@@ -81,29 +81,30 @@ int main(int argc, char **argv)
 
     GList *file_list = NULL;
 
-    if (uri_list != NULL)
+    if (uri_list)
     {
         if (g_slist_length(uri_list) == 1)
         {
             file_list = vnr_list_new_for_path(uri_list->data,
-                                window->prefs->show_hidden,
-                                &error);
+                                              window->prefs->show_hidden,
+                                              &error);
         }
         else
         {
             file_list = vnr_list_new_for_list(uri_list,
-                              window->prefs->show_hidden,
-                              &error);
+                                              window->prefs->show_hidden,
+                                              &error);
         }
 
-        if (error != NULL)
+        if (error)
         {
             if (!file_list)
             {
-                vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                                      TRUE,
-                                      _("The given locations contain no images."),
-                                      TRUE);
+                vnr_message_area_show(
+                                VNR_MESSAGE_AREA(window->msg_area),
+                                TRUE,
+                                _("The given locations contain no images."),
+                                TRUE);
             }
             else
             {
@@ -112,6 +113,8 @@ int main(int argc, char **argv)
                                       error->message,
                                       TRUE);
             }
+
+            // free error
         }
     }
 

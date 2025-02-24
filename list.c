@@ -31,14 +31,19 @@ GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden,
     }
     else
     {
-        filelist = vnr_list_new_for_file(filepath, include_hidden);
+        gchar *directory = g_path_get_dirname(filepath);
+        filelist = vnr_list_new_for_dir(directory, TRUE, include_hidden);
+        g_free(directory);
 
-        GList *find = vnr_list_find(filelist, filepath);
+        if (filelist)
+        {
+            GList *find = vnr_list_find(filelist, filepath);
 
-        if (!find)
-            filelist = vnr_list_free(filelist);
-        else
-            filelist = find;
+            if (!find)
+                filelist = vnr_list_free(filelist);
+            else
+                filelist = find;
+        }
     }
 
     g_object_unref(fileinfo);
@@ -47,38 +52,30 @@ GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden,
     return filelist;
 }
 
-GList* vnr_list_new_for_file(gchar *filepath, gboolean include_hidden)
+GList* vnr_list_new_for_dir(gchar *directory, gboolean sort,
+                            gboolean include_hidden)
 {
-    gchar *directory = g_path_get_dirname(filepath);
+    if (!directory)
+        return NULL;
 
-    GList *list = vnr_list_new_for_dir(directory, TRUE, include_hidden);
-
-    g_free(directory);
-
-    return list;
-}
-
-GList* vnr_list_new_for_dir(gchar *directory,
-                            gboolean sort, gboolean include_hidden)
-{
     GFile *gfile = g_file_new_for_path(directory);
 
     GFileEnumerator *file_enum = g_file_enumerate_children(
-        gfile,
-        G_FILE_ATTRIBUTE_STANDARD_NAME ","
-        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
-        G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
-        G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
-        G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
-        G_FILE_ATTRIBUTE_TIME_MODIFIED,
-        G_FILE_QUERY_INFO_NONE,
-        NULL, NULL);
-
-    GFileInfo *fileinfo = g_file_enumerator_next_file(file_enum, NULL, NULL);
+                        gfile,
+                        G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                        G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                        G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
+                        G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
+                        G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
+                        G_FILE_ATTRIBUTE_TIME_MODIFIED,
+                        G_FILE_QUERY_INFO_NONE,
+                        NULL, NULL);
 
     GList *list = NULL;
 
-    while (fileinfo != NULL)
+    GFileInfo *fileinfo = g_file_enumerator_next_file(file_enum, NULL, NULL);
+
+    while (fileinfo)
     {
         VnrFile *vnrfile = vnr_file_new();
 
@@ -108,6 +105,7 @@ GList* vnr_list_new_for_dir(gchar *directory,
         }
 
         g_object_unref(fileinfo);
+
         fileinfo = g_file_enumerator_next_file(file_enum, NULL, NULL);
     }
 

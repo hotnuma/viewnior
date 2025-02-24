@@ -1240,6 +1240,9 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 
 void window_open_list(VnrWindow *window, GSList *uri_list)
 {
+    if (!uri_list)
+        return;
+
     _window_set_monitor(window, NULL);
 
     GList *file_list = NULL;
@@ -1258,7 +1261,7 @@ void window_open_list(VnrWindow *window, GSList *uri_list)
                                           &error);
     }
 
-    if (error != NULL)
+    if (error)
     {
         window_close_file(window);
         //gtk_action_group_set_sensitive(window->actions_collection, FALSE);
@@ -1280,6 +1283,8 @@ void window_open_list(VnrWindow *window, GSList *uri_list)
                                   error->message,
                                   TRUE);
         }
+
+        // free error
 
         return;
     }
