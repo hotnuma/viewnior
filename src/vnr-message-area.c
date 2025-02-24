@@ -84,12 +84,15 @@ vnr_message_area_init(VnrMessageArea *msg_area)
     msg_area->initialized = FALSE;
 }
 
-static void
-vnr_message_area_show_basic(VnrMessageArea *msg_area,
-                            gboolean critical,
-                            const char *message, gboolean close_image)
+static void vnr_message_area_show_basic(VnrMessageArea *msg_area,
+                                        gboolean critical,
+                                        const char *message,
+                                        gboolean close_image)
 {
+    // remove the file monitor early ?
+
     char *warning;
+
     if (!msg_area->initialized)
     {
         vnr_message_area_initialize(msg_area);
@@ -114,6 +117,7 @@ vnr_message_area_show_basic(VnrMessageArea *msg_area,
     gtk_label_set_markup(GTK_LABEL(msg_area->message), warning);
 
     g_free(warning);
+
     if (close_image == TRUE)
         window_close_file(msg_area->vnr_win);
 }

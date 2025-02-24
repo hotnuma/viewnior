@@ -125,6 +125,7 @@ gboolean dialog_file_rename(GtkWindow *window, VnrFile *file)
             g_free(dir);
 
             ret = vnr_file_rename(file, fullpath);
+
             g_free(fullpath);
         }
     }

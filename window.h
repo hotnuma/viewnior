@@ -94,7 +94,7 @@ GType window_get_type() G_GNUC_CONST;
 VnrWindow* window_new();
 
 void window_list_set(VnrWindow *window, GList *list);
-VnrFile *window_list_get_current(VnrWindow *window);
+VnrFile *window_get_current_file(VnrWindow *window);
 void window_list_set_current(VnrWindow *window, GList *list);
 
 // open / close

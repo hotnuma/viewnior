@@ -265,7 +265,7 @@ vnr_properties_dialog_init(VnrPropertiesDialog *dialog)
 
 void vnr_properties_dialog_update(VnrPropertiesDialog *dialog)
 {
-    VnrFile *current = window_list_get_current(dialog->window);
+    VnrFile *current = window_get_current_file(dialog->window);
     if (!current)
         return;
 
@@ -358,7 +358,7 @@ static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
 {
     vnr_properties_dialog_clear_metadata(dialog);
 
-    VnrFile *current = window_list_get_current(dialog->window);
+    VnrFile *current = window_get_current_file(dialog->window);
     if (!current)
         return;
 
@@ -367,7 +367,7 @@ static void vnr_properties_dialog_update_metadata(VnrPropertiesDialog *dialog)
 
 void vnr_properties_dialog_update_image(VnrPropertiesDialog *dialog)
 {
-    VnrFile *current = window_list_get_current(dialog->window);
+    VnrFile *current = window_get_current_file(dialog->window);
     if (!current)
         return;
 

@@ -538,7 +538,8 @@ static void _window_on_realize(VnrWindow *window, gpointer user_data)
 
     if (prefs->start_maximized)
     {
-        window_load_file(window, FALSE);
+        if (window_load_file(window, FALSE))
+            _window_set_monitor(window, window->filelist);
     }
     else
     {
@@ -546,8 +547,8 @@ static void _window_on_realize(VnrWindow *window, gpointer user_data)
         GdkRectangle geometry;
         GdkDisplay *display = gdk_screen_get_display(screen);
         GdkMonitor *monitor = gdk_display_get_monitor_at_window(
-                            display,
-                            gtk_widget_get_window(widget));
+                                        display,
+                                        gtk_widget_get_window(widget));
 
         gdk_monitor_get_geometry(monitor, &geometry);
 
@@ -556,10 +557,11 @@ static void _window_on_realize(VnrWindow *window, gpointer user_data)
 
         //printf("w = %d, h = %d\n", geometry.width, geometry.height);
 
-        window_load_file(window, false); // don't fit to screen
+        if (window_load_file(window, false)) // don't fit to screen
+            _window_set_monitor(window, window->filelist);
     }
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
 
     if (!current)
         return;
@@ -655,7 +657,7 @@ static void _view_on_drag_begin(GtkWidget *widget,
     (void) info;
     (void) time;
 
-    VnrFile *current = window_list_get_current(VNR_WINDOW(user_data));
+    VnrFile *current = window_get_current_file(VNR_WINDOW(user_data));
     if (!current)
         return;
 
@@ -677,9 +679,7 @@ static void _window_drag_data_received(GtkWidget *widget,
 {
     VnrWindow *window = VNR_WINDOW(widget);
 
-    GSList *uri_list = NULL;
     GdkAtom target = gtk_selection_data_get_target(selection_data);
-    GdkDragAction suggested_action;
 
     if (!gtk_targets_include_uri(&target, 1))
         return;
@@ -687,14 +687,18 @@ static void _window_drag_data_received(GtkWidget *widget,
     if (gtk_drag_get_source_widget(context))
         return;
 
+    GdkDragAction suggested_action;
     suggested_action = gdk_drag_context_get_suggested_action(context);
+
     if (suggested_action == GDK_ACTION_COPY
         || suggested_action == GDK_ACTION_ASK)
     {
         const guchar *data = gtk_selection_data_get_data(selection_data);
 
+        GSList *uri_list = NULL;
         uri_list = vnr_tools_parse_uri_string_list_to_file_list((gchar *)data);
-        if (uri_list == NULL)
+
+        if (!uri_list)
         {
             window_close_file(window);
 
@@ -928,7 +932,7 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window)
     /* Change the info, only if there is an image
      * (vnr_window_close isn't called on the current image) */
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current)
         return;
 
@@ -965,7 +969,6 @@ void window_list_set(VnrWindow *window, GList *list)
     {
         vnr_list_free(window->filelist);
         window_list_set_current(window, NULL);
-        _window_set_monitor(window, NULL);
     }
 
     if (list && g_list_length(g_list_first(list)) > 1)
@@ -982,10 +985,9 @@ void window_list_set(VnrWindow *window, GList *list)
     }
 
     window_list_set_current(window, list);
-    _window_set_monitor(window, list);
 }
 
-VnrFile* window_list_get_current(VnrWindow *window)
+VnrFile* window_get_current_file(VnrWindow *window)
 {
     g_return_val_if_fail(window != NULL, NULL);
 
@@ -1021,9 +1023,9 @@ static void _window_set_monitor(VnrWindow *window, GList *current)
         return;
 
     GFileMonitor *monitor = g_file_monitor(gfile,
-                             /*G_FILE_MONITOR_WATCH_MOUNTS
-                             |*/ G_FILE_MONITOR_WATCH_MOVES,
-                             NULL, NULL);
+                                           /*G_FILE_MONITOR_WATCH_MOUNTS
+                                           |*/ G_FILE_MONITOR_WATCH_MOVES,
+                                           NULL, NULL);
     if (!monitor)
     {
         g_object_unref(gfile);
@@ -1032,7 +1034,8 @@ static void _window_set_monitor(VnrWindow *window, GList *current)
 
     window->monitor = monitor;
     g_signal_connect_swapped(monitor, "changed",
-                     G_CALLBACK(_window_monitor_on_change), window);
+                             G_CALLBACK(_window_monitor_on_change), window);
+
     //g_file_monitor_set_rate_limit(monitor, 2000);
 
     g_object_unref(gfile);
@@ -1047,7 +1050,7 @@ static void _window_monitor_on_change(VnrWindow *window,
     (void) monitor;
     (void) other_file;
 
-    if (!window_list_get_current(window))
+    if (!window_get_current_file(window))
         return;
 
     switch (event_type)
@@ -1128,7 +1131,7 @@ static void _window_action_openfile(VnrWindow *window, GtkWidget *widget)
     g_signal_connect(GTK_FILE_CHOOSER(dialog), "update-preview",
                      G_CALLBACK(_on_update_preview), preview);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (current)
     {
         gchar *dirname = g_path_get_dirname(current->path);
@@ -1197,7 +1200,7 @@ static void _window_action_opendir(VnrWindow *window, GtkWidget *widget)
     gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (current)
     {
         gchar *dirname = g_path_get_dirname(current->path);
@@ -1222,9 +1225,13 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 {
     if (response_id == GTK_RESPONSE_ACCEPT)
     {
-        GSList *uri_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+        GSList *uri_list = gtk_file_chooser_get_filenames(
+                                            GTK_FILE_CHOOSER(dialog));
+
         g_return_if_fail(uri_list != NULL);
+
         window_open_list(window, uri_list);
+
         g_slist_free_full(uri_list, g_free);
     }
 
@@ -1233,6 +1240,8 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
 
 void window_open_list(VnrWindow *window, GSList *uri_list)
 {
+    _window_set_monitor(window, NULL);
+
     GList *file_list = NULL;
     GError *error = NULL;
 
@@ -1281,7 +1290,9 @@ void window_open_list(VnrWindow *window, GSList *uri_list)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
     window_close_file(window);
-    window_load_file(window, FALSE);
+
+    if (window_load_file(window, FALSE))
+        _window_set_monitor(window, file_list);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1291,7 +1302,7 @@ gboolean window_load_file(VnrWindow *window, gboolean fit_to_screen)
 {
     g_return_val_if_fail(window != NULL, false);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current)
         return false;
 
@@ -1395,7 +1406,7 @@ gboolean window_load_file(VnrWindow *window, gboolean fit_to_screen)
 
 static void _window_update_fs_filename_label(VnrWindow *window)
 {
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
 
     if (!current || window->mode == WINDOW_MODE_NORMAL)
         return;
@@ -1442,6 +1453,8 @@ static void _action_resize(VnrWindow *window, GtkWidget *widget)
 
 void window_close_file(VnrWindow *window)
 {
+    _window_set_monitor(window, NULL);
+
     gtk_window_set_title(GTK_WINDOW(window), "Viewnior");
     uni_anim_view_set_anim(UNI_ANIM_VIEW(window->view), NULL);
 
@@ -1460,7 +1473,7 @@ static void _window_update_openwith_menu(VnrWindow *window)
 
     gtk_widget_hide(window->openwith_item);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current)
         return;
 
@@ -1552,7 +1565,7 @@ static void _on_openwith(VnrWindow *window, gpointer user_data)
 {
     g_return_if_fail(VNR_IS_WINDOW(window) || !GTK_IS_WIDGET(user_data));
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current)
         return;
 
@@ -1591,6 +1604,8 @@ gboolean window_prev(VnrWindow *window)
     if (g_list_length(g_list_first(window->filelist)) < 2)
         return FALSE;
 
+    _window_set_monitor(window, NULL);
+
     if (window->mode == WINDOW_MODE_SLIDESHOW)
         g_source_remove(window->sl_source_id);
 
@@ -1599,14 +1614,12 @@ gboolean window_prev(VnrWindow *window)
         prev = g_list_last(window->filelist);
 
     window_list_set_current(window, prev);
-    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    window_load_file(window, FALSE);
-
-    _window_set_monitor(window, prev);
+    if (window_load_file(window, FALSE))
+        _window_set_monitor(window, prev);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1628,6 +1641,8 @@ gboolean window_next(VnrWindow *window, gboolean reset_timer)
     if (g_list_length(g_list_first(window->filelist)) < 2)
         return FALSE;
 
+    _window_set_monitor(window, NULL);
+
     if (window->mode == WINDOW_MODE_SLIDESHOW && reset_timer)
         g_source_remove(window->sl_source_id);
 
@@ -1636,14 +1651,12 @@ gboolean window_next(VnrWindow *window, gboolean reset_timer)
         next = g_list_first(window->filelist);
 
     window_list_set_current(window, next);
-    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    window_load_file(window, FALSE);
-
-    _window_set_monitor(window, next);
+    if (window_load_file(window, FALSE))
+        _window_set_monitor(window, next);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1676,6 +1689,8 @@ static gboolean _window_on_sl_timeout(VnrWindow *window)
 
 gboolean window_first(VnrWindow *window)
 {
+    _window_set_monitor(window, NULL);
+
     GList *first = g_list_first(window->filelist);
 
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
@@ -1684,14 +1699,12 @@ gboolean window_first(VnrWindow *window)
     }
 
     window_list_set_current(window, first);
-    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    window_load_file(window, FALSE);
-
-    _window_set_monitor(window, first);
+    if (window_load_file(window, FALSE))
+        _window_set_monitor(window, first);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1701,6 +1714,8 @@ gboolean window_first(VnrWindow *window)
 
 gboolean window_last(VnrWindow *window)
 {
+    _window_set_monitor(window, NULL);
+
     GList *last = g_list_last(window->filelist);
 
     if (vnr_message_area_is_critical(VNR_MESSAGE_AREA(window->msg_area)))
@@ -1709,13 +1724,12 @@ gboolean window_last(VnrWindow *window)
     }
 
     window_list_set_current(window, last);
-    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
-    window_load_file(window, FALSE);
-    _window_set_monitor(window, last);
+    if (window_load_file(window, FALSE))
+        _window_set_monitor(window, last);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1728,6 +1742,8 @@ static void _window_action_reload(VnrWindow *window, GtkWidget *widget)
     g_return_if_fail(window != NULL);
     (void) widget;
 
+    // create a new monitor ?
+
     window_load_file(window, FALSE);
 }
 
@@ -1736,7 +1752,7 @@ static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget)
     g_return_if_fail(window != NULL);
     (void) widget;
 
-    if (window_list_get_current(window) == NULL
+    if (window_get_current_file(window) == NULL
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
@@ -1750,7 +1766,7 @@ static void _window_action_selectdir(VnrWindow *window, GtkWidget *widget)
     g_return_if_fail(window != NULL);
     (void) widget;
 
-    if (window_list_get_current(window) == NULL
+    if (window_get_current_file(window) == NULL
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
@@ -1796,7 +1812,7 @@ static GSList* _window_file_chooser(VnrWindow *window,
     gtk_file_chooser_set_show_hidden(chooser, window->prefs->show_hidden);
     gtk_file_chooser_set_select_multiple(chooser, multiple);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (current)
     {
         gchar *dirname = g_path_get_dirname(current->path);
@@ -1821,7 +1837,7 @@ static void _window_action_copy(VnrWindow *window, GtkWidget *widget)
     g_return_if_fail(window != NULL);
     (void) widget;
 
-    if (window_list_get_current(window) == NULL
+    if (window_get_current_file(window) == NULL
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
@@ -1838,7 +1854,7 @@ static void _window_copy(VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
 
     if (!current || window->mode != WINDOW_MODE_NORMAL)
         return;
@@ -1886,7 +1902,7 @@ static void _window_action_move(VnrWindow *window, GtkWidget *widget)
     g_return_if_fail(window != NULL);
     (void) widget;
 
-    if (window_list_get_current(window) == NULL
+    if (window_get_current_file(window) == NULL
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
@@ -1903,7 +1919,7 @@ static void _window_move(VnrWindow *window)
 {
     g_return_if_fail(window != NULL);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current || !window->destdir || window->mode != WINDOW_MODE_NORMAL)
         return;
 
@@ -1917,9 +1933,12 @@ static void _window_move(VnrWindow *window)
 
     if (ret)
     {
+        _window_set_monitor(window, NULL);
         _window_delete_item(window);
         window_close_file(window);
-        window_load_file(window, FALSE);
+
+        if (window_load_file(window, FALSE))
+            _window_set_monitor(window, window->filelist);
     }
 
 cleanup:
@@ -1932,7 +1951,7 @@ static void _window_action_rename(VnrWindow *window, GtkWidget *widget)
     (void) widget;
     g_return_if_fail(window != NULL);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
 
     if (!current || window->mode != WINDOW_MODE_NORMAL)
         return;
@@ -1952,7 +1971,7 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
     (void) widget;
     g_return_if_fail(window != NULL);
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
 
     if (!current || window->mode != WINDOW_MODE_NORMAL)
         return;
@@ -2027,6 +2046,7 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
         }
         else
         {
+            _window_set_monitor(window, NULL);
             gboolean ret = _window_delete_item(window);
 
             if (!ret)
@@ -2039,7 +2059,9 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
                     vnr_tools_set_cursor(GTK_WIDGET(dlg), GDK_WATCH, true);
 
                 window_close_file(window);
-                window_load_file(window, FALSE);
+
+                if (window_load_file(window, FALSE))
+                    _window_set_monitor(window, window->filelist);
 
                 if (window->prefs->confirm_delete && !window->cursor_is_hidden)
                     vnr_tools_set_cursor(GTK_WIDGET(dlg), GDK_LEFT_PTR, false);
@@ -2072,7 +2094,6 @@ static gboolean _window_delete_item(VnrWindow *window)
 
     // ensure we won't free the list
     window_list_set_current(window, NULL);
-    _window_set_monitor(window, NULL);
 
     if (!next)
     {
@@ -2099,7 +2120,6 @@ static gboolean _window_delete_item(VnrWindow *window)
     }
 
     window_list_set(window, next);
-    _window_set_monitor(window, next);
 
     return true;
 }
@@ -2121,7 +2141,7 @@ static void _window_action_properties(VnrWindow *window, GtkWidget *widget)
     (void) widget;
     g_return_if_fail(window != NULL);
 
-    if (window_list_get_current(window) == NULL
+    if (window_get_current_file(window) == NULL
         || window->mode != WINDOW_MODE_NORMAL)
         return;
 
@@ -2358,7 +2378,7 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current)
         return;
 
@@ -2471,7 +2491,7 @@ static void _window_action_set_wallpaper(VnrWindow *window, GtkWidget *widget)
             desktop_environment = uni_detect_desktop_environment();
         }
 
-        VnrFile *current = window_list_get_current(window);
+        VnrFile *current = window_get_current_file(window);
 
         switch (desktop_environment)
         {
@@ -2578,7 +2598,7 @@ static void _window_action_slideshow(VnrWindow *window)
     if (!window->can_slideshow)
         return;
 
-    VnrFile *current = window_list_get_current(window);
+    VnrFile *current = window_get_current_file(window);
     if (!current)
         return;
 
@@ -2702,7 +2722,7 @@ void window_fullscreen_toggle(VnrWindow *window)
 
 static void _window_fullscreen(VnrWindow *window)
 {
-    if (window_list_get_current(window) == NULL)
+    if (window_get_current_file(window) == NULL)
         return;
 
     gtk_window_fullscreen(GTK_WINDOW(window));
