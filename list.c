@@ -31,25 +31,42 @@ GList* vnr_list_new_for_path(gchar *filepath, gboolean include_hidden,
     }
     else
     {
-        gchar *directory = g_path_get_dirname(filepath);
-        filelist = vnr_list_new_for_dir(directory, TRUE, include_hidden);
-        g_free(directory);
-
-        if (filelist)
-        {
-            GList *find = vnr_list_find(filelist, filepath);
-
-            if (!find)
-                filelist = vnr_list_free(filelist);
-            else
-                filelist = find;
-        }
+        filelist = vnr_list_new_for_file(filepath, include_hidden, false);
     }
 
     g_object_unref(fileinfo);
     g_object_unref(file);
 
     return filelist;
+}
+
+GList* vnr_list_new_for_file(gchar *filepath,
+                             gboolean include_hidden, gboolean try_first)
+{
+    if (!filepath)
+        return NULL;
+
+    gchar *directory = g_path_get_dirname(filepath);
+    if (!directory)
+        return NULL;
+
+    GList *filelist = vnr_list_new_for_dir(directory, TRUE, include_hidden);
+    g_free(directory);
+
+    if (!filelist)
+        return NULL;
+
+    GList *find = vnr_list_find(filelist, filepath);
+
+    if (!find)
+    {
+        if (try_first)
+            return g_list_first(filelist);
+        else
+            return vnr_list_free(filelist);
+    }
+
+    return find;
 }
 
 GList* vnr_list_new_for_dir(gchar *directory, gboolean sort,

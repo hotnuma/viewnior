@@ -10,6 +10,8 @@ G_BEGIN_DECLS
 
 GList* vnr_list_new_for_path(gchar *filepath,
                              gboolean include_hidden, GError **error);
+GList* vnr_list_new_for_file(gchar *filepath,
+                             gboolean include_hidden, gboolean try_first);
 GList* vnr_list_new_for_dir(gchar *directory, gboolean sort,
                             gboolean include_hidden);
 GList* vnr_list_new_for_list(GSList *uri_list,

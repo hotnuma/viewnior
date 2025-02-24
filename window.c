@@ -1748,9 +1748,19 @@ static void _window_action_reload(VnrWindow *window, GtkWidget *widget)
     g_return_if_fail(window != NULL);
     (void) widget;
 
-    // create a new monitor ?
+    _window_set_monitor(window, NULL);
 
-    window_load_file(window, FALSE);
+    VnrFile *vnrfile = window_get_current_file(window);
+    if (!vnrfile)
+        return;
+
+    GList *list = vnr_list_new_for_file(vnrfile->path,
+                                        window->prefs->show_hidden,
+                                        true);
+    window_list_set(window, list);
+
+    if (window_load_file(window, FALSE))
+        _window_set_monitor(window, window->filelist);
 }
 
 static void _window_action_resetdir(VnrWindow *window, GtkWidget *widget)

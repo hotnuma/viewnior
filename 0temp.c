@@ -2,18 +2,21 @@
 
 // ----------------------------------------------------------------------------
 
-GList* vnr_list_new_for_file(gchar *filepath, gboolean include_hidden);
+gchar *directory = g_path_get_dirname(filepath);
+filelist = vnr_list_new_for_dir(directory, TRUE, include_hidden);
+g_free(directory);
 
-GList* vnr_list_new_for_file(gchar *filepath, gboolean include_hidden)
+if (filelist)
 {
-    gchar *directory = g_path_get_dirname(filepath);
+    GList *find = vnr_list_find(filelist, filepath);
 
-    GList *list = vnr_list_new_for_dir(directory, TRUE, include_hidden);
-
-    g_free(directory);
-
-    return list;
+    if (!find)
+        filelist = vnr_list_free(filelist);
+    else
+        filelist = find;
 }
+
+// ----------------------------------------------------------------------------
 
 if (!list)
     return NULL;
