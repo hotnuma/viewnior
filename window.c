@@ -173,6 +173,7 @@ typedef enum
     WINDOW_ACTION_OPEN = 1,
     WINDOW_ACTION_OPENDIR,
     WINDOW_ACTION_OPENWITH,
+    WINDOW_ACTION_SAVE,
     WINDOW_ACTION_RELOAD,
     WINDOW_ACTION_RESETDIR,
     WINDOW_ACTION_SELECTDIR,
@@ -216,6 +217,13 @@ static EtkActionEntry _window_actions[] =
      N_("Open the selected image with a different application"),
      NULL,
      NULL},
+
+    {WINDOW_ACTION_SAVE,
+     "<Actions>/AppWindow/Save", "<Control>S",
+     0, NULL,
+     NULL,
+     NULL,
+     G_CALLBACK(_window_action_save_image)},
 
     {WINDOW_ACTION_RELOAD,
      "<Actions>/AppWindow/Reload", "F5",
@@ -1039,8 +1047,6 @@ static void _window_monitor_on_change(VnrWindow *window,
     (void) monitor;
     (void) other_file;
 
-    //VnrWindow *window = VNR_WINDOW(user_data);
-
     if (!window_list_get_current(window))
         return;
 
@@ -1048,7 +1054,7 @@ static void _window_monitor_on_change(VnrWindow *window,
     {
     case G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
         char *path = g_file_get_path(event_file);
-        printf("changes: %s\n", path);
+        printf("_window_monitor_on_change: %s\n", path);
         g_free(path);
 
         if (!window->need_reload)
@@ -1067,9 +1073,16 @@ static gboolean _window_on_idle_reload(VnrWindow *window)
 {
     g_return_val_if_fail(window != NULL, G_SOURCE_REMOVE);
 
-    printf("reload\n");
-
     window->need_reload = false;
+
+    if (window->no_reload)
+    {
+        window->no_reload = false;
+
+        return G_SOURCE_REMOVE;
+    }
+
+    printf("_window_on_idle_reload: reload\n");
 
     window_load_file(window, FALSE);
 
@@ -1291,7 +1304,9 @@ gboolean window_load_file(VnrWindow *window, gboolean fit_to_screen)
     if (error != NULL)
     {
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                              TRUE, error->message, TRUE);
+                              TRUE,
+                              error->message,
+                              TRUE);
 
         if (gtk_widget_get_visible(window->props_dlg))
             vnr_properties_dialog_clear(
@@ -2169,27 +2184,38 @@ static void _window_rotate_pixbuf(VnrWindow *window,
 
     window->modifications ^= 4;
 
-    //gtk_action_group_set_sensitive(window->action_save, window->modifications);
+    //gtk_action_group_set_sensitive(
+    //      window->action_save, window->modifications);
 
-    if (window->modifications == 0 && window->prefs->behavior_modify != VNR_PREFS_MODIFY_IGNORE)
+    if (window->modifications == 0
+            && window->prefs->behavior_modify != VNR_PREFS_MODIFY_IGNORE)
     {
         vnr_message_area_hide(VNR_MESSAGE_AREA(window->msg_area));
         return;
     }
 
     if (window->writable_format_name == NULL)
+    {
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                               TRUE,
-                              _("Image modifications cannot be saved.\nWriting in this format is not supported."),
+                              _("Image modifications cannot be saved.\n"
+                                "Writing in this format is not supported."),
                               FALSE);
+    }
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
+    {
         _window_action_save_image(window, NULL);
+    }
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
-        vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
-                                          FALSE,
-                                          _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, "gtk-save",
-                                          G_CALLBACK(_window_action_save_image));
+    {
+        vnr_message_area_show_with_button(
+                VNR_MESSAGE_AREA(window->msg_area),
+                FALSE,
+                _("Save modifications?\nThis will overwrite the image "
+                  "and may reduce its quality!"),
+                FALSE, "gtk-save",
+                G_CALLBACK(_window_action_save_image));
+    }
 }
 
 static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
@@ -2222,8 +2248,10 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
 
     g_object_unref(result);
 
-    // Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical
-    window->modifications ^= (window->modifications & 4) ? 1 + horizontal : 2 - horizontal;
+    // Extra conditions. Rotating 180 degrees is also flipping horizontal
+    // and vertical
+    window->modifications ^= (window->modifications & 4)
+            ? 1 + horizontal : 2 - horizontal;
 
     //gtk_action_group_set_sensitive(window->action_save,
     //                               window->modifications);
@@ -2235,18 +2263,27 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
     }
 
     if (window->writable_format_name == NULL)
+    {
         vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
                               TRUE,
-                              _("Image modifications cannot be saved.\nWriting in this format is not supported."),
+                              _("Image modifications cannot be saved.\n"
+                                "Writing in this format is not supported."),
                               FALSE);
+    }
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
+    {
         _window_action_save_image(window, NULL);
+    }
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
-        vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
-                                          FALSE,
-                                          _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, "gtk-save",
-                                          G_CALLBACK(_window_action_save_image));
+    {
+        vnr_message_area_show_with_button(
+                VNR_MESSAGE_AREA(window->msg_area),
+                FALSE,
+                _("Save modifications?\nThis will overwrite"
+                  " the image and may reduce its quality!"),
+                FALSE, "gtk-save",
+                G_CALLBACK(_window_action_save_image));
+    }
 }
 
 static void _window_action_crop(VnrWindow *window, GtkWidget *widget)
@@ -2274,8 +2311,10 @@ static void _window_action_crop(VnrWindow *window, GtkWidget *widget)
                              gdk_pixbuf_get_bits_per_sample(original),
                              crop->area.width, crop->area.height);
 
-    gdk_pixbuf_copy_area((const GdkPixbuf *)original, crop->area.x, crop->area.y,
-                         crop->area.width, crop->area.height, cropped, 0, 0);
+    gdk_pixbuf_copy_area((const GdkPixbuf*) original,
+                         crop->area.x, crop->area.y,
+                         crop->area.width, crop->area.height,
+                         cropped, 0, 0);
 
     uni_anim_view_set_static(UNI_ANIM_VIEW(window->view), cropped);
 
@@ -2289,18 +2328,28 @@ static void _window_action_crop(VnrWindow *window, GtkWidget *widget)
     //gtk_action_group_set_sensitive(window->action_save, TRUE);
 
     if (window->writable_format_name == NULL)
-        vnr_message_area_show(VNR_MESSAGE_AREA(window->msg_area),
-                              TRUE,
-                              _("Image modifications cannot be saved.\nWriting in this format is not supported."),
-                              FALSE);
+    {
+        vnr_message_area_show(
+                VNR_MESSAGE_AREA(window->msg_area),
+                TRUE,
+                _("Image modifications cannot be saved.\n"
+                  "Writing in this format is not supported."),
+                FALSE);
+    }
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_SAVE)
+    {
         _window_action_save_image(window, NULL);
+    }
     else if (window->prefs->behavior_modify == VNR_PREFS_MODIFY_ASK)
-        vnr_message_area_show_with_button(VNR_MESSAGE_AREA(window->msg_area),
-                                          FALSE,
-                                          _("Save modifications?\nThis will overwrite the image and may reduce its quality!"),
-                                          FALSE, "gtk-save",
-                                          G_CALLBACK(_window_action_save_image));
+    {
+        vnr_message_area_show_with_button(
+                VNR_MESSAGE_AREA(window->msg_area),
+                FALSE,
+                _("Save modifications?\nThis will overwrite"
+                  " the image and may reduce its quality!"),
+                FALSE, "gtk-save",
+                G_CALLBACK(_window_action_save_image));
+    }
 
     g_object_unref(crop);
 }
@@ -2326,12 +2375,13 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
 
     if (g_strcmp0(window->writable_format_name, "jpeg") == 0)
     {
-        gchar *quality;
-        quality = g_strdup_printf("%i", window->prefs->jpeg_quality);
+        gchar *quality = g_strdup_printf("%i", window->prefs->jpeg_quality);
 
-        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                        current->path, "jpeg",
-                        &error, "quality", quality, NULL);
+        gdk_pixbuf_save(
+                uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
+                current->path, "jpeg",
+                &error, "quality", quality, NULL);
+
         g_free(quality);
     }
     else if (g_strcmp0(window->writable_format_name, "png") == 0)
@@ -2339,16 +2389,19 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
         gchar *compression;
         compression = g_strdup_printf("%i", window->prefs->png_compression);
 
-        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                        current->path, "png",
-                        &error, "compression", compression, NULL);
+        gdk_pixbuf_save(
+                uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
+                current->path, "png",
+                &error, "compression", compression, NULL);
+
         g_free(compression);
     }
     else
     {
-        gdk_pixbuf_save(uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
-                        current->path,
-                        window->writable_format_name, &error, NULL);
+        gdk_pixbuf_save(
+                uni_image_view_get_pixbuf(UNI_IMAGE_VIEW(window->view)),
+                current->path,
+                window->writable_format_name, &error, NULL);
     }
 
     uni_write_exiv2_from_cache(current->path);
@@ -2363,10 +2416,12 @@ static void _window_action_save_image(VnrWindow *window, GtkWidget *widget)
         return;
     }
 
-    if (window->prefs->reload_on_save)
+    if (!window->prefs->reload_on_save)
     {
-        window_load_file(window, FALSE);
-        return;
+        window->no_reload = true;
+
+        //window_load_file(window, FALSE);
+        //return;
     }
 
     window->modifications = 0;

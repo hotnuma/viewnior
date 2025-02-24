@@ -63,6 +63,7 @@ struct _VnrWindow
     // reload
     GFileMonitor *monitor;
     gboolean need_reload;
+    gboolean no_reload;
 
     // widgets
     GtkWidget *layout_box;
