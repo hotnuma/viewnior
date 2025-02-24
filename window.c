@@ -81,6 +81,13 @@ static void _view_on_zoom_changed(UniImageView *view, VnrWindow *window);
 
 // open / close ---------------------------------------------------------------
 
+static void _window_set_monitor(VnrWindow *window, GList *current);
+static void _window_monitor_on_change(VnrWindow *window,
+                                      GFile *event_file,
+                                      GFile *other_file,
+                                      GFileMonitorEvent event_type,
+                                      GFileMonitor *monitor);
+static gboolean _window_on_idle_reload(VnrWindow *window);
 static void _window_action_openfile(VnrWindow *window, GtkWidget *widget);
 static void _on_update_preview(GtkFileChooser *file_chooser, gpointer data);
 static gboolean _file_size_is_small(char *filename);
@@ -89,12 +96,6 @@ static void _on_file_open_dialog_response(GtkWidget *dialog,
                                           gint response_id,
                                           VnrWindow *window);
 static void _window_update_fs_filename_label(VnrWindow *window);
-static void _monitor_on_change(GFileMonitor *monitor,
-                               GFile *event_file,
-                               GFile *other_file,
-                               GFileMonitorEvent event_type,
-                               gpointer user_data);
-static gboolean _window_on_idle_reload(VnrWindow *window);
 static void _action_resize(VnrWindow *window, GtkWidget *widget);
 static void _window_update_openwith_menu(VnrWindow *window);
 static void _on_openwith(VnrWindow *window, gpointer user_data);
@@ -755,6 +756,7 @@ static void window_dispose(GObject *object)
 
     VnrWindow *window = VNR_WINDOW(object);
 
+    _window_set_monitor(window, NULL);
     window->accel_group = etk_actions_dispose(GTK_WINDOW(window),
                                               window->accel_group);
     window->list_image = etk_widget_list_free(window->list_image);
@@ -767,7 +769,6 @@ static void window_finalize(GObject *object)
     VnrWindow *window = VNR_WINDOW(object);
 
     g_free(window->destdir);
-
     vnr_list_free(window->filelist);
     window_list_set_current(window, NULL);
 
@@ -956,6 +957,7 @@ void window_list_set(VnrWindow *window, GList *list)
     {
         vnr_list_free(window->filelist);
         window_list_set_current(window, NULL);
+        _window_set_monitor(window, NULL);
     }
 
     if (list && g_list_length(g_list_first(list)) > 1)
@@ -972,10 +974,13 @@ void window_list_set(VnrWindow *window, GList *list)
     }
 
     window_list_set_current(window, list);
+    _window_set_monitor(window, list);
 }
 
 VnrFile* window_list_get_current(VnrWindow *window)
 {
+    g_return_val_if_fail(window != NULL, NULL);
+
     if (!window->filelist)
         return NULL;
 
@@ -986,43 +991,89 @@ void window_list_set_current(VnrWindow *window, GList *list)
 {
     g_return_if_fail(window != NULL);
 
-    if (window->filelist == list)
-        return;
+    window->filelist = list;
+}
+
+static void _window_set_monitor(VnrWindow *window, GList *current)
+{
+    g_return_if_fail(window != NULL);
 
     if (window->monitor)
         g_object_unref(window->monitor);
 
     window->monitor = NULL;
 
-    if (list)
+    if (!current)
+        return;
+
+    VnrFile *vnrfile = VNR_FILE(current->data);
+    GFile *gfile = g_file_new_for_path(vnrfile->path);
+
+    if (!gfile)
+        return;
+
+    GFileMonitor *monitor = g_file_monitor(gfile,
+                             /*G_FILE_MONITOR_WATCH_MOUNTS
+                             |*/ G_FILE_MONITOR_WATCH_MOVES,
+                             NULL, NULL);
+    if (!monitor)
     {
-        VnrFile *vnrfile = VNR_FILE(list->data);
-
-        GFile *gfile = g_file_new_for_path(vnrfile->path);
-
-        if (!gfile)
-            goto out;
-
-        GFileMonitor *monitor = g_file_monitor(gfile,
-                                 /*G_FILE_MONITOR_WATCH_MOUNTS
-                                 |*/ G_FILE_MONITOR_WATCH_MOVES,
-                                 NULL, NULL);
-        if (!monitor)
-        {
-            g_object_unref(gfile);
-            goto out;
-        }
-
-        window->monitor = monitor;
-        g_signal_connect(monitor, "changed",
-                         G_CALLBACK(_monitor_on_change), window);
-        g_file_monitor_set_rate_limit(monitor, 2000);
-
         g_object_unref(gfile);
+        return;
     }
 
- out:
-    window->filelist = list;
+    window->monitor = monitor;
+    g_signal_connect_swapped(monitor, "changed",
+                     G_CALLBACK(_window_monitor_on_change), window);
+    //g_file_monitor_set_rate_limit(monitor, 2000);
+
+    g_object_unref(gfile);
+}
+
+static void _window_monitor_on_change(VnrWindow *window,
+                                      GFile *event_file,
+                                      GFile *other_file,
+                                      GFileMonitorEvent event_type,
+                                      GFileMonitor *monitor)
+{
+    (void) monitor;
+    (void) other_file;
+
+    //VnrWindow *window = VNR_WINDOW(user_data);
+
+    if (!window_list_get_current(window))
+        return;
+
+    switch (event_type)
+    {
+    case G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
+        char *path = g_file_get_path(event_file);
+        printf("changes: %s\n", path);
+        g_free(path);
+
+        if (!window->need_reload)
+        {
+            window->need_reload = true;
+            g_idle_add((GSourceFunc) _window_on_idle_reload, window);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+static gboolean _window_on_idle_reload(VnrWindow *window)
+{
+    g_return_val_if_fail(window != NULL, G_SOURCE_REMOVE);
+
+    printf("reload\n");
+
+    window->need_reload = false;
+
+    window_load_file(window, FALSE);
+
+    return G_SOURCE_REMOVE;
 }
 
 
@@ -1348,51 +1399,6 @@ static void _window_update_fs_filename_label(VnrWindow *window)
     g_free(buf);
 }
 
-static void _monitor_on_change(GFileMonitor *monitor,
-                               GFile *event_file,
-                               GFile *other_file,
-                               GFileMonitorEvent event_type,
-                               gpointer user_data)
-{
-    (void) monitor;
-    (void) other_file;
-
-    VnrWindow *window = VNR_WINDOW(user_data);
-    if (!window_list_get_current(window))
-        return;
-
-    switch (event_type)
-    {
-    case G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
-        char *path = g_file_get_path(event_file);
-        printf("changes: %s\n", path);
-        g_free(path);
-
-        if (!window->need_reload)
-        {
-            window->need_reload = true;
-            g_idle_add((GSourceFunc) _window_on_idle_reload, window);
-        }
-        break;
-
-    default:
-        break;
-    }
-}
-
-static gboolean _window_on_idle_reload(VnrWindow *window)
-{
-    g_return_val_if_fail(window != NULL, G_SOURCE_REMOVE);
-
-    printf("reload\n");
-
-    window->need_reload = false;
-
-    window_load_file(window, FALSE);
-
-    return G_SOURCE_REMOVE;
-}
-
 static void _action_resize(VnrWindow *window, GtkWidget *widget)
 {
     (void) widget;
@@ -1578,11 +1584,14 @@ gboolean window_prev(VnrWindow *window)
         prev = g_list_last(window->filelist);
 
     window_list_set_current(window, prev);
+    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
     window_load_file(window, FALSE);
+
+    _window_set_monitor(window, prev);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1612,11 +1621,14 @@ gboolean window_next(VnrWindow *window, gboolean reset_timer)
         next = g_list_first(window->filelist);
 
     window_list_set_current(window, next);
+    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
     window_load_file(window, FALSE);
+
+    _window_set_monitor(window, next);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1657,11 +1669,14 @@ gboolean window_first(VnrWindow *window)
     }
 
     window_list_set_current(window, first);
+    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
     window_load_file(window, FALSE);
+
+    _window_set_monitor(window, first);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -1679,11 +1694,13 @@ gboolean window_last(VnrWindow *window)
     }
 
     window_list_set_current(window, last);
+    _window_set_monitor(window, NULL);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_WATCH, true);
 
     window_load_file(window, FALSE);
+    _window_set_monitor(window, last);
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -2040,6 +2057,7 @@ static gboolean _window_delete_item(VnrWindow *window)
 
     // ensure we won't free the list
     window_list_set_current(window, NULL);
+    _window_set_monitor(window, NULL);
 
     if (!next)
     {
@@ -2066,6 +2084,7 @@ static gboolean _window_delete_item(VnrWindow *window)
     }
 
     window_list_set(window, next);
+    _window_set_monitor(window, next);
 
     return true;
 }
