@@ -174,7 +174,7 @@ static bool file_exists(const char *filepath)
     struct stat st;
     int result = stat(filepath, &st);
 
-    return (result == 0 && (st.st_mode & S_IFREG));
+    return (result == 0);
 }
 
 
