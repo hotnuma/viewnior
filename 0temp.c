@@ -2,6 +2,22 @@
 
 // ----------------------------------------------------------------------------
 
+    if (!list)
+        return NULL;
+
+    GList *found = vnr_list_find(list, filepath);
+
+    if (!found)
+    {
+        vnr_list_free(list);
+
+        return NULL;
+    }
+
+    return found;
+
+// ----------------------------------------------------------------------------
+
 vnr-crop.c
 
         G_GNUC_BEGIN_IGNORE_DEPRECATIONS

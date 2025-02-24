@@ -1253,7 +1253,7 @@ void window_open_list(VnrWindow *window, GSList *uri_list)
     }
     else
     {
-        file_list = vnr_list_new_multiple(uri_list,
+        file_list = vnr_list_new_for_list(uri_list,
                                           window->prefs->show_hidden,
                                           &error);
     }
