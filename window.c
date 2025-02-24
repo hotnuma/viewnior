@@ -1009,9 +1009,10 @@ static void _window_set_monitor(VnrWindow *window, GList *current)
     g_return_if_fail(window != NULL);
 
     if (window->monitor)
+    {
         g_object_unref(window->monitor);
-
-    window->monitor = NULL;
+        window->monitor = NULL;
+    }
 
     if (!current)
         return;
@@ -1023,8 +1024,7 @@ static void _window_set_monitor(VnrWindow *window, GList *current)
         return;
 
     GFileMonitor *monitor = g_file_monitor(gfile,
-                                           /*G_FILE_MONITOR_WATCH_MOUNTS
-                                           |*/ G_FILE_MONITOR_WATCH_MOVES,
+                                           G_FILE_MONITOR_WATCH_MOVES,
                                            NULL, NULL);
     if (!monitor)
     {
@@ -1380,7 +1380,8 @@ gboolean window_load_file(VnrWindow *window, gboolean fit_to_screen)
     }
     else if (window->prefs->zoom == VNR_PREFS_ZOOM_LAST_USED)
     {
-        uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view), last_fit_mode);
+        uni_image_view_set_fitting(UNI_IMAGE_VIEW(window->view),
+                                   last_fit_mode);
         _view_on_zoom_changed(UNI_IMAGE_VIEW(window->view), window);
     }
     else
@@ -1877,8 +1878,9 @@ static void _window_copy(VnrWindow *window)
         {
             //printf("%s\n", outpath);
 
-            VnrFile *newfile = vnr_file_new_for_path(outpath,
-                                                     window->prefs->show_hidden);
+            VnrFile *newfile = vnr_file_new_for_path(
+                                                outpath,
+                                                window->prefs->show_hidden);
 
             if (!vnr_list_insert(window->filelist, newfile))
                 g_object_unref(newfile);
@@ -2012,8 +2014,9 @@ static void _window_action_delete(VnrWindow *window, GtkWidget *widget)
         prompt = g_strdup_printf(_("Are you sure you want to\n"
                                  "permanently delete \"%s\"?"),
                                  current->display_name);
-        markup = g_markup_printf_escaped("<span weight=\"bold\" size=\"larger\">%s</span>\n\n%s",
-                                         prompt, warning);
+        markup = g_markup_printf_escaped(
+                    "<span weight=\"bold\" size=\"larger\">%s</span>\n\n%s",
+                    prompt, warning);
 
         dlg = gtk_message_dialog_new(GTK_WINDOW(window),
                                      GTK_DIALOG_MODAL,
@@ -2196,10 +2199,13 @@ static void _window_rotate_pixbuf(VnrWindow *window,
     window->current_image_height = gdk_pixbuf_get_height(result);
 
     if (gtk_widget_get_visible(window->props_dlg))
-        vnr_properties_dialog_update_image(VNR_PROPERTIES_DIALOG(window->props_dlg));
+        vnr_properties_dialog_update_image(
+                            VNR_PROPERTIES_DIALOG(window->props_dlg));
 
-    // Extra conditions. Rotating 180 degrees is also flipping horizontal and vertical
-    if ((window->modifications & (4)) ^ ((angle == GDK_PIXBUF_ROTATE_CLOCKWISE) << 2))
+    // Extra conditions. Rotating 180 degrees is also flipping horizontal
+    // and vertical
+    if ((window->modifications & (4))
+        ^ ((angle == GDK_PIXBUF_ROTATE_CLOCKWISE) << 2))
         window->modifications ^= 3;
 
     window->modifications ^= 4;
@@ -2261,7 +2267,8 @@ static void _window_flip_pixbuf(VnrWindow *window, gboolean horizontal)
     uni_anim_view_set_static(UNI_ANIM_VIEW(window->view), result);
 
     if (gtk_widget_get_visible(window->props_dlg))
-        vnr_properties_dialog_update_image(VNR_PROPERTIES_DIALOG(window->props_dlg));
+        vnr_properties_dialog_update_image(
+                    VNR_PROPERTIES_DIALOG(window->props_dlg));
 
     if (!window->cursor_is_hidden)
         vnr_tools_set_cursor(GTK_WIDGET(window), GDK_LEFT_PTR, false);
@@ -2937,8 +2944,11 @@ static GtkWidget* _window_get_fs_toolitem(VnrWindow *window)
     gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
     window->sl_timeout_widget = widget;
 
-    window->fs_seconds_label = gtk_label_new(ngettext(" second", " seconds", 5));
-    gtk_box_pack_start(GTK_BOX(box), window->fs_seconds_label, FALSE, FALSE, 0);
+    window->fs_seconds_label = gtk_label_new(ngettext(" second",
+                                                      " seconds", 5));
+    gtk_box_pack_start(GTK_BOX(box),
+                       window->fs_seconds_label,
+                       FALSE, FALSE, 0);
 
     window->fs_toolitem = GTK_WIDGET(item);
 
